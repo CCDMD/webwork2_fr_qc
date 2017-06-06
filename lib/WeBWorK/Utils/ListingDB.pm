@@ -18,7 +18,7 @@ package WeBWorK::Utils::ListingDB;
 
 use strict;
 use DBI;
-use WeBWorK::Utils qw(sortByName);
+use WeBWorK::Utils qw(readDirectory sortByName);
 use WeBWorK::Utils::Tags;
 use File::Basename;
 use WeBWorK::Debug;
@@ -44,7 +44,8 @@ BEGIN
 	&createListing &updateListing &deleteListing &getAllChapters
 	&getAllSections &searchListings &getAllListings &getSectionListings
 	&getAllDBsubjects &getAllDBchapters &getAllDBsections &getDBTextbooks
-	&getDBListings &countDBListings &getTables &getDBextras
+	&getDBListings &countDBListings &getTables &getDBextras &getAllKeyWords &getTop20KeyWords
+        &getAllDirs &getAllSubdirs &countDirListings &getDirListings
 	);
 	%EXPORT_TAGS		=();
 	@EXPORT_OK		=qw();
@@ -68,6 +69,24 @@ my %OPLtables = (
  pgfile_problem => 'OPL_pgfile_problem',
 );
 
+my %BPLtables = (
+ dbsubject => 'BPL_DBsubject',
+ dbchapter => 'BPL_DBchapter',
+ dbsection => 'BPL_DBsection',
+ author => 'BPL_author',
+ path => 'BPL_path',
+ pgfile => 'BPL_pgfile',
+ keyword => 'BPL_keyword',
+ keywordmap => 'BPL_keyword_chapters',
+ keywordrank => 'BPL_keyword_rank',
+ pgfile_keyword => 'BPL_pgfile_keyword',
+ textbook => 'BPL_textbook',
+ chapter => 'BPL_chapter',
+ section => 'BPL_section',
+ problem => 'BPL_problem',
+ morelt => 'BPL_morelt',
+ pgfile_problem => 'BPL_pgfile_problem',
+);
 
 my %NPLtables = (
  dbsubject => 'NPL-DBsubject',
@@ -89,15 +108,19 @@ my %NPLtables = (
 
 sub getTables {
 	my $ce = shift;
+        my $typ = shift;
 	my $libraryRoot = $ce->{problemLibrary}->{root};
 	my %tables;
 
-       if($ce->{problemLibrary}->{version} == 2.5) {
-		%tables = %OPLtables;
-	  } else {
+
+       if($ce->{problemLibrary}->{version} == 2.0 && $typ ne 'BPL') {
+                %tables = %OPLtables;
+       } elsif($typ eq 'BPL') {
+		%tables = %BPLtables;
+       } else {
 		%tables = %NPLtables;
-	  }
-	return %tables;
+       }
+       return %tables;
 }
 
 sub getDB {
@@ -185,7 +208,13 @@ sub makeKeywordWhere {
 	my $where = join(" OR ", @kwlist);
 	return "AND ( $where )";
 }
-
+sub makeKeywordWhereAND {
+	my $kwstring = shift;
+	my @kwlist = keywordCleaner($kwstring);
+	@kwlist = map { "kw.keyword = \"$_\"" } @kwlist;
+	my $where = join(" AND ", @kwlist);
+	return "AND ( $where )";
+}
 =item getDBextras($path)
 Get flags for whether a pg file uses Math Objects, and if it is static
 
@@ -311,7 +340,9 @@ $r is the Apache request object
 
 sub getAllDBsubjects {
 	my $r = shift;
-	my %tables = getTables($r->ce);
+        my $typ = shift || 'OPL';
+        if($r->param('library_srchtype') eq 'BPL') { $typ = 'BPL'; }
+	my %tables = getTables($r->ce, $typ);
 	my @results=();
 	my @row;
 	my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY DBsubject_id";
@@ -325,8 +356,96 @@ sub getAllDBsubjects {
 	# @results = sortByName(undef, @results);
 	return @results;
 }
+=item getAllKeyWords($r)
+Returns an array of keywords starting
 
+$r is the Apache request object
 
+=cut
+sub getAllKeyWords {
+	my $r = shift;
+	my %tables = getTables($r->ce,'BPL');
+	my @results=();
+        my @resultsx= ();
+	my @row;
+
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+        my $where;
+        if($chapter && $chapter ne 'All Chapters') {
+           $where .= qq( AND d.name = "$chapter");
+        }
+        if($subject && $subject ne 'All Subjects') {
+           $where .= qq( AND c.name = "$subject");
+        }
+
+	my $query = "SELECT distinct keyword FROM `$tables{keyword}` a,`$tables{keywordmap}` b,`$tables{dbsubject}` c,`$tables{dbchapter}` d 
+                     WHERE a.keyword_id=b.bplkeyword_id 
+                      AND  b.bpldbchapter_id = d.DBchapter_id
+                      AND  c.DBsubject_id = d.DBsubject_id
+                      $where";
+	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
+print STDERR "\n\n$query\n\n";
+
+	my $dbh = getDB($r->ce);
+	my $sth = $dbh->prepare($query);
+	$sth->execute();
+
+	while (@row = $sth->fetchrow_array()) {
+		push @results, $row[0];
+		push @results, "-".$row[0];
+	}
+	# @results = sortByName(undef, @results);
+	return @results;
+}
+
+=item getAllKeyWords($r)
+Returns an array of keywords starting
+
+$r is the Apache request object
+
+=cut
+sub getTop20KeyWords {
+	my $r = shift;
+	my %tables = getTables($r->ce, 'BPL');
+	my @results=();
+	my @row;
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+        my $where;
+        if($chapter&& $chapter ne 'All Chapters') {
+           $where .= qq( AND d.name = "$chapter" );
+        }
+        if($subject && $subject ne 'All Subjects') {
+           $where .= qq( AND c.name = "$subject");
+        }
+	my $query = "SELECT distinct keyword FROM `$tables{keyword}` a,`$tables{keywordmap}` b,`$tables{dbsubject}` c,`$tables{dbchapter}` d 
+                     WHERE a.keyword_id=b.bplkeyword_id 
+                      AND  b.bpldbchapter_id = d.DBchapter_id
+                      AND  c.DBsubject_id = d.DBsubject_id
+                      $where ORDER BY keyword LIMIT 0,20";
+=comment
+	my $query = "SELECT distinct keyword 
+                     FROM `$tables{keyword}` a LEFT JOIN `$tables{keywordmap}` b ON a.keyword_id=b.bplkeyword_id
+                          LEFT JOIN `$tables{dbsubject}` c ON b.bpldbchapter_id = c.DBsubject_id
+                          LEFT JOIN `$tables{dbchapter}` d ON c.DBsubject_id = d.DBsubject_id
+                      LEFT OUTER JOIN `$tables{keywordrank}` r ON a.keyword_id=r.keyword_id
+                      $where
+                      ORDER BY keyword,r.rank DESC LIMIT 0,20";
+=cut
+
+print STDERR "\n\n$query\n\n";
+
+	my $dbh = getDB($r->ce);
+	my $sth = $dbh->prepare($query);
+	$sth->execute();
+
+	while (@row = $sth->fetchrow_array()) {
+		push @results, $row[0];
+	}
+	# @results = sortByName(undef, @results);
+	return @results;
+}
 =item getAllDBchapters($r)
 Returns an array of DBchapter names                                             
                                                                                 
@@ -336,7 +455,9 @@ $r is the Apache request object
 
 sub getAllDBchapters {
 	my $r = shift;
-	my %tables = getTables($r->ce);
+        my $typ = shift || 'OPL';
+        if($r->param('library_srchtype') eq 'BPL') { $typ = 'BPL'; }
+	my %tables = getTables($r->ce,$typ);
 	my $subject = $r->param('library_subjects');
 	return () unless($subject);
 	my $dbh = getDB($r->ce);
@@ -345,6 +466,7 @@ sub getAllDBchapters {
 				`$tables{dbsubject}` t
                  WHERE c.DBsubject_id = t.DBsubject_id AND
                  t.name = \"$subject\" ORDER BY c.DBchapter_id";
+
 	my $all_chaps_ref = $dbh->selectall_arrayref($query);
 	my @results = map { $_->[0] } @{$all_chaps_ref};
 	#@results = sortByName(undef, @results);
@@ -360,7 +482,8 @@ $r is the Apache request object
 
 sub getAllDBsections {
 	my $r = shift;
-	my %tables = getTables($r->ce);
+        my $typ = 'OPL';
+	my %tables = getTables($r->ce, $typ);
 	my $subject = $r->param('library_subjects');
 	return () unless($subject);
 	my $chapter = $r->param('library_chapters');
@@ -394,12 +517,19 @@ Here, we search on all known fields out of r
 sub getDBListings {
 	my $r = shift;
 	my $amcounter = shift;  # 0-1 if I am a counter.
+        my $typ = shift || 'OPL';
+
+        if($r->param('library_srchtype') eq 'BPL') {
+            $typ = 'BPL';
+        }
+
 	my $ce = $r->ce;
-	my %tables = getTables($ce);
+	my %tables = getTables($ce,$typ);
 	my $subj = $r->param('library_subjects') || "";
 	my $chap = $r->param('library_chapters') || "";
 	my $sec = $r->param('library_sections') || "";
-	my $keywords = $r->param('library_keywords') || "";
+	my $keywords =  $r->param('library_keywords') || $r->param('search_bpl') || "";
+
 	# Next could be an array, an array reference, or nothing
 	my @levels = $r->param('level');
 	if(scalar(@levels) == 1 and ref($levels[0]) eq 'ARRAY') {
@@ -407,12 +537,38 @@ sub getDBListings {
 	}
 	@levels = grep { defined($_) && m/\S/ } @levels;
 	my ($kw1, $kw2) = ('','');
-	if($keywords) {
+
+	if($keywords ne "" && $typ ne "BPL") {
 		$kw1 = ", `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
 		$kw2 = " AND kw.keyword_id=pgkey.keyword_id AND
 			 pgkey.pgfile_id=pgf.pgfile_id ". 
 			makeKeywordWhere($keywords) ;
 	}
+
+        #Hack for BPL new interface
+        if($typ eq "BPL") {
+            my @tags = split(',',$keywords);
+            my $k1 = shift(@tags);
+            my $k;
+	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
+	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id AND kc.bpldbchapter_id = dbc.DBchapter_id AND
+                          kw.keyword_id=kc.bplkeyword_id AND
+			 pgkey.pgfile_id=pgf.pgfile_id";
+            $kw2 .= " AND kw.keyword = \"$k1\" " if($k1 ne "");
+
+            if(scalar(@tags) > 0) {
+              foreach (@tags) {
+                $_=~s/\s+$//g;
+                $_=~s/^\s+//g;
+                $k++;
+                if($_=~/^-/) {
+                 $kw2 .= " AND NOT EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw.keyword = \"$_\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                } else {
+                 $kw2 .= " AND EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw.keyword = \"$_\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                }
+              }
+            }
+        }
 
 	my $dbh = getDB($ce);
 
@@ -433,12 +589,12 @@ sub getDBListings {
 		$extrawhere .= " AND pgf.level IN (".join(',', @levels).") ";
 	}
 	my $textextrawhere = '';
-    my $haveTextInfo=0;
+        my $haveTextInfo=0;
 	for my $j (qw( textbook textchapter textsection )) {
 		my $foo = $r->param(LIBRARY_STRUCTURE->{$j}{name}) || '';
 		$foo =~ s/^\s*\d+\.\s*//;
 		if($foo) {
-            $haveTextInfo=1;
+                        $haveTextInfo=1;
 			$foo =~ s/'/\\'/g;
 			$textextrawhere .= " AND ".LIBRARY_STRUCTURE->{$j}{where}."=\"$foo\" ";
 		}
@@ -447,14 +603,35 @@ sub getDBListings {
 	my $selectwhat = 'DISTINCT pgf.pgfile_id';
 	$selectwhat = 'COUNT(' . $selectwhat . ')' if ($amcounter);
 
-	my $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+        my $query;
+        if($typ eq 'BPL') {
+	$query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+         `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj $kw1
+        WHERE dbsj.DBsubject_id = dbc.DBsubject_id
+              \n $extrawhere 
+              $kw2";
+        } else {
+	$query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
          `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj $kw1
         WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
               dbc.DBchapter_id = dbsc.DBchapter_id AND
               dbsc.DBsection_id = pgf.DBsection_id 
               \n $extrawhere 
               $kw2";
+        }
+
 	if($haveTextInfo) {
+        if($typ eq 'BPL') {
+      $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+        `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
+		`$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
+		`$tables{chapter}` tc ts $kw1
+        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
+              pgf.pgfile_id = pgp.pgfile_id AND
+              pgp.problem_id = prob.problem_id AND
+              tc.textbook_id = tbk.textbook_id \n $extrawhere \n $textextrawhere
+              $kw2";
+         } else {
       $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
         `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
 		`$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
@@ -468,7 +645,9 @@ sub getDBListings {
               ts.chapter_id = tc.chapter_id AND
               prob.section_id = ts.section_id \n $extrawhere \n $textextrawhere
               $kw2";
-     }
+         }
+         }
+print STDERR "\n\n\n$query\n\n\n";
 #$query =~ s/\n/ /g;
 #warn $query;
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
@@ -487,11 +666,26 @@ sub getDBListings {
 	return @results;
 }
 
-sub countDBListings {
-	my $r = shift;
-	return (getDBListings($r,1));
+sub getDirListings {
+
+    my $r = shift;
+    my $topdir = $r->param('library_topdir');
+
+
+    my @lis = eval { readDirectory($topdir) };
+    my @pgfiles = grep { m/\.pg$/ and (not m/(Header|-text)(File)?\.pg$/) and -f "$topdir/$_"} @lis;
+    return @pgfiles;
 }
 
+sub countDBListings {
+	my $r = shift;
+        my $typ = shift;
+	return (getDBListings($r,1,$typ));
+}
+sub countDirListings {
+	my $r = shift;
+	return (getDirListings($r));
+}
 sub getMLTleader {
 	my $r = shift;
 	my $mltid = shift;
@@ -599,6 +793,33 @@ sub searchListings {
 	return @results;
 }
 ##############################################################################
+# returns a list of Directories
+#
+sub getAllDirs {
+
+print STDERR "Am i here\n";
+    my $r = shift;
+    my $lib = $r->param('library_lib');
+    my $topdir = $r->param('library_topdir');
+    my @dirs = ();
+
+    my @lis = eval { readDirectory($topdir) };
+    foreach (sort @lis) {
+     next if /^\.+/;
+     if(-d "$topdir/$_") {
+       push @dirs, $_ ;
+     }
+    }
+
+print STDERR join "\n",@dirs;
+
+    return @dirs;
+    
+}
+
+
+
+##############################################################################
 # returns a list of chapters
 #
 # Warning - out of date
@@ -702,12 +923,14 @@ sub getAllListings {
 sub getSectionListings	{
 	#print STDERR "ListingDB::getSectionListings(chapter,section)\n";
 	my $r = shift;
+        my $typ = shift || $r->param('library_srchtype');
 	my $ce = $r->ce;
 	my $version = $ce->{problemLibrary}->{version} || 1;
-	if($version => 2) { return(getDBListings($r, 0))}
+	if($version => 2) { return(getDBListings($r, 0, $typ))}
 	my $subj = $r->param('library_subjects') || "";
 	my $chap = $r->param('library_chapters') || "";
 	my $sec = $r->param('library_sections') || "";
+
 
 	my $chapstring = '';
 	if($chap) {
