@@ -12,10 +12,87 @@ var basicRequestObject = {
 };
 
 var basicWebserviceURL = "/webwork2/instructorXMLHandler";
+var tagify;
+
+
+$(window).load(function() {
+   var input1 = document.querySelector('input[name=search_bpl]');
+   if(!input1) 
+           return;
+   var tagify = new Tagify(input1, {
+            suggestionsMinChars : 1, autocomplete: 1
+   });
+
+   tagify.on('add', ()=>{
+       lib_update('count', 'clear', tagify, 'BPL' );
+   });
+   tagify.on('remove', ()=>{
+       lib_update('count', 'clear', tagify, 'BPL' );
+   });
+
+   $("#library_subjects").change ( function() {
+       input1.value = '';
+       tagify.destroy();
+       tagify = new Tagify(input1, {
+            suggestionsMinChars : 1, autocomplete: 1
+       } );
+
+       tagify.on('add', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+       });
+       tagify.on('remove', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+       });
+       lib_searchops("BPL",tagify);
+       lib_update('chapters', 'get', tagify, 'BPL' );
+       return true;
+   });
+
+   $("#library_chapters").change ( function() {
+       input1.value = '';
+       tagify.destroy();
+       tagify = new Tagify(input1, {   
+           suggestionsMinChars : 1, autocomplete: 1,
+       });
+
+       tagify.on('add', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+       });
+       tagify.on('remove', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+       });
+       lib_searchops("BPL",tagify);
+       lib_update('count', 'clear', tagify, 'BPL' );
+       return true;
+   });
+
+  lib_searchops("BPL",tagify);
+  $("#search_bpl").hide();
+
+  //hide solutions and hints to be toggled
+  $('a:contains("Solution:")').hide();
+  $('a:contains("Hint:")').hide();
+});
+
+
+function toggleSolution(t) {
+    if (t.is(':checked')) {
+         $('a:contains("Solution:")').show();
+    } else {
+         $('a:contains("Solution:")').hide();
+    }
+}
+function toggleHint(t) {
+    if (t.is(':checked')) {
+         $('a:contains("Hint:")').show();
+    } else {
+         $('a:contains("Hint:")').hide();
+    }
+}
+
 
 
 // Messaging
-
 function nomsg() {
   $(".Message").html("");
 }
@@ -27,7 +104,6 @@ function goodmsg(msg) {
 function badmsg(msg) {
   $(".Message").html('<div class="ResultsWithError">'+msg+"</div>");
 }
-
 
 function settoggle(id, text1, text2) {
   $('#'+id).toggle(function() {$('#'+id).html(text2)}, 
@@ -93,7 +169,7 @@ function init_webservice(command) {
   return mydefaultRequestObject;
 }
 
-function lib_update(who, what) {
+function lib_update(who, what, tg, typ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
   nomsg();
@@ -108,9 +184,12 @@ function lib_update(who, what) {
   var subj = $('[name="library_subjects"] option:selected').val();
   var chap = $('[name="library_chapters"] option:selected').val();
   var sect = $('[name="library_sections"] option:selected').val();
+  var keywd = $('[name="search_bpl"]').val();
+
   if(subj == 'All Subjects') { subj = '';};
   if(chap == 'All Chapters') { chap = '';};
   if(sect == 'All Sections') { sect = '';};
+
   var lib_text = $('[name="library_textbook"] option:selected').val();
   var lib_textchap = $('[name="library_textchapter"] option:selected').val();
   var lib_textsect = $('[name="library_textsection"] option:selected').val();
@@ -120,11 +199,107 @@ function lib_update(who, what) {
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_sections = sect;
+  mydefaultRequestObject.library_srchtype = typ;
+  mydefaultRequestObject.library_keywords = keywd;
+
   mydefaultRequestObject.library_textbooks = lib_text;
   mydefaultRequestObject.library_textchapter = lib_textchap;
   mydefaultRequestObject.library_textsection = lib_textsect;
   if(who == 'count') {
     mydefaultRequestObject.command = 'countDBListings';
+    // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+			   reportWWerror(data);		   
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr = arr[0];
+		       var line = maketext("There are") + " " + arr + " " + maketext("matching WeBWorK problems")
+		       if(arr == "1") {
+			   line = maketext("There is 1 matching WeBWorK problem")
+		       }
+		       $('#library_count_line').html(line);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+      
+  }
+  var subcommand = "getAllDBchapters";
+  if(what == 'clear') {
+    setselect('library_'+who, [all]);
+    return lib_update(child[who], 'clear' , tg , typ);
+  }
+  if(who=='chapters' && subj=='') { return lib_update(who, 'clear'); }
+  if(who=='sections' && chap=='') { return lib_update(who, 'clear'); }
+  if(who=='sections') { subcommand = "getSectionListings";}
+  mydefaultRequestObject.command = subcommand;
+  // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0,all);
+		       setselect('library_'+who, arr);
+		       lib_update(child[who], 'clear', tg);
+                       if(typ == 'BPL')
+                           lib_searchops('BPL',tg);
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+function dir_update(who, what ) {
+  var child = { lib : 'dir', dir : 'subdir', subdir : 'count'};
+
+
+  nomsg();
+  var all = 'All '+ capFirstLetter(who);
+
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  var lib    = $('[name="library_lib"] option:selected').val();
+  var dir    = $('[name="library_dir"] option:selected').val();
+  var subdir = $('[name="library_subdir"] option:selected').val();
+  var topdir = $('[name="library_topdir"]').val();
+
+  if(lib == '--Select--') { lib = '';};
+  if(dir == 'All Dir') { dir = '';};
+  if(subdir == 'All Subdir') { subdir = '';};
+  topdir = topdir+'/'+lib+'/'+dir+'/'+subdir;
+
+  mydefaultRequestObject.library_topdir = topdir;
+  mydefaultRequestObject.library_lib = lib;
+  mydefaultRequestObject.library_dir = dir;
+  mydefaultRequestObject.library_subdir = subdir;
+
+  if(who == 'count') {
+    mydefaultRequestObject.command = 'countDirListings';
     // console.log(mydefaultRequestObject);
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
@@ -152,14 +327,14 @@ function lib_update(who, what) {
 		  });
       
   }
-  var subcommand = "getAllDBchapters";
+  var subcommand = "getAllDirs";
   if(what == 'clear') {
     setselect('library_'+who, [all]);
-    return lib_update(child[who], 'clear');
+    return dir_update(child[who], 'clear' );
   }
-  if(who=='chapters' && subj=='') { return lib_update(who, 'clear'); }
-  if(who=='sections' && chap=='') { return lib_update(who, 'clear'); }
-  if(who=='sections') { subcommand = "getSectionListings";}
+  //if(who=='lib' && lib=='') { return dir_update(who, 'clear'); }
+  //if(who=='dir' && dir=='') { return dir_update(who, 'clear'); }
+  if( who == 'dir' || who=='subdir') { subcommand = "getAllDirs";}
   mydefaultRequestObject.command = subcommand;
   // console.log(mydefaultRequestObject);
     return $.ajax({type:'post',
@@ -172,17 +347,153 @@ function lib_update(who, what) {
 		       }
 
 		       var response = $.parseJSON(data);
+                       alert(data);
 		       // console.log(response);
 		       var arr = response.result_data;
 		       arr.splice(0,0,all);
 		       setselect('library_'+who, arr);
-		       lib_update(child[who], 'clear');
+		       dir_update(child[who], 'clear');
 		       return true;
 		   },
 		  error: function (data) {
 		      alert(basicWebserviceURL+': '+data.statusText);
 		  },
 		  });
+}
+function lib_searchops(lib,tg) {
+
+  nomsg();
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  //var keyp = $('input#search_bpl').val();
+  //var keyp = str;
+  var subj = $('[name="library_subjects"] option:selected').val();
+  var chap = $('[name="library_chapters"] option:selected').val();
+
+  //mydefaultRequestObject.library_keywords = keyp;
+  mydefaultRequestObject.library_subjects = subj;
+  mydefaultRequestObject.library_chapters = chap;
+
+  var subcommand = "getAllKeywords";
+
+  mydefaultRequestObject.command = subcommand;
+  // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0);
+		       setkeywords( arr,tg);
+                       return arr;
+		       //return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+
+function setkeywords(arr,tg) {
+
+  tg.settings.whitelist = arr;
+  tg.settings.enforeWhitelist    = true;
+  tg.DOM.datalist = tg.buildDataList();
+  lib_top20keywords("BPL",tg);
+
+}
+
+function keywordclick(tg,ar) {
+
+   $(".keyword").click( function() {
+        kw = $(this).attr("keyword");
+        var tags = $("input#search_bpl").val();
+
+        $("input#search_bpl").val(tags+','+kw);
+        $("input#search_bpl").trigger("input");
+        tg.addTag(kw);
+        lib_update('count', 'clear', tagify, 'BPL' );
+        var ir = ar.indexOf(kw);
+        if(ir > -1) 
+            ar.splice(ir,1);
+        settop20keywords(ar,tg);
+
+    });
+}
+
+function lib_top20keywords (lib,tg) {
+
+  nomsg();
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  var subj = $('[name="library_subjects"] option:selected').val();
+  var chap = $('[name="library_chapters"] option:selected').val();
+
+  mydefaultRequestObject.library_subjects = subj;
+  mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.library_srchtype = 'top20';
+
+  var subcommand = "getTop20KeyWords";
+
+  mydefaultRequestObject.command = subcommand;
+   console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0);
+		       settop20keywords( arr, tg);
+                       //return arr;
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+function settop20keywords(arr,tg) {
+
+   //Add the keywords to div kword
+   var kwRows = '';
+   var arrayLength = arr.length;
+   for (var i = 0; i < arrayLength; i++)
+   {
+        // Do something
+        kwRows += '<span id="keyword" class="keyword" keyword="'+arr[i]+'">'+arr[i]+'</span>';
+        
+   }
+   document.getElementById("kword").innerHTML = kwRows;keywordclick(tg,arr);
+
+}
+function onRemoveTag(e){
+    lib_update('count', 'clear', e, 'BPL' );
+}
+
+function onAddTag(e){
+    lib_update('count', 'clear', e, 'BPL' );
 }
 
 function setselect(selname, newarray) {
