@@ -293,6 +293,12 @@ sub searchLib {    #API for searching the NPL database
 		$out->{ra_out} = \@textbooks;
 		return($out);		
 	};
+        'getAllDirs' eq $subcommand && do {
+		my @dirs = WeBWorK::Utils::ListingDB::getAllDirs($self);
+		$out->{ra_out} = \@dirs;
+		$out->{text} = encode_base64("Subjects loaded.");
+		return($out);		
+	};
 	'getAllDBsubjects' eq $subcommand && do {
 		my @subjects = WeBWorK::Utils::ListingDB::getAllDBsubjects($self);
 		$out->{ra_out} = \@subjects;
@@ -306,6 +312,19 @@ sub searchLib {    #API for searching the NPL database
         $out->{text} = encode_base64("Chapters loaded.");
 
 		return($out);		
+	};
+        'getDirListings' eq $subcommand && do {
+
+		my $templateDir = $self->ce->{courseDirs}->{templates};
+		$self->{library_dir} = $rh->{library_dir};
+		$self->{library_lib} = $rh->{library_lib};
+		$self->{library_topdir} = $rh->{library_topdir};
+		$self->{library_subdir} = $rh->{library_subdir};
+		my @listings = WeBWorK::Utils::ListingDB::getDirListings($self);
+		my @output = map {$templateDir."/".$rh->{library_dir}."/".$_->{path}."/".$_->{filename}} @listings;
+		#change the hard coding!!!....just saying
+		$out->{ra_out} = \@output;
+		return($out);
 	};
 	'getDBListings' eq $subcommand && do {
 
@@ -335,7 +354,30 @@ sub searchLib {    #API for searching the NPL database
 
 		return($out);
 	};
+       'getAllKeywords' eq $subcommand && do {
+		$self->{library_subjects} = $rh->{library_subjects};
+		$self->{library_chapters} = $rh->{library_chapters};
+		$self->{library_keywords} = $rh->{library_keywords};
+		$self->{library_srchtype} = $rh->{library_srchtype};
 
+		my @keyword_listings = WeBWorK::Utils::ListingDB::getAllKeyWords($self);
+		$out->{ra_out} = \@keyword_listings;
+                $out->{text} = encode_base64("Keywords loaded.");
+
+		return($out);
+	};
+        'getTop20KeyWords' eq $subcommand && do {
+		$self->{library_subjects} = $rh->{library_subjects};
+		$self->{library_chapters} = $rh->{library_chapters};
+		$self->{library_keywords} = $rh->{library_keywords};
+		$self->{library_srchtype} = $rh->{library_srchtype};
+
+		my @keyword_listings = WeBWorK::Utils::ListingDB::getTop20KeyWords($self);
+		$out->{ra_out} = \@keyword_listings;
+                $out->{text} = encode_base64("Keywords loaded.");
+
+		return($out);
+	};
 	'countDBListings' eq $subcommand && do {
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
@@ -345,6 +387,16 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_textchapter} = $rh->{library_textchapter};
 		$self->{library_textsection} = $rh->{library_textsection};
 		my $count = WeBWorK::Utils::ListingDB::countDBListings($self);
+					$out->{text} = encode_base64("Count done.");
+		$out->{ra_out} = [$count];
+		return($out);
+	};
+        'countDirListings' eq $subcommand && do {
+		$self->{library_dir} = $rh->{library_dir};
+		$self->{library_lib} = $rh->{library_lib};
+		$self->{library_topdir} = $rh->{library_topdir};
+		$self->{library_subdir} = $rh->{library_subdir};
+		my $count = WeBWorK::Utils::ListingDB::countDirListings($self);
 					$out->{text} = encode_base64("Count done.");
 		$out->{ra_out} = [$count];
 		return($out);
