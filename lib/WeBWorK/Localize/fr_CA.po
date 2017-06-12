@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: webwork2\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2017-02-09 13:19-0500\n"
+"PO-Revision-Date: 2017-06-12 11:35-0500\n"
 "Last-Translator: Julie Tremblay <julie.tremblay@bdeb.qc.ca>\n"
 "Language-Team: French (Canada) (http://www.transifex.com/webwork/webwork2/"
 "language/fr_CA/)\n"
@@ -8314,6 +8314,12 @@ msgstr "Vous pouvez également consulter ces fichiers temporaires :"
 #: /opt/webwork/pg/macros/PGanswermacros.pl:1693
 msgid "You can earn partial credit on this problem."
 msgstr "Vous pouvez obtenir une partie des points pour ce problème."
+
+#
+msgid "In order to get credit for this problem all answers must be correct."
+msgstr ""
+"Afin d'obtenir 100 % pour ce problème, toutes les réponses doivent être "
+"correctes."
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:1238
 msgid "You can not specify an absolute path"
