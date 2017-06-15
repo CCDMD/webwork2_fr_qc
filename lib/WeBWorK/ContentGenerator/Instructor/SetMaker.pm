@@ -424,7 +424,7 @@ sub view_problems_line_bpl {
 	my $label = shift;
         my $count_line = shift;
 	my $r = shift; # so we can get parameter values
-	my $result = CGI::submit(-name=>"$internal_name", -value=>$label);
+	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label);
         $result .= CGI::reset(-name=>"reset", -value=> $r->maketext('Reset'));
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
@@ -936,12 +936,14 @@ sub browse_specific_panel {
 	my $self = shift;
 	my $r = $self->r;
 	my $ce = $r->ce;
-	my $library_selected = shift || '';
-	my $dir_selected = shift;
+	my $library_selected = shift || $r->param('library_lib');
+	my $dir_selected = shift || $r->param('library_dir');
+	my $subdir_selected = shift || $r->param('library_subdir');
         my @libs = sort keys %problib;
         my @list_of_reps = ( );
         my @list_of_sub_reps = ( );
         my ($library_dir,$library_subdir);
+        my $topdir = $ce->{courseDirs}{templates};
 
 	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
         unshift @libs,ALL_LIBS;
@@ -955,30 +957,35 @@ sub browse_specific_panel {
 	    @list_of_reps = sort(get_sub_reps($folder_to_check));
         }
         unshift @list_of_reps,ALL_DIRS;
-        if($library_dir) {
-            $folder_to_check = $ce->{courseDirs}{templates}."/".$library_selected."/".$library_dir;
+        if($dir_selected) {
+            $folder_to_check = $ce->{courseDirs}{templates}."/".$library_selected."/".$dir_selected;
 	    @list_of_sub_reps = sort(get_sub_reps($folder_to_check));
         }
         unshift @list_of_sub_reps,ALL_SUBDIRS;
 
-	my $view_problem_line = view_problems_line('lib_view_spcf', $r->maketext('View Problems'), $self->r);
+        my $count_line;
+        #my $count_line = WeBWorK::Utils::ListingDB::countDirListings($r);
+
+
+	my $view_problem_line = view_problems_line_bpl('lib_view_spcf', $r->maketext('View Problems'),undef, $self->r);
 	my $popupetc = CGI::popup_menu(-name=> 'library_lib',
                                 -values=>\@libs,
 				-onchange=>"dir_update('dir','get');return true",
-                                -default=> $library_selected).
-		CGI::hidden(-name=>"library_topdir", -default=>$folder_to_check,-override=>1,-value=>$folder_to_check).
+                                -default=> $library_selected,
+                                ).
+		CGI::hidden(-name=>"library_topdir", -default=>$topdir,-override=>1,-value=>$topdir).
 		CGI::br();
 
 	my $popupetc2 = CGI::popup_menu(-name=> 'library_dir',
                                 -values=>\@list_of_reps,
 				-onchange=>"dir_update('subdir','get');return true",
-                                -default=> $library_dir).
+                                -default=> $dir_selected).
 		CGI::br();
 	my $popupetc3 = CGI::popup_menu(-name=> 'library_subdir',
                                 -values=>\@list_of_sub_reps,
 				-onchange=>"dir_update('count','clear');return true",
-                                -default=> $library_subdir).
-		CGI::br().  $view_problem_line;
+                                -default=> $subdir_selected).
+		CGI::br().CGI::br().  $view_problem_line;
 
 	if(scalar(@libs) == 0) {
 		$popupetc = "there are no set problem libraries course to look at.";
@@ -992,6 +999,8 @@ sub browse_specific_panel {
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Sub Directory:")." ",
 		$popupetc3
 	));
+       print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
+
 }
 
 #####	 Version 4 is the set definition file panel
@@ -1120,7 +1129,7 @@ sub make_top_row {
         if($browse_which eq 'browse_bpl_library') {
 		$self->browse_library_panel('BPL');
         } elsif($browse_which eq 'browse_spcf_library') {
-		$self->browse_specific_panel($library_selected);
+		$self->browse_specific_panel();
         } elsif ($browse_which eq 'browse_local') {
 		$self->browse_local_panel($library_selected);
 	} elsif ($browse_which eq 'browse_mysets') {
@@ -1155,10 +1164,10 @@ sub make_top_row {
 	}
 	if (scalar(@pg_files)) {
                 $show_hide_path_button  = "";
-                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" if( $r->param('browse_which') eq 'browse_bpl_library');
+                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>$these_widths,
                                     -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
-			            -value=>$r->maketext("Add All")) if( $r->param('browse_which') eq 'browse_bpl_library');
+			            -value=>$r->maketext("Add All")) if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
 
 
 
@@ -1395,10 +1404,14 @@ sub process_search {
 	my %mlt = ();
 	my $mltind;
 	for my $indx (0..$#dbsearch) {
-           if($typ eq 'BPL') {
+           if($r->param('browse_which') eq 'browse_bpl_library') {
 		$dbsearch[$indx]->{filepath} = "BPL/".$dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
            } else {
-		$dbsearch[$indx]->{filepath} = "Library/".$dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
+                if($r->param('browse_which') eq 'browse_spcf_library') {
+		   $dbsearch[$indx]->{filepath} = $dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
+                } else {
+		   $dbsearch[$indx]->{filepath} = "Library/".$dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
+                }
            }
 # For debugging
 $dbsearch[$indx]->{oindex} = $indx;
@@ -1687,11 +1700,8 @@ sub pre_header_initialize {
 	} elsif ($r->param('lib_view_spcf')) {
  
 		@pg_files=();
-                my $typ;
-                if($r->param('browse_which') eq 'browse_bpl_library') {
-                   $typ = 'BPL';
-                }
-                if($typ eq 'BPL') {
+                my $typ = '';
+                if($r->param('browse_which') eq 'browse_spcf_library') {
                     $r->{showHints} = 1;
                     $r->{showSolutions} = 1;
                 }
