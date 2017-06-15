@@ -131,6 +131,14 @@ my $lib = 'BPL';
 	KEY (DBsubject_id),
 	PRIMARY KEY (DBchapter_id)
 '],
+[$tables{dbsection}, '
+        DBsection_id int(15) NOT NULL auto_increment,
+        name varchar(255) NOT NULL,
+        DBchapter_id int(15) DEFAULT 0 NOT NULL,
+        KEY DBsection (name),
+        KEY (DBchapter_id),
+        PRIMARY KEY (DBsection_id)
+'],
 [$tables{path}, '
 	path_id int(15) NOT NULL auto_increment,
 	path varchar(255) NOT NULL,
@@ -184,7 +192,7 @@ for my $tableinfo (@create_tables) {
 	my $tabinit = $tableinfo->[1];
 	my $query = "DROP TABLE IF EXISTS `$tabname`";
 	$dbh->do($query);
-	$query = "CREATE TABLE `$tabname` ( $tabinit ) ENGINE=$db_storage_engine CHARACTER SET latin1";
+	$query = "CREATE TABLE `$tabname` ( $tabinit ) ENGINE=$db_storage_engine DEFAULT CHARSET=latin1";
 	$dbh->do($query);
 }
 
@@ -199,10 +207,9 @@ sub safe_get_id {
         my $wherevalues = shift;
         my $addifnew = shift;
         my @insertvalues = @_;
-#print "\nCalled with $tablename, $idname, $whereclause, [".join(',', @$wherevalues)."], (".join(',', @insertvalues).")\n";
+#print "\nCalled with $tablename, $idname, $whereclause, [".join(',', @$wherevalues)."], (".join(',', @insertvalues).")\n" if($tablename eq 'BPL_keyword');
 
-        my $query = "SELECT $idname FROM `$tablename` ".$whereclause;
-        print "$query\n" if($whereclause =~/quations lin/);
+        my $query = "SELECT $idname FROM `$tablename` ".$whereclause ;
         my $sth = $dbh->prepare($query);
         $sth->execute(@$wherevalues);
         my $idvalue, @row;
@@ -216,6 +223,7 @@ sub safe_get_id {
                                 $insertvalues[$j] = NULL;
                         }
                 }
+                print "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $dbh->do("INSERT INTO `$tablename` VALUES(". join(',',@insertvalues) .")");
                 dbug "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $sth = $dbh->prepare($query);
@@ -258,8 +266,6 @@ sub pgfiles {
 			my $path_id = safe_get_id($tables{path}, 'path_id',
 					qq(WHERE path = ?), [$pgpath], 1, "", $pgpath, "", "");
 
-			my $pgfile_id = safe_get_id($tables{pgfile}, 'pgfile_id',
-					qq(WHERE filename = ? AND path_id = ? AND DBsection_id = ? ), [$pgfile, $path_id, 1], 1, "", 1, 0, '', $path_id, $pgfile, 0, $level, $lang, $static, $mathobj);
 
 			my $DBsubject_id = safe_get_id($tables{dbsubject}, 'DBsubject_id',
 					qq(WHERE BINARY name = ?), [$tags->{DBsubject}], 1, "", $tags->{DBsubject});
@@ -276,6 +282,14 @@ sub pgfiles {
                                         print "\nInvalid chapter '$tags->{DBchapter}' in $name\n";
                                         next;
                         }
+                        my $DBsection_id = safe_get_id($tables{dbsection}, 'DBsection_id',
+                                qq(WHERE name = ? and DBchapter_id = ?), ['Misc', $DBchapter_id], 1, "", 'Misc', $DBchapter_id);
+			if(not $DBsection_id) {
+				print "\nInvalid section 'Misc'\n";
+				next;
+			}
+			my $pgfile_id = safe_get_id($tables{pgfile}, 'pgfile_id',
+					qq(WHERE filename = ? AND path_id = ? AND DBsection_id = ? ), [$pgfile, $path_id, $DBsection_id], 1, "", $DBsection_id, 0, '', $path_id, $pgfile, 0, $level, $lang, $static, $mathobj);
                         foreach my $keyword (@{$tags->{keywords}}) {
                                 $keyword =~ s/[\'\"]//g;
                                 $keyword = kwtidy($keyword);
@@ -322,9 +336,14 @@ sub trim {
 
 sub kwtidy {
 	my $s = shift;
-	$s =~ s/\W//g;
+	#$s =~ s/\W//g;
 	$s =~ s/_//g;
-	$s = lc($s);
+	$s =~ s/\\//g;
+	$s =~ s/^'//g;
+	$s =~ s/'$//g;
+	$s =~ s/^\s+//;
+	$s =~ s/\s+$//;
+	#$s = lc($s);
 	return($s);
 }
 
