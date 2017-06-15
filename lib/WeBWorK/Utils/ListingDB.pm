@@ -22,6 +22,8 @@ use WeBWorK::Utils qw(readDirectory sortByName);
 use WeBWorK::Utils::Tags;
 use File::Basename;
 use WeBWorK::Debug;
+use File::Find::Rule;
+use Encode::Encoder qw(encoder);
 
 use constant LIBRARY_STRUCTURE => {
 	textbook => { select => 'tbk.textbook_id,tbk.title,tbk.author,tbk.edition',
@@ -125,14 +127,14 @@ sub getTables {
 
 sub getDB {
 	my $ce = shift;
-	my $dbh = DBI->connect(
+        my $dbh = DBI->connect(
 		$ce->{problemLibrary_db}->{dbsource},
 		$ce->{problemLibrary_db}->{user},
 		$ce->{problemLibrary_db}->{passwd},
-		{
-			PrintError => 0,
-			RaiseError => 1,
-		},
+                {
+                        PrintError => 0,
+                        RaiseError => 1,
+                },
 	);
 	die "Cannot connect to problem library database" unless $dbh;
 	return($dbh);
@@ -371,6 +373,8 @@ sub getAllKeyWords {
 
 	my $subject = $r->param('library_subjects');
 	my $chapter = $r->param('library_chapters');
+        #$subject = encoder($subject)->utf8;
+        $chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
         my $where;
         if($chapter && $chapter ne 'All Chapters') {
            $where .= qq( AND d.name = "$chapter");
@@ -385,9 +389,12 @@ sub getAllKeyWords {
                       AND  c.DBsubject_id = d.DBsubject_id
                       $where";
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
-print STDERR "\n\n$query\n\n";
 
 	my $dbh = getDB($r->ce);
+        if($where) {
+            #$dbh->{mysql_enable_utf8} = 1;
+            #$dbh->do("SET NAMES 'utf8'");
+        }
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
 
@@ -412,6 +419,8 @@ sub getTop20KeyWords {
 	my @row;
 	my $subject = $r->param('library_subjects');
 	my $chapter = $r->param('library_chapters');
+        #$subject = encoder($subject)->utf8;
+        $chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
         my $where;
         if($chapter&& $chapter ne 'All Chapters') {
            $where .= qq( AND d.name = "$chapter" );
@@ -434,9 +443,12 @@ sub getTop20KeyWords {
                       ORDER BY keyword,r.rank DESC LIMIT 0,20";
 =cut
 
-print STDERR "\n\n$query\n\n";
 
 	my $dbh = getDB($r->ce);
+if($where) {
+        #$dbh->{mysql_enable_utf8} = 1;
+        #$dbh->do("SET NAMES 'utf8'");
+}
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
 
@@ -517,7 +529,7 @@ Here, we search on all known fields out of r
 sub getDBListings {
 	my $r = shift;
 	my $amcounter = shift;  # 0-1 if I am a counter.
-        my $typ = shift || 'OPL';
+        my $typ = shift || $r->param('library_srchtype');
 
         if($r->param('library_srchtype') eq 'BPL') {
             $typ = 'BPL';
@@ -527,6 +539,9 @@ sub getDBListings {
 	my %tables = getTables($ce,$typ);
 	my $subj = $r->param('library_subjects') || "";
 	my $chap = $r->param('library_chapters') || "";
+        #$subj = encoder($subj)->utf8;
+        $chap = encoder($chap)->utf8 if($chap!~/[^[:ascii:]]/);
+        
 	my $sec = $r->param('library_sections') || "";
 	my $keywords =  $r->param('library_keywords') || $r->param('search_bpl') || "";
 
@@ -546,14 +561,15 @@ sub getDBListings {
 	}
 
         #Hack for BPL new interface
-        if($typ eq "BPL") {
+        if($typ eq "BPL" && $keywords ne "") {
             my @tags = split(',',$keywords);
             my $k1 = shift(@tags);
             my $k;
 	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
-	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id AND kc.bpldbchapter_id = dbc.DBchapter_id AND
-                          kw.keyword_id=kc.bplkeyword_id AND
-			 pgkey.pgfile_id=pgf.pgfile_id";
+	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
+                     AND kc.bpldbchapter_id = dbc.DBchapter_id 
+                     AND kw.keyword_id=kc.bplkeyword_id 
+                     AND pgkey.pgfile_id=pgf.pgfile_id";
             $kw2 .= " AND kw.keyword = \"$k1\" " if($k1 ne "");
 
             if(scalar(@tags) > 0) {
@@ -569,17 +585,18 @@ sub getDBListings {
               }
             }
         }
-
 	my $dbh = getDB($ce);
 
 	my $extrawhere = '';
 	if($subj) {
 		$subj =~ s/'/\\'/g;
 		$extrawhere .= " AND dbsj.name=\"$subj\" ";
+		#$extrawhere .= " AND dbsj.name=CONVERT(CONVERT(\"$subj\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($chap) {
 		$chap =~ s/'/\\'/g;
 		$extrawhere .= " AND dbc.name=\"$chap\" ";
+		#$extrawhere .= " AND dbc.name=CONVERT(CONVERT(\"$chap\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($sec) {
 		$sec =~ s/'/\\'/g;
@@ -603,6 +620,7 @@ sub getDBListings {
 	my $selectwhat = 'DISTINCT pgf.pgfile_id';
 	$selectwhat = 'COUNT(' . $selectwhat . ')' if ($amcounter);
 
+=comment
         my $query;
         if($typ eq 'BPL') {
 	$query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
@@ -611,16 +629,19 @@ sub getDBListings {
               \n $extrawhere 
               $kw2";
         } else {
-	$query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+=cut
+	my $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
          `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj $kw1
         WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
               dbc.DBchapter_id = dbsc.DBchapter_id AND
               dbsc.DBsection_id = pgf.DBsection_id 
               \n $extrawhere 
               $kw2";
+=comment
         }
+=cut
 
-	if($haveTextInfo) {
+	if($haveTextInfo && $typ ne 'BPL') {
         if($typ eq 'BPL') {
       $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
         `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
@@ -647,14 +668,18 @@ sub getDBListings {
               $kw2";
          }
          }
-print STDERR "\n\n\n$query\n\n\n";
 #$query =~ s/\n/ /g;
 #warn $query;
+
+        #$dbh->{mysql_enable_utf8} = 1;
+        #$dbh->do("SET NAMES 'utf8'");
+
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
 		return(@pg_ids[0]);
 	}
+
 	my @results=();
 	for my $pgid (@pg_ids) {
 		$query = "SELECT path, filename, morelt_id, pgfile_id, static, MO FROM `$tables{pgfile}` pgf, `$tables{path}` p 
@@ -663,28 +688,53 @@ print STDERR "\n\n\n$query\n\n\n";
 		push @results, {'path' => $row->[0], 'filename' => $row->[1], 'morelt' => $row->[2], 'pgid'=> $row->[3], 'static' => $row->[4], 'MO' => $row->[5] };
 		
 	}
+        $dbh->disconnect;
 	return @results;
 }
 
 sub getDirListings {
 
     my $r = shift;
+    my $amcounter = shift;
     my $topdir = $r->param('library_topdir');
+    my $libraryRoot = $topdir; #$r->param('library_dir')."/".$r->param('library_subdir');
+    my $topdir .= "/".$r->param('library_lib') if($r->param('library_lib') ne '--Select--');
+    $libraryRoot = $libraryRoot."/".$r->param('library_lib') if($r->param('library_lib'));
+    $libraryRoot = $libraryRoot."/".$r->param('library_dir') if($r->param('library_dir') ne 'All Dir');
+    $libraryRoot = $libraryRoot."/".$r->param('library_subdir') if($r->param('library_subdir') ne 'All Subdir');
 
+    my @results = ();
+    my $level = 4;
 
+    my @lis = File::Find::Rule->file()
+                            ->name('*.pg')
+                            ->maxdepth($level)
+                            ->in($libraryRoot);
+    if($amcounter) {
+                return(scalar(@lis));
+    }
+
+=comment
     my @lis = eval { readDirectory($topdir) };
     my @pgfiles = grep { m/\.pg$/ and (not m/(Header|-text)(File)?\.pg$/) and -f "$topdir/$_"} @lis;
-    return @pgfiles;
+=cut
+    foreach (@lis) {
+        my $filename = basename($_);
+        my $pgpath   = dirname($_);
+        $pgpath =~ s|^$topdir/||;
+        push @results, {'path' => $pgpath, 'filename' => $filename, 'morelt' => undef, 'pgid'=> $3, 'static' => undef, 'MO' => undef };
+    }
+    return @results;
 }
 
 sub countDBListings {
 	my $r = shift;
-        my $typ = shift;
+        my $typ = shift || $r->param('library_srchtype');
 	return (getDBListings($r,1,$typ));
 }
 sub countDirListings {
 	my $r = shift;
-	return (getDirListings($r));
+	return (getDirListings($r,1));
 }
 sub getMLTleader {
 	my $r = shift;
@@ -797,7 +847,6 @@ sub searchListings {
 #
 sub getAllDirs {
 
-print STDERR "Am i here\n";
     my $r = shift;
     my $lib = $r->param('library_lib');
     my $topdir = $r->param('library_topdir');
@@ -811,7 +860,6 @@ print STDERR "Am i here\n";
      }
     }
 
-print STDERR join "\n",@dirs;
 
     return @dirs;
     
