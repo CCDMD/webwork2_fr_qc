@@ -330,6 +330,7 @@ sub searchLib {    #API for searching the NPL database
 
 		my $templateDir = $self->ce->{courseDirs}->{templates};
 		$self->{library_subjects} = $rh->{library_subjects};
+		$self->{library_srchtype} = $rh->{library_srchtype};
 		$self->{library_chapters} = $rh->{library_chapters};
 		$self->{library_sections} = $rh->{library_sections};
 		$self->{library_keywords} = $rh->{library_keywords};
@@ -358,7 +359,6 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
 		$self->{library_keywords} = $rh->{library_keywords};
-		$self->{library_srchtype} = $rh->{library_srchtype};
 
 		my @keyword_listings = WeBWorK::Utils::ListingDB::getAllKeyWords($self);
 		$out->{ra_out} = \@keyword_listings;
@@ -370,7 +370,6 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
 		$self->{library_keywords} = $rh->{library_keywords};
-		$self->{library_srchtype} = $rh->{library_srchtype};
 
 		my @keyword_listings = WeBWorK::Utils::ListingDB::getTop20KeyWords($self);
 		$out->{ra_out} = \@keyword_listings;
