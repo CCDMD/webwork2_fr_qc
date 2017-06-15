@@ -16,9 +16,19 @@ var tagify;
 
 
 $(window).load(function() {
+
    var input1 = document.querySelector('input[name=search_bpl]');
-   if(!input1) 
-           return;
+   if($('[name="browse_which"]').val() == 'browse_spcf_library'  && $('[name="library_lib"] option:selected').index() == 0) {
+      $("#lib_view_spcf").attr("disabled","disabled");
+   }
+   if(!input1) { 
+       var brw = $('[name="browse_which"]').val();
+       if(brw == 'browse_spcf_library') {
+          $('a:contains("Solution:")').hide();
+          $('a:contains("Hint:")').hide();
+       }
+       return;
+   }
    var tagify = new Tagify(input1, {
             suggestionsMinChars : 1, autocomplete: 1
    });
@@ -70,8 +80,8 @@ $(window).load(function() {
   $("#search_bpl").hide();
 
   //hide solutions and hints to be toggled
-  $('a:contains("Solution:")').hide();
-  $('a:contains("Hint:")').hide();
+     $('a:contains("Solution:")').hide();
+     $('a:contains("Hint:")').hide();
 });
 
 
@@ -181,6 +191,11 @@ function lib_update(who, what, tg, typ) {
     // console.log("Could not get webservice request object");
     return false;
   }
+
+  if($('[name="browse_which"]').val() == 'browse_bpl_library') {
+     typ = 'BPL';
+  }
+
   var subj = $('[name="library_subjects"] option:selected').val();
   var chap = $('[name="library_chapters"] option:selected').val();
   var sect = $('[name="library_sections"] option:selected').val();
@@ -193,6 +208,7 @@ function lib_update(who, what, tg, typ) {
   var lib_text = $('[name="library_textbook"] option:selected').val();
   var lib_textchap = $('[name="library_textchapter"] option:selected').val();
   var lib_textsect = $('[name="library_textsection"] option:selected').val();
+
   if(lib_text == 'All Textbooks') { lib_text = '';};
   if(lib_textchap == 'All Chapters') { lib_textchap = '';};
   if(lib_textsect == 'All Sections') { lib_textsect = '';};
@@ -261,8 +277,8 @@ function lib_update(who, what, tg, typ) {
 		       arr.splice(0,0,all);
 		       setselect('library_'+who, arr);
 		       lib_update(child[who], 'clear', tg);
-                       if(typ == 'BPL')
-                           lib_searchops('BPL',tg);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
 		       return true;
 		   },
 		  error: function (data) {
@@ -272,6 +288,7 @@ function lib_update(who, what, tg, typ) {
 }
 function dir_update(who, what ) {
   var child = { lib : 'dir', dir : 'subdir', subdir : 'count'};
+
 
 
   nomsg();
@@ -294,9 +311,16 @@ function dir_update(who, what ) {
   topdir = topdir+'/'+lib+'/'+dir+'/'+subdir;
 
   mydefaultRequestObject.library_topdir = topdir;
-  mydefaultRequestObject.library_lib = lib;
-  mydefaultRequestObject.library_dir = dir;
-  mydefaultRequestObject.library_subdir = subdir;
+  //mydefaultRequestObject.library_lib = lib;
+  //mydefaultRequestObject.library_dir = dir;
+  //mydefaultRequestObject.library_subdir = subdir;
+  if(who == 'dir' && what == 'get' && $('[name="library_lib"] option:selected').index() > 0) {
+      $("#lib_view_spcf").removeAttr("disabled");
+  } else {
+      if($('[name="library_lib"] option:selected').index() == 0) {
+          $("#lib_view_spcf").attr("disabled","disabled");
+      }
+  }
 
   if(who == 'count') {
     mydefaultRequestObject.command = 'countDirListings';
@@ -347,7 +371,6 @@ function dir_update(who, what ) {
 		       }
 
 		       var response = $.parseJSON(data);
-                       alert(data);
 		       // console.log(response);
 		       var arr = response.result_data;
 		       arr.splice(0,0,all);
@@ -446,7 +469,7 @@ function lib_top20keywords (lib,tg) {
 
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
-  mydefaultRequestObject.library_srchtype = 'top20';
+  //mydefaultRequestObject.library_srchtype = 'top20';
 
   var subcommand = "getTop20KeyWords";
 
