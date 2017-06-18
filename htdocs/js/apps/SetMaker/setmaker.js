@@ -29,48 +29,18 @@ $(window).load(function() {
        }
        return;
    }
-   var tagify = new Tagify(input1, {
-            suggestionsMinChars : 1, autocomplete: 1
-   });
 
-   tagify.on('add', ()=>{
-       lib_update('count', 'clear', tagify, 'BPL' );
-   });
-   tagify.on('remove', ()=>{
-       lib_update('count', 'clear', tagify, 'BPL' );
-   });
-
+   tagify = bpl_reset();
    $("#library_subjects").change ( function() {
-       input1.value = '';
-       tagify.destroy();
-       tagify = new Tagify(input1, {
-            suggestionsMinChars : 1, autocomplete: 1
-       } );
-
-       tagify.on('add', ()=>{
-           lib_update('count', 'clear', tagify, 'BPL' );
-       });
-       tagify.on('remove', ()=>{
-           lib_update('count', 'clear', tagify, 'BPL' );
-       });
-       lib_searchops("BPL",tagify);
+       tagify = bpl_reset(tagify);
        lib_update('chapters', 'get', tagify, 'BPL' );
+       lib_searchops("BPL",tagify);
+       lib_update('count', 'clear', tagify, 'BPL' );
        return true;
    });
 
    $("#library_chapters").change ( function() {
-       input1.value = '';
-       tagify.destroy();
-       tagify = new Tagify(input1, {   
-           suggestionsMinChars : 1, autocomplete: 1,
-       });
-
-       tagify.on('add', ()=>{
-           lib_update('count', 'clear', tagify, 'BPL' );
-       });
-       tagify.on('remove', ()=>{
-           lib_update('count', 'clear', tagify, 'BPL' );
-       });
+       tagify = bpl_reset(tagify);
        lib_searchops("BPL",tagify);
        lib_update('count', 'clear', tagify, 'BPL' );
        return true;
@@ -78,11 +48,38 @@ $(window).load(function() {
 
   lib_searchops("BPL",tagify);
   $("#search_bpl").hide();
+  $('input[name=reset]').click(function() {
+       tagify = bpl_reset(tagify);
+       //lib_updasubjectste('subjects', 'clear', tagify, 'BPL' );
+       $('[name="library_subjects"]').prop("selectedIndex",0);
+       lib_update('chapters', 'clear', tagify, 'BPL' );
+       lib_update('count', 'clear', tagify, 'BPL' );
+       lib_searchops("BPL",tagify);
+       return true;
+  });
 
   //hide solutions and hints to be toggled
      $('a:contains("Solution:")').hide();
      $('a:contains("Hint:")').hide();
 });
+
+function bpl_reset(tg) {
+       var input1 = document.querySelector('input[name=search_bpl]');
+       input1.value = '';
+       if(tg)
+         tg.destroy();
+       tagify = new Tagify(input1, {
+           suggestionsMinChars : 1, autocomplete: 1,
+       });
+       tagify.on('add', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+       });
+       tagify.on('remove', ()=>{
+           lib_update('count', 'clear', tagify, 'BPL' );
+           lib_top20keywords('BPL',tagify);
+       });
+       return tagify;
+}
 
 
 function toggleSolution(t) {
@@ -289,8 +286,6 @@ function lib_update(who, what, tg, typ) {
 function dir_update(who, what ) {
   var child = { lib : 'dir', dir : 'subdir', subdir : 'count'};
 
-
-
   nomsg();
   var all = 'All '+ capFirstLetter(who);
 
@@ -300,14 +295,22 @@ function dir_update(who, what ) {
     // console.log("Could not get webservice request object");
     return false;
   }
+  if(who == 'dir' && what == 'get') {
+      $('[name="library_dir"]').prop("selectedIndex",0);
+  }
+  if(who == 'subdir' && what == 'get') {
+      $('[name="library_subdir"]').prop("selectedIndex",0);
+  }
   var lib    = $('[name="library_lib"] option:selected').val();
   var dir    = $('[name="library_dir"] option:selected').val();
   var subdir = $('[name="library_subdir"] option:selected').val();
   var topdir = $('[name="library_topdir"]').val();
 
+
   if(lib == '--Select--') { lib = '';};
   if(dir == 'All Dir') { dir = '';};
   if(subdir == 'All Subdir') { subdir = '';};
+
   topdir = topdir+'/'+lib+'/'+dir+'/'+subdir;
 
   mydefaultRequestObject.library_topdir = topdir;
@@ -500,14 +503,21 @@ function lib_top20keywords (lib,tg) {
 function settop20keywords(arr,tg) {
 
    //Add the keywords to div kword
-   var kwRows = '';
+   var kwRows = '<div align="left" style="line-height: .8em;">';
    var arrayLength = arr.length;
+   var tags = $("input#search_bpl").val();
+   var tarr = tags.split(',');
+    
    for (var i = 0; i < arrayLength; i++)
    {
         // Do something
-        kwRows += '<span id="keyword" class="keyword" keyword="'+arr[i]+'">'+arr[i]+'</span>';
+        //Check if arr[i] is already in tags
+        if($.inArray(arr[i], tarr) > -1)
+          continue; 
+        kwRows += '<span width="100%" id="keyword" class="keyword" keyword="'+arr[i]+'" style="font-size: 13px; line-height: 200%;">'+arr[i]+'</span> ';
         
    }
+   kwRows += '</div>';
    document.getElementById("kword").innerHTML = kwRows;keywordclick(tg,arr);
 
 }
