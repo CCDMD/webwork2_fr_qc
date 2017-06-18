@@ -428,20 +428,20 @@ sub getTop20KeyWords {
         if($subject && $subject ne 'All Subjects') {
            $where .= qq( AND c.name = "$subject");
         }
+=comment
 	my $query = "SELECT distinct keyword FROM `$tables{keyword}` a,`$tables{keywordmap}` b,`$tables{dbsubject}` c,`$tables{dbchapter}` d 
                      WHERE a.keyword_id=b.bplkeyword_id 
                       AND  b.bpldbchapter_id = d.DBchapter_id
                       AND  c.DBsubject_id = d.DBsubject_id
                       $where ORDER BY keyword LIMIT 0,20";
-=comment
+=cut
 	my $query = "SELECT distinct keyword 
                      FROM `$tables{keyword}` a LEFT JOIN `$tables{keywordmap}` b ON a.keyword_id=b.bplkeyword_id
                           LEFT JOIN `$tables{dbsubject}` c ON b.bpldbchapter_id = c.DBsubject_id
                           LEFT JOIN `$tables{dbchapter}` d ON c.DBsubject_id = d.DBsubject_id
                       LEFT OUTER JOIN `$tables{keywordrank}` r ON a.keyword_id=r.keyword_id
                       $where
-                      ORDER BY keyword,r.rank DESC LIMIT 0,20";
-=cut
+                      ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
 
 
 	my $dbh = getDB($r->ce);
@@ -540,10 +540,16 @@ sub getDBListings {
 	my $subj = $r->param('library_subjects') || "";
 	my $chap = $r->param('library_chapters') || "";
         #$subj = encoder($subj)->utf8;
+        $subj = encoder($subj)->utf8 if($subj!~/[^[:ascii:]]/);
         $chap = encoder($chap)->utf8 if($chap!~/[^[:ascii:]]/);
         
 	my $sec = $r->param('library_sections') || "";
 	my $keywords =  $r->param('library_keywords') || $r->param('search_bpl') || "";
+	my $dbh = getDB($ce);
+        my $sth;
+       
+        $sth = $dbh->prepare("UPDATE `$tables{keywordrank}` SET rank=rank+1 WHERE keyword_id=(select keyword_id from `$tables{keyword}` WHERE keyword=?)") if($typ eq 'BPL');
+        
 
 	# Next could be an array, an array reference, or nothing
 	my @levels = $r->param('level');
@@ -564,28 +570,40 @@ sub getDBListings {
         if($typ eq "BPL" && $keywords ne "") {
             my @tags = split(',',$keywords);
             my $k1 = shift(@tags);
-            my $k;
+            my $k=0;
+            my $op = '=';
+            $op = '<>' if($k1=~/^-/);
+            $k1 = encoder($k1)->utf8 if($k1!~/[^[:ascii:]]/);
+            $k1 =~s/^-//;
+            $sth->execute($k1) if(!$amcounter);
+
 	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
 	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
                      AND kc.bpldbchapter_id = dbc.DBchapter_id 
                      AND kw.keyword_id=kc.bplkeyword_id 
                      AND pgkey.pgfile_id=pgf.pgfile_id";
-            $kw2 .= " AND kw.keyword = \"$k1\" " if($k1 ne "");
+
+            $kw2 .= " AND kw.keyword $op \"$k1\" " if($k1 ne "");
 
             if(scalar(@tags) > 0) {
-              foreach (@tags) {
-                $_=~s/\s+$//g;
-                $_=~s/^\s+//g;
+              foreach my $t (@tags) {
+                $t=~s/\s+$//g;
+                $t=~s/^\s+//g;
                 $k++;
-                if($_=~/^-/) {
-                 $kw2 .= " AND NOT EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw.keyword = \"$_\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                $t = encoder($t)->utf8 if($t!~/[^[:ascii:]]/);
+                if($t=~/^-/) {
+                    $t =~s/^-//;
+                    $kw2 .= " AND NOT EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
                 } else {
-                 $kw2 .= " AND EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw.keyword = \"$_\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                    $kw2 .= " AND EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
                 }
+                ###Rank them here 
+                $t =~s/^-//;
+                $sth->execute($t) if(!$amcounter);
               }
             }
+            $sth->finish;
         }
-	my $dbh = getDB($ce);
 
 	my $extrawhere = '';
 	if($subj) {
@@ -674,10 +692,13 @@ sub getDBListings {
         #$dbh->{mysql_enable_utf8} = 1;
         #$dbh->do("SET NAMES 'utf8'");
 
+print STDERR "$query\n\n\n";
+
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
+print STDERR Data::Dumper->Dump([$pg_id_ref]);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
-		return(@pg_ids[0]);
+	    return(@pg_ids[0]);
 	}
 
 	my @results=();
@@ -703,6 +724,7 @@ sub getDirListings {
     $libraryRoot = $libraryRoot."/".$r->param('library_dir') if($r->param('library_dir') ne 'All Dir');
     $libraryRoot = $libraryRoot."/".$r->param('library_subdir') if($r->param('library_subdir') ne 'All Subdir');
 
+
     my @results = ();
     my $level = 4;
 
@@ -711,7 +733,7 @@ sub getDirListings {
                             ->maxdepth($level)
                             ->in($libraryRoot);
     if($amcounter) {
-                return(scalar(@lis));
+           return(scalar(@lis));
     }
 
 =comment
@@ -859,8 +881,6 @@ sub getAllDirs {
        push @dirs, $_ ;
      }
     }
-
-
     return @dirs;
     
 }
