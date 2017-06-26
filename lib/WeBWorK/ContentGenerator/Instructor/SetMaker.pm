@@ -425,7 +425,7 @@ sub view_problems_line_bpl {
         my $count_line = shift;
 	my $r = shift; # so we can get parameter values
 	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label);
-        $result .= CGI::reset(-name=>"reset", -value=> $r->maketext('Reset'));
+        $result .= CGI::reset(-id=>"reset",-name=>"reset", -value=> $r->maketext('Reset'));
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -707,6 +707,8 @@ sub browse_library_panel5 {
 	$defaultHints = 1;
 	my $defaultSolutions = $r->param('showSolutions') || SHOW_SOLUTIONS_DEFAULT;
 	$defaultSolutions = 1;
+        my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -720,7 +722,7 @@ sub browse_library_panel5 {
 
 	print CGI::Tr({},
 	    CGI::td({-class=>"InfoPanel", -align=>"left"}, 
-		#CGI::hidden(-name=>"showHints", -default=>1,-override=>1),
+		#CGI::hidden(-name=>"max_shown",-id=>"max_shown", -value=>$defaultMax),
 		#CGI::hidden(-name=>"showSolutions", -default=>1,-override=>1),
 		CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 		#CGI::hidden(-name=>"library_srchtype", -default=>'BPL',-override=>1,-value=>'BPL'),
@@ -1164,7 +1166,17 @@ sub make_top_row {
 	}
 	if (scalar(@pg_files)) {
                 $show_hide_path_button  = "";
+
+                my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+
+                my $displayMax = ' '.$r->maketext('Max. Shown:').' '.
+                CGI::popup_menu(-name=> 'max_shown',
+                                -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
+                                -onchange => 'document.mainform.max_shown.value=this.value;document.getElementById("lib_view").click();',
+                                -default=> $defaultMax);
+
                 $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
+                $show_hide_path_button .= $displayMax if($r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>$these_widths,
                                     -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			            -value=>$r->maketext("Add All")) if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
