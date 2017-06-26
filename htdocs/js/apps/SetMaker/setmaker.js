@@ -18,9 +18,19 @@ var tagify;
 $(window).load(function() {
 
    var input1 = document.querySelector('input[name=search_bpl]');
-   if($('[name="browse_which"]').val() == 'browse_spcf_library'  && $('[name="library_lib"] option:selected').index() == 0) {
-      $("#lib_view_spcf").attr("disabled","disabled");
+   if($('[name="browse_which"]').val() == 'browse_spcf_library' ) {
+       $('input[name=reset]').click(function() {
+           $('[name="library_lib"]').prop("selectedIndex",0);
+           dir_update('dir', 'clear', tagify, 'BPL' );
+           dir_update('count', 'clear', tagify, 'BPL' );
+           return false;
+       });
+       if($('[name="library_lib"] option:selected').index() == 0) {
+           $("#lib_view_spcf").attr("disabled","disabled");
+       }
+       
    }
+   
    if(!input1) { 
        var brw = $('[name="browse_which"]').val();
        if(brw == 'browse_spcf_library') {
@@ -29,10 +39,10 @@ $(window).load(function() {
        }
        return;
    }
-
-   tagify = bpl_reset();
+   tagify = bpl_reset(null,0);
+   //alert(input1.val());
    $("#library_subjects").change ( function() {
-       tagify = bpl_reset(tagify);
+       tagify = bpl_reset(tagify,1);
        lib_update('chapters', 'get', tagify, 'BPL' );
        lib_searchops("BPL",tagify);
        lib_update('count', 'clear', tagify, 'BPL' );
@@ -40,7 +50,7 @@ $(window).load(function() {
    });
 
    $("#library_chapters").change ( function() {
-       tagify = bpl_reset(tagify);
+       tagify = bpl_reset(tagify,1);
        lib_searchops("BPL",tagify);
        lib_update('count', 'clear', tagify, 'BPL' );
        return true;
@@ -49,13 +59,13 @@ $(window).load(function() {
   lib_searchops("BPL",tagify);
   $("#search_bpl").hide();
   $('input[name=reset]').click(function() {
-       tagify = bpl_reset(tagify);
+       tagify = bpl_reset(tagify,1);
        //lib_updasubjectste('subjects', 'clear', tagify, 'BPL' );
        $('[name="library_subjects"]').prop("selectedIndex",0);
        lib_update('chapters', 'clear', tagify, 'BPL' );
        lib_update('count', 'clear', tagify, 'BPL' );
        lib_searchops("BPL",tagify);
-       return true;
+       return false;
   });
 
   //hide solutions and hints to be toggled
@@ -63,9 +73,10 @@ $(window).load(function() {
      $('a:contains("Hint:")').hide();
 });
 
-function bpl_reset(tg) {
+function bpl_reset(tg,rs) {
        var input1 = document.querySelector('input[name=search_bpl]');
-       input1.value = '';
+       if(rs)
+         input1.value = '';
        if(tg)
          tg.destroy();
        tagify = new Tagify(input1, {
@@ -297,6 +308,7 @@ function dir_update(who, what ) {
   }
   if(who == 'dir' && what == 'get') {
       $('[name="library_dir"]').prop("selectedIndex",0);
+      $('[name="library_subdir"]').prop("selectedIndex",0);
   }
   if(who == 'subdir' && what == 'get') {
       $('[name="library_subdir"]').prop("selectedIndex",0);
