@@ -391,16 +391,13 @@ sub getAllKeyWords {
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
 
 	my $dbh = getDB($r->ce);
-        if($where) {
-            #$dbh->{mysql_enable_utf8} = 1;
-            #$dbh->do("SET NAMES 'utf8'");
-        }
+print STDERR "$query\n";
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
 
 	while (@row = $sth->fetchrow_array()) {
-		push @results, $row[0];
-		push @results, "-".$row[0];
+	    push @results, $row[0];
+	    push @results, "-".$row[0];
 	}
 	# @results = sortByName(undef, @results);
 	return @results;
@@ -423,10 +420,10 @@ sub getTop20KeyWords {
         $chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
         my $where;
         if($chapter&& $chapter ne 'All Chapters') {
-           $where .= qq( AND d.name = "$chapter" );
+           $where .= qq( AND c.name = "$chapter" );
         }
         if($subject && $subject ne 'All Subjects') {
-           $where .= qq( AND c.name = "$subject");
+           $where .= qq( AND d.name = "$subject");
         }
 =comment
 	my $query = "SELECT distinct keyword FROM `$tables{keyword}` a,`$tables{keywordmap}` b,`$tables{dbsubject}` c,`$tables{dbchapter}` d 
@@ -435,13 +432,28 @@ sub getTop20KeyWords {
                       AND  c.DBsubject_id = d.DBsubject_id
                       $where ORDER BY keyword LIMIT 0,20";
 =cut
+=comment
 	my $query = "SELECT distinct keyword 
                      FROM `$tables{keyword}` a LEFT JOIN `$tables{keywordmap}` b ON a.keyword_id=b.bplkeyword_id
-                          LEFT JOIN `$tables{dbsubject}` c ON b.bpldbchapter_id = c.DBsubject_id
-                          LEFT JOIN `$tables{dbchapter}` d ON c.DBsubject_id = d.DBsubject_id
+                          LEFT JOIN `$tables{dbchapter}` c ON c.DBchapter_id = b.bpldbchapter_id
+                          LEFT JOIN `$tables{dbsubject}` d ON d.DBsubject_id = c.DBsubject_id
                       LEFT OUTER JOIN `$tables{keywordrank}` r ON a.keyword_id=r.keyword_id
+                      WHERE 1=1
                       $where
                       ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
+=cut
+	my $query = "select distinct s.keyword
+	             from (
+			SELECT a.keyword_id,a.keyword
+			FROM `BPL_keyword` a , `BPL_keyword_chapters` b, `BPL_DBchapter` c , `BPL_DBsubject` d
+			WHERE a.keyword_id=b.bplkeyword_id
+			AND d.DBsubject_id = c.DBsubject_id
+			AND c.DBchapter_id = b.bpldbchapter_id
+                        $where
+	             ) as s
+	             LEFT OUTER JOIN `BPL_keyword_rank` r ON r.keyword_id=s.keyword_id	
+	             ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
+	print STDERR "$query\n";
 
 
 	my $dbh = getDB($r->ce);
@@ -453,7 +465,7 @@ if($where) {
 	$sth->execute();
 
 	while (@row = $sth->fetchrow_array()) {
-		push @results, $row[0];
+	    push @results, $row[0];
 	}
 	# @results = sortByName(undef, @results);
 	return @results;
@@ -655,11 +667,12 @@ sub getDBListings {
               dbsc.DBsection_id = pgf.DBsection_id 
               \n $extrawhere 
               $kw2";
+        $query .= " ORDER BY pgf.filename" if($typ eq 'BPL');
 =comment
         }
 =cut
 
-	if($haveTextInfo && $typ ne 'BPL') {
+	if($haveTextInfo) {
         if($typ eq 'BPL') {
       $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
         `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
@@ -695,7 +708,6 @@ sub getDBListings {
 print STDERR "$query\n\n\n";
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
-print STDERR Data::Dumper->Dump([$pg_id_ref]);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
 	    return(@pg_ids[0]);
@@ -733,14 +745,14 @@ sub getDirListings {
                             ->maxdepth($level)
                             ->in($libraryRoot);
     if($amcounter) {
-           return(scalar(@lis));
+         return(scalar(@lis));
     }
 
 =comment
     my @lis = eval { readDirectory($topdir) };
     my @pgfiles = grep { m/\.pg$/ and (not m/(Header|-text)(File)?\.pg$/) and -f "$topdir/$_"} @lis;
 =cut
-    foreach (@lis) {
+    foreach (sort @lis) {
         my $filename = basename($_);
         my $pgpath   = dirname($_);
         $pgpath =~ s|^$topdir/||;
