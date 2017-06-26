@@ -223,7 +223,7 @@ sub safe_get_id {
                                 $insertvalues[$j] = NULL;
                         }
                 }
-                print "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
+                #print "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $dbh->do("INSERT INTO `$tablename` VALUES(". join(',',@insertvalues) .")");
                 dbug "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $sth = $dbh->prepare($query);
@@ -291,7 +291,8 @@ sub pgfiles {
 			my $pgfile_id = safe_get_id($tables{pgfile}, 'pgfile_id',
 					qq(WHERE filename = ? AND path_id = ? AND DBsection_id = ? ), [$pgfile, $path_id, $DBsection_id], 1, "", $DBsection_id, 0, '', $path_id, $pgfile, 0, $level, $lang, $static, $mathobj);
                         foreach my $keyword (@{$tags->{keywords}}) {
-                                $keyword =~ s/[\'\"]//g;
+                                #$keyword =~s/[\'\"]//g;
+                                #$keyword =~s/[\'\"]//g;
                                 $keyword = kwtidy($keyword);
                                 # skip it if it is empty
                                 next unless $keyword;
@@ -339,10 +340,10 @@ sub kwtidy {
 	#$s =~ s/\W//g;
 	$s =~ s/_//g;
 	$s =~ s/\\//g;
-	$s =~ s/^'//g;
-	$s =~ s/'$//g;
 	$s =~ s/^\s+//;
 	$s =~ s/\s+$//;
+	$s =~ s/^\'//g;
+	$s =~ s/\'$//g;
 	#$s = lc($s);
 	return($s);
 }
