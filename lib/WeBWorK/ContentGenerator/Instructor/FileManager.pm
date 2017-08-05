@@ -161,7 +161,7 @@ sub body {
 	elsif($action eq "Rename" 	|| $action eq $r->maketext("Rename")) {$self->Rename;} 
 	elsif($action eq "Delete" 	|| $action eq $r->maketext("Delete")) {$self->Delete;} 
 	elsif($action eq "Make Archive" || $action eq $r->maketext("Make Archive")) {$self->MakeArchive;} 
-	elsif($action eq "Unpack" 	|| $action eq $r->maketext("Unpack")) {$self->UnpackArchive;} 
+	elsif($action eq "Unpack Archive" 	|| $action eq $r->maketext("Unpack Archive")) {$self->UnpackArchive;} 
 	elsif($action eq "New Folder"	|| $action eq $r->maketext("New Folder")) {$self->NewFolder;} 
 	elsif($action eq "New File" 	|| $action eq $r->maketext("New File")) {$self->NewFile;} 
 	elsif($action eq "Upload" 	|| $action eq $r->maketext("Upload")) {$self->Upload;} 
@@ -288,11 +288,12 @@ sub Refresh {
 		}
 		function checkArchive(files,disabled) {
 			var button = document.getElementById('MakeArchive');
-			//button.value = 'Make Archive';
+			button.value = 'Make Archive';
 			if (disabled) return;
-			if (!files.childNodes[files.selectedIndex].value.match(/\\.(tar|tar\\.gz|tgz)\$/)) return;
+			if (!files[files.selectedIndex].value.match(/\\.(tar|tar\\.gz|tgz)\$/)) 	
+				return;
 			for (var i = files.selectedIndex+1; i < files.length; i++)
-			  {if (files.childNodes[i].selected) return}
+			  {if (files[i].selected) return;}
 			button.value = 'Unpack Archive';
 		}
 EOF
@@ -455,7 +456,7 @@ sub View {
 	my $fileManagerPage = $urlpath->newFromModule($urlpath->module, $r, courseID => $self->{courseName});
 	my $fileManagerURL  = $self->systemLink($fileManagerPage, params => {download => $filename, pwd => $pwd});
 	print CGI::div({style=>"float:right"},
-		 CGI::a({href=>$fileManagerURL},"Download"));
+		 CGI::a({href=>$fileManagerURL},$r->maketext("Download")));
 	print CGI::p(),CGI::b($name),CGI::p();
 	print CGI::hr();
 
@@ -470,7 +471,7 @@ sub View {
 		print CGI::img({src=>$fileManagerURL, border=>0});
 	} else {
 		print CGI::div({class=>"ResultsWithError"},
-			"The file does not appear to be a text file.");
+			$r->maketext("The file does not appear to be a text file."));
 	}
 }
 
@@ -511,7 +512,7 @@ sub Edit {
 	}
 	my $data = readFile($file);
 	if (!isText($data)) {
-		$self->addbadmessage($r->maketext("The file does not appear to be a text file"));
+		$self->addbadmessage($r->maketext("The file does not appear to be a text file."));
 		$self->Refresh; return;
 	}
 
@@ -735,14 +736,14 @@ sub Delete {
 			  CGI::p({style=>"color:red"},$r->maketext("There is no undo for deleting files or directories!")),
 			  CGI::p($r->maketext("Really delete the items listed above?")),
 			  CGI::div({style=>"float:left; padding-left:3ex"},
-			    CGI::input({type=>"submit",name=>"action",value=>"Cancel"})),
+			    CGI::input({type=>"submit",name=>"action",value=>$r->maketext("Cancel")})),
 			  CGI::div({style=>"float:right; padding-right:3ex"},
-			    CGI::input({type=>"submit",name=>"action",value=>"Delete"})),
+			    CGI::input({type=>"submit",name=>"action",value=>$r->maketext("Delete")})),
 			),
 		);
 		print CGI::end_table();
 
-		print CGI::hidden({name=>"confirmed",value=>"Delete"});
+		print CGI::hidden({name=>"confirmed",value=>$r->maketext("Delete")});
 		foreach my $file (@files) {print CGI::hidden({name=>"files",value=>$file})}
 		$self->HiddenFlags;
 	}
@@ -904,7 +905,7 @@ sub Upload {
 			
 			$self->Confirm($r->maketext("File <b>[_1]</b> already exists. Overwrite it, or rename it as:",$name).CGI::p(),uniqueName($dir,$name),$r->maketext("Rename"),$r->maketext("Overwrite"));
 			#$self->Confirm("File ".CGI::b($name)." already exists. Overwrite it, or rename it as:".CGI::p(),uniqueName($dir,$name),"Rename","Overwrite");
-			print CGI::hidden({name=>"action",value=>"Upload"});
+			print CGI::hidden({name=>"action",value=>$r->maketext("Upload")});
 			print CGI::hidden({name=>"file",value=>$fileIDhash});
 			return;
 		}

@@ -769,7 +769,7 @@ sub links {
 			}
 
 			
-				print CGI::li(&$makelink("${pfx}Options", urlpath_args=>{%args}, systemlink_args=>\%systemlink_args));
+				print CGI::li(&$makelink("${pfx}Options", text=>$r->maketext("User Settings"), urlpath_args=>{%args}, systemlink_args=>\%systemlink_args));
 					
 			print CGI::li(&$makelink("${pfx}Grades", urlpath_args=>{%args}, systemlink_args=>\%systemlink_args));
 			
