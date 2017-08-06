@@ -438,7 +438,7 @@ sub checkDates {
 		$error = 1;
 	}
 	if ($due_date > $cutoff) {
-		$self->addbadmessage($r->maketext("Error: due date cannot be more than 10 years from now in set [_1]",$setID));
+		$self->addbadmessage($r->maketext("Error: close date cannot be more than 10 years from now in set [_1]",$setID));
 		$error = 1;
 	}
 	if ($answer_date > $cutoff) {

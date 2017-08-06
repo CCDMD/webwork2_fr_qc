@@ -320,8 +320,8 @@ $emailableURL
 
 		try {
 			sendmail($email,{transport => $transport});
-			print CGI::p("Your message was sent successfully.");
-			print CGI::p(CGI::a({-href => $returnURL}, "Return to your work"));
+			print CGI::p($r->maketext("Your message was sent successfully."));
+			print CGI::p(CGI::a({-href => $returnURL}, $r->maketext("Return to your work")));
 			print CGI::pre(wrap("", "", $feedback));
 		} catch {
 				$self->feedbackForm($user, $returnURL,
@@ -352,16 +352,18 @@ $emailableURL
 
 sub feedbackNotAllowed {
 	my ($self, $returnURL) = @_;
-
-	print CGI::p("You are not allowed to send e-mail.");
-	print CGI::p(CGI::a({-href=>$returnURL}, "Cancel E-Mail")) if $returnURL;
+	my $r = $self->r;
+	
+	print CGI::p($r->maketext("You are not allowed to send e-mail."));
+	print CGI::p(CGI::a({-href=>$returnURL}, $r->maketext("Cancel E-mail"))) if $returnURL;
 }
 
 sub noRecipientsAvailable {
 	my ($self, $returnURL) = @_;
-
-	print CGI::p("No e-mail recipients are listed for this course.");
-	print CGI::p(CGI::a({-href=>$returnURL}, "Cancel E-Mail")) if $returnURL;
+	my $r = $self->r;
+	
+	print CGI::p($r->maketext("No e-mail recipients are listed for this course."));
+	print CGI::p(CGI::a({-href=>$returnURL}, $r->maketext("Cancel E-mail"))) if $returnURL;
 }
 sub title {
 	my ($self, $user, $returnURL, $message) = @_;
@@ -426,41 +428,43 @@ sub getFeedbackRecipients {
 sub format_user {
 	my ($self, $User) = @_;
 	my $ce = $self->r->ce;
-
-	my $result = "User ID:    " . $User->user_id . "\n";
-	$result .= "Name:       " . $User->full_name . "\n";
-	$result .= "Email:      " . $User->email_address . "\n";
-	$result .= "Student ID: " . $User->student_id . "\n";
-
+        my $r = $self->r;
+	
+	my $result = $r->maketext("User ID:    ") . $User->user_id . "\n";
+	$result .= $r->maketext("Name:       ") . $User->full_name . "\n";
+	$result .= $r->maketext("Email:      ") . $User->email_address . "\n";
+	$result .= $r->maketext("Student ID: ") . $User->student_id . "\n";
+	
 	my $status_name = $ce->status_abbrev_to_name($User->status);
 	my $status_string = defined $status_name
 		? "$status_name ('" . $User->status . "')"
 		: $User->status . " (unknown status abbreviation)";
-	$result .= "Status:     $status_string\n";
-
-	$result .= "Section:    " . $User->section . "\n";
-	$result .= "Recitation: " . $User->recitation . "\n";
-	$result .= "Comment:    " . $User->comment . "\n";
-
+	$result .= $r->maketext("Status:     [_1]", $status_string). "\n";
+	
+	$result .= $r->maketext("Section:    ") . $User->section . "\n";
+	$result .= $r->maketext("Recitation: ") . $User->recitation . "\n";
+	$result .= $r->maketext("Comment:    ") . $User->comment . "\n";
+	
 	return $result;
 }
 
 sub format_userset {
 	my ($self, $Set) = @_;
 	my $ce = $self->r->ce;
-
-	my $result = "Set ID:                    " . $Set->set_id . "\n";
-	$result .= "Set header file:           " . $Set->set_header . "\n";
-	$result .= "Hardcopy header file:      " . $Set->hardcopy_header . "\n";
-
+        my $r = $self->r;
+	
+	my $result = $r->maketext("Set ID:                    ") . $Set->set_id . "\n";
+	$result .= $r->maketext("Set header file:           ") . $Set->set_header . "\n";
+	$result .= $r->maketext("Hardcopy header file:      ") . $Set->hardcopy_header . "\n";
+	
 	my $tz = $ce->{siteDefaults}{timezone};
-	$result .= "Open date:                 " . $self->formatDateTime($Set->open_date, $tz). "\n";
-	$result .= "Due date:                  " . $self->formatDateTime($Set->due_date, $tz). "\n";
-	$result .= "Answer date:               " . $self->formatDateTime($Set->answer_date, $tz) . "\n";
-	$result .= "Visible:                   " . ($Set->visible ? "yes" : "no") . "\n";
-	$result .= "Assignment type:           " . $Set->assignment_type . "\n";
+	$result .= $r->maketext("Open date:                 ") . $self->formatDateTime($Set->open_date, $tz). "\n";
+	$result .= $r->maketext("Due date:                  ") . $self->formatDateTime($Set->due_date, $tz). "\n";
+	$result .= $r->maketext("Answer date:               ") . $self->formatDateTime($Set->answer_date, $tz) . "\n";
+	$result .= $r->maketext("Visible:                   ") . ($Set->visible ? $r->maketext("yes") : $r->maketext("no")) . "\n";
+	$result .= $r->maketext("Assignment type:           ") . $Set->assignment_type . "\n";
 	if ($Set->assignment_type =~ /gateway/) {
-		$result .= "Attempts per version:      " . $Set->assignment_type . "\n";
+		$result .= $r->maketext("Attempts per version:      ") . $Set->assignment_type . "\n";
 		$result .= "Time interval:             " . $Set->time_interval . "\n";
 		$result .= "Versions per interval:     " . $Set->versions_per_interval . "\n";
 		$result .= "Version time limit:        " . $Set->version_time_limit . "\n";
@@ -475,28 +479,29 @@ sub format_userset {
 sub format_userproblem {
 	my ($self, $Problem) = @_;
 	my $ce = $self->r->ce;
-
-	my $result = "Problem ID:                   " . $Problem->problem_id . "\n";
-	$result .= "Source file:                  " . $Problem->source_file . "\n";
-	$result .= "Value:                        " . $Problem->value . "\n";
-	$result .= "Max attempts                  " . ($Problem->max_attempts == -1 ? "unlimited" : $Problem->max_attempts) . "\n";
-	$result .= "Random seed:                  " . $Problem->problem_seed . "\n";
-	$result .= "Status:                       " . $Problem->status . "\n";
-	$result .= "Attempted:                    " . ($Problem->attempted ? "yes" : "no") . "\n";
-
+        my $r = $self->r;
+	
+	my $result = $r->maketext("Problem ID:                   ") . $Problem->problem_id . "\n";
+	$result .= $r->maketext("Source file:                  ") . $Problem->source_file . "\n";
+	$result .= $r->maketext("Value:                        ") . $Problem->value . "\n";
+	$result .= $r->maketext("Max attempts                  ") . ($Problem->max_attempts == -1 ? $r->maketext("unlimited") : $Problem->max_attempts) . "\n";
+	$result .= $r->maketext("Random seed:                  ") . $Problem->problem_seed . "\n";
+	$result .= $r->maketext("Status:                       ") . $Problem->status . "\n";
+	$result .= $r->maketext("Attempted:                    ") . ($Problem->attempted ? $r->maketext("yes") : $r->maketext("no")) . "\n";
+	
 	my %last_answer = decodeAnswers($Problem->last_answer);
 	if (%last_answer) {
-		$result .= "Last answer:\n";
+		$result .= $r->maketext("Last answer:"). "\n";
 		foreach my $key (sort keys %last_answer) {
 			$result .= "\t$key: $last_answer{$key}\n";
 		}
 	} else {
-		$result .= "Last answer:                  none\n";
+		$result .= $r->maketext("Last answer:                  none"). "\n";
 	}
-
-	$result .= "Number of correct attempts:   " . $Problem->num_correct . "\n";
-	$result .= "Number of incorrect attempts: " . $Problem->num_incorrect . "\n";
-
+	
+	$result .= $r->maketext("Number of correct attempts:   ") . $Problem->num_correct . "\n";
+	$result .= $r->maketext("Number of incorrect attempts: ") . $Problem->num_incorrect . "\n";
+	
 	return $result;
 }
 

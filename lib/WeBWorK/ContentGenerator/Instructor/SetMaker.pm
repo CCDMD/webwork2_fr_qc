@@ -843,7 +843,7 @@ sub make_top_row {
 	}
 	$libs = CGI::br().$r->maketext("or Problems from").$libs if $libs ne '';
 
-	my $these_widths = "width: 24ex";
+	my $these_widths = "width: 25ex";
 
 	if($have_local_sets ==0) {
 		$list_of_local_sets = [$r->maketext(NO_LOCAL_SET_STRING)];
@@ -889,7 +889,7 @@ sub make_top_row {
 		CGI::submit(-name=>"browse_npl_library", -value=>$r->maketext("Open Problem Library"), -style=>$these_widths, @dis1),
 		CGI::submit(-name=>"browse_local", -value=>$r->maketext("Local Problems"), -style=>$these_widths, @dis2),
 		CGI::submit(-name=>"browse_mysets", -value=>$r->maketext("From This Course"), -style=>$these_widths, @dis3),
-		CGI::submit(-name=>"browse_setdefs", -value=>$r->maketext("Set Definition Files"), -style=>$these_widths, @dis4),
+		CGI::submit(-name=>"browse_setdefs", -value=>$r->maketext("Set Definition Files"), -style=>"width: 30ex", @dis4),
 		$libs,
 	));
 
@@ -927,7 +927,7 @@ sub make_top_row {
 						 -value=>$r->maketext("Next page"));
 	}
 	if (scalar(@pg_files)) {
-		$show_hide_path_button = CGI::submit(-id=>"toggle_paths", -style=>"width:16ex",
+		$show_hide_path_button = CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
 		                         -value=>$r->maketext("Show all paths"),
 								 -id =>"toggle_paths",
 								 -onClick=>'return togglepaths()');
@@ -945,7 +945,7 @@ sub make_top_row {
                                     -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			            -value=>$r->maketext("Add All")),
 		           CGI::submit(-name=>"cleardisplay", 
-		                -style=>$these_widths,
+		                -style=>"width: 30ex",
 		                -value=>$r->maketext("Clear Problem Display")),
 			$prev_button, " ", $next_button, " ", $show_hide_path_button
 		     )), 

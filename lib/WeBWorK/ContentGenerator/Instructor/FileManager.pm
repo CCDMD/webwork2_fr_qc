@@ -288,13 +288,13 @@ sub Refresh {
 		}
 		function checkArchive(files,disabled) {
 			var button = document.getElementById('MakeArchive');
-			button.value = 'Make Archive';
+			button.value = maketext("Make Archive");
 			if (disabled) return;
 			if (!files[files.selectedIndex].value.match(/\\.(tar|tar\\.gz|tgz)\$/)) 	
 				return;
 			for (var i = files.selectedIndex+1; i < files.length; i++)
 			  {if (files[i].selected) return;}
-			button.value = 'Unpack Archive';
+			button.value = maketext("Unpack Archive");
 		}
 EOF
 
@@ -575,7 +575,7 @@ sub RefreshEdit {
 	my $pwd = shift || $self->{pwd};
 	my $name = "$pwd/$file"; $name =~ s!^\./?!!;
 
-	my %button = (type=>"submit",name=>"action",style=>"width:6em");
+	my %button = (type=>"submit",name=>"action",style=>"width:8em");
 
 	print CGI::p();
 	print CGI::start_table({border=>0,cellspacing=>0,cellpadding=>2, width=>"95%", align=>"center"});
@@ -769,7 +769,7 @@ sub MakeArchive {
 	@files = readpipe $tar." 2>&1";
 	if ($? == 0) {
 		my $n = scalar(@files); 
-		$self->addgoodmessage($r->maketext("Archive '[_1]' created successfully ([quant, _2, file])",$archive, $n));
+		$self->addgoodmessage($r->maketext("Archive '[_1]' created successfully ([quant,_2,file])",$archive, $n));
 	} else {
 		$self->addbadmessage($r->maketext("Can't create archive '[_1]': command returned [_2]",$archive,systemError($?)));
 	}
