@@ -370,6 +370,7 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
 		$self->{library_keywords} = $rh->{library_keywords};
+		$self->{library_defkeywords} = $rh->{library_defkeywords};
 
 		my @keyword_listings = WeBWorK::Utils::ListingDB::getTop20KeyWords($self);
 		$out->{ra_out} = \@keyword_listings;
