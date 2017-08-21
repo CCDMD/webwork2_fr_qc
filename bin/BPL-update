@@ -52,6 +52,7 @@ my %BPLtables = (
  keyword => 'BPL_keyword',
  pgfile_keyword => 'BPL_pgfile_keyword',
  keywordmap => 'BPL_keyword_chapters',
+ keyworddim => 'BPL_keyword_dim',
  textbook => 'BPL_textbook',
  chapter => 'BPL_chapter',
  section => 'BPL_section',
@@ -174,7 +175,18 @@ my $lib = 'BPL';
 	KEY (bplkeyword_id,bpldbchapter_id),
 	PRIMARY KEY (id)
 '],
-
+[$tables{keyworddim}, '
+	keyword_id int(15) NOT NULL,
+	keyword varchar(256) NOT NULL,
+	DBchapter_id int(11) NOT NULL,
+	chapter varchar(256) NOT NULL,
+	DBsubject_id int(11) NOT NULL,
+	subject varchar(256) NOT NULL,
+	pgfile_id int(15) NOT NULL,
+	KEY (chapter),
+	KEY (subject),
+	KEY (keyword,pgfile_id)
+'],
 [$tables{pgfile_keyword}, '
 	pgfile_id int(15) DEFAULT 0 NOT NULL,
 	keyword_id int(15) DEFAULT 0 NOT NULL,
@@ -367,7 +379,8 @@ sub maybenewtext {
 						   section => '', chapter =>'', problems => [] };
 }
 
-$dbh->disconnect;
+print "\nCreating master table for all keywords,subject,chapter,pgfile...\n";
+$dbh->do("INSERT INTO BPL_keyword_dim select distinct k.keyword_id,k.keyword,c.DBchapter_id,c.name as chapter,s.DBsubject_id,s.name as subject,pg.pgfile_id from BPL_keyword_chapters kc, BPL_keyword k, BPL_DBchapter c, BPL_DBsubject s, BPL_pgfile_keyword pg where kc.bplkeyword_id = k.keyword_id and c.DBchapter_id = kc.bpldbchapter_id and pg.keyword_id = k.keyword_id and s.DBsubject_id = c.DBsubject_id");
 
 if ($ce->{problemLibrary}{showLibraryLocalStats} ||
     $ce->{problemLibrary}{showLibraryGlobalStats}) {
@@ -375,5 +388,5 @@ if ($ce->{problemLibrary}{showLibraryLocalStats} ||
   do $ENV{WEBWORK_ROOT}.'/bin/update-BPL-statistics';
 }
 
-
+$dbh->disconnect;
 print "\nDone.\n";
