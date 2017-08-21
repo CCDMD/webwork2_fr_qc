@@ -80,6 +80,7 @@ my %BPLtables = (
  pgfile => 'BPL_pgfile',
  keyword => 'BPL_keyword',
  keywordmap => 'BPL_keyword_chapters',
+ keyworddim => 'BPL_keyword_dim',
  keywordrank => 'BPL_keyword_rank',
  pgfile_keyword => 'BPL_pgfile_keyword',
  textbook => 'BPL_textbook',
@@ -364,6 +365,76 @@ Returns an array of keywords starting
 $r is the Apache request object
 
 =cut
+sub _getAllKeyWords {
+	my $r = shift;
+	my %tables = getTables($r->ce, 'BPL');
+	my @results=();
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+	my $keywords =  $r->param('library_keywords') || "";
+        my $row;
+        my $kwwhere;
+        my $exwhere;
+        my $AllKeyWords = {};
+        my $PgKeyWords = {};
+
+	my $dbh = getDB($r->ce);
+
+        my $query = "SELECT * FROM  `$tables{keyworddim}`";
+
+        my $hash = $dbh->selectall_arrayref($query);
+        foreach my $r (@$hash) {
+              my ($keyword_id,$keyword,$chapter_id,$chapter,$subject_id,$subject,$pgfile_id,$rank) = @$r;
+              push @{$PgKeyWords->{$keyword}->{pgfile_id}}, $pgfile_id;
+        }
+
+        my %ExclPGFILE;
+        my %InclPGFILE;
+
+        if($keywords ne "") {
+            my $firstLoop = 1;
+            my %lastSet;
+            my @tags = split ',',$keywords;
+            foreach my $kw (@tags) {
+                my $pgfiles;
+                $kw =~s/^\s+//g;
+                $kw =~s/\s+$//g;
+                if($kw =~/^-/) {
+                    $kw =~s/^-//;
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                     
+                    foreach (  @$pgfiles ) {
+                       $ExclPGFILE{$_} = 1;
+                    }
+                } else {
+
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                    %lastSet = map{ $_ =>1 } @$pgfiles if($firstLoop);
+                    my @masterSet = grep( $lastSet{$_}, @$pgfiles );
+                    %lastSet = map{$_ =>1} @masterSet;
+                    $firstLoop = 0 if($firstLoop);
+
+                }
+                %InclPGFILE=%lastSet;
+            }
+        }
+
+	foreach my $r (@$hash) {
+
+              my ($keyword_id,$keyword,$chapter_id,$DBchapter,$subject_id,$DBsubject,$pgfile_id,$rank) = @$r;
+
+              next if($subject ne "All Subjects" && $DBsubject ne $subject);
+              next if($chapter ne "All Chapters" && $DBchapter ne $chapter);
+              next if(scalar(keys %ExclPGFILE) > 0 && exists $ExclPGFILE{$pgfile_id});
+
+              next if(scalar(keys %InclPGFILE) > 0 && not exists $InclPGFILE{$pgfile_id});
+
+              $AllKeyWords->{$keyword} = 0;
+
+        }
+        my @results = sort map { $_ => "-".$_; } keys %$AllKeyWords;
+        return @results; 
+}
 sub getAllKeyWords {
 	my $r = shift;
 	my %tables = getTables($r->ce,'BPL');
@@ -391,7 +462,7 @@ sub getAllKeyWords {
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
 
 	my $dbh = getDB($r->ce);
-print STDERR "$query\n";
+#print STDERR "$query\n";
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
 
@@ -413,38 +484,136 @@ sub getTop20KeyWords {
 	my $r = shift;
 	my %tables = getTables($r->ce, 'BPL');
 	my @results=();
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+	my $keywords =  $r->param('library_keywords') || "";
+        my $limit = $r->param('library_defkeywords') || 20;
+        my $row;
+        my $kwwhere;
+        my $exwhere;
+        my $AllKeyWords = {};
+        my $PgKeyWords = {};
+
+	my $dbh = getDB($r->ce);
+        #$subject = encoder($subject)->utf8 if($subject!~/[^[:ascii:]]/);
+        #$chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
+
+        my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s LEFT OUTER JOIN `BPL_keyword_rank` r ON r.keyword_id=s.keyword_id";
+
+        my $hash = $dbh->selectall_arrayref($query);
+        foreach my $r (@$hash) {
+              my ($keyword_id,$keyword,$chapter_id,$chapter,$subject_id,$subject,$pgfile_id,$rank) = @$r;
+              push @{$PgKeyWords->{$keyword}->{pgfile_id}}, $pgfile_id;
+        }
+
+        my %ExclPGFILE;
+        my %InclPGFILE;
+        my %SrchKeyWords;
+
+        if($keywords ne "") {
+            my $firstLoop = 1;
+            my %lastSet;
+            my @tags = split ',',$keywords;
+ 
+            foreach my $kw (@tags) {
+                my $pgfiles;
+                $kw =~s/^\s+//g;
+                $kw =~s/\s+$//g;
+                $SrchKeyWords{$kw} = 1;
+                if($kw =~/^-/) {
+                    $kw =~s/^-//;
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                     
+                    foreach (  @$pgfiles ) {
+                       $ExclPGFILE{$_} = 1;
+                    }
+                } else {
+
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                    %lastSet = map{ $_ =>1 } @$pgfiles if($firstLoop);
+                    my @masterSet = grep( $lastSet{$_}, @$pgfiles );
+                    %lastSet = map{$_ =>1} @masterSet;
+                    $firstLoop = 0 if($firstLoop);
+
+                }
+                %InclPGFILE=%lastSet;
+            }
+        }
+
+	foreach my $r (@$hash) {
+
+              my ($keyword_id,$keyword,$chapter_id,$DBchapter,$subject_id,$DBsubject,$pgfile_id,$rank) = @$r;
+
+              next if(exists($SrchKeyWords{$keyword}));
+              next if($subject ne "All Subjects" && $DBsubject ne $subject);
+              next if($chapter ne "All Chapters" && $DBchapter ne $chapter);
+              next if(scalar(keys %ExclPGFILE) > 0 && exists $ExclPGFILE{$pgfile_id});
+
+              next if(scalar(keys %InclPGFILE) > 0 && not exists $InclPGFILE{$pgfile_id});
+
+              $AllKeyWords->{$keyword}->{rank}    = $rank || 0;
+
+        }
+        my @results = sort { $AllKeyWords->{$b}{rank} <=> $AllKeyWords->{$a}{rank} } keys %$AllKeyWords;
+        $limit = (scalar(@results) > $limit) ? $limit : scalar(@results);
+        return @results[0..$limit-1]; 
+=comment
+	while (@row = $sth->fetchrow_array()) {
+	    push @results, $row[0];
+	}
+	# @results = sortByName(undef, @results);
+	return @results;
+=cut
+}
+sub _getTop20KeyWords {
+	my $r = shift;
+	my %tables = getTables($r->ce, 'BPL');
+	my @results=();
 	my @row;
 	my $subject = $r->param('library_subjects');
 	my $chapter = $r->param('library_chapters');
+	my $keywords =  $r->param('library_keywords') || "";
+        my $limit = $r->param('library_defkeywords') || 20;
+        my $kwwhere;
+        my $exwhere;
+
+
+        #print STDERR "KRDS: $keywords\n";
+        if($keywords ne "") {
+    	    my @tags = split ',',$keywords;
+            s/^\s+// for @tags;
+            $exwhere = join '","', @tags;
+            my $k = 1;
+            foreach my $kw (@tags) {
+    	        $kw = encoder($kw)->utf8 if($kw!~/[^[:ascii:]]/);
+                $kw =~s/^\s+//g;
+                $kw =~s/\s+$//g;
+
+                if($kw =~/^-/) {
+    	            $kw =~s/^-//;
+                    $kwwhere .= " AND NOT EXISTS (select 1 from  `$tables{keyworddim}` kc$k where kc$k.keyword = \"$kw\" AND kc$k.pgfile_id = km.pgfile_id) \n";
+                } else {
+                    $kwwhere .= " AND EXISTS (select 1 from  `$tables{keyworddim}` kc$k where kc$k.keyword = \"$kw\" AND kc$k.pgfile_id = km.pgfile_id) \n";
+                }
+                $k++;
+            }
+        }
+
         #$subject = encoder($subject)->utf8;
+        #$subject = encoder($subject)->utf8 if($subject!~/[^[:ascii:]]/);
         $chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
         my $where;
         if($chapter&& $chapter ne 'All Chapters') {
-           $where .= qq( AND c.name = "$chapter" );
+           $where .= qq( AND km.chapter = "$chapter" );
         }
         if($subject && $subject ne 'All Subjects') {
-           $where .= qq( AND d.name = "$subject");
+           $where .= qq( AND km.subject = "$subject");
         }
 =comment
-	my $query = "SELECT distinct keyword FROM `$tables{keyword}` a,`$tables{keywordmap}` b,`$tables{dbsubject}` c,`$tables{dbchapter}` d 
-                     WHERE a.keyword_id=b.bplkeyword_id 
-                      AND  b.bpldbchapter_id = d.DBchapter_id
-                      AND  c.DBsubject_id = d.DBsubject_id
-                      $where ORDER BY keyword LIMIT 0,20";
-=cut
-=comment
-	my $query = "SELECT distinct keyword 
-                     FROM `$tables{keyword}` a LEFT JOIN `$tables{keywordmap}` b ON a.keyword_id=b.bplkeyword_id
-                          LEFT JOIN `$tables{dbchapter}` c ON c.DBchapter_id = b.bpldbchapter_id
-                          LEFT JOIN `$tables{dbsubject}` d ON d.DBsubject_id = c.DBsubject_id
-                      LEFT OUTER JOIN `$tables{keywordrank}` r ON a.keyword_id=r.keyword_id
-                      WHERE 1=1
-                      $where
-                      ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
-=cut
+        ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
 	my $query = "select distinct s.keyword
 	             from (
-			SELECT a.keyword_id,a.keyword
+			SELECT a.keyword_id,a.keyword,c.DBchapter_id
 			FROM `BPL_keyword` a , `BPL_keyword_chapters` b, `BPL_DBchapter` c , `BPL_DBsubject` d
 			WHERE a.keyword_id=b.bplkeyword_id
 			AND d.DBsubject_id = c.DBsubject_id
@@ -452,9 +621,19 @@ sub getTop20KeyWords {
                         $where
 	             ) as s
 	             LEFT OUTER JOIN `BPL_keyword_rank` r ON r.keyword_id=s.keyword_id	
-	             ORDER BY r.rank DESC,keyword ASC LIMIT 0,20";
-	print STDERR "$query\n";
+                     $kwwhere
+                     LIMIT $offset,$limit";
+=cut
+        my $query = "SELECT keyword FROM (SELECT DISTINCT km.keyword,km.keyword_id
+                     FROM `$tables{keyworddim}` km WHERE 1=1
+                     $where
+                     $kwwhere) as s
+                     LEFT OUTER JOIN `$tables{keywordrank}` r ON r.keyword_id=s.keyword_id
+                     WHERE 1=1 AND s.keyword NOT IN (\"$exwhere\")
+                     ORDER BY r.rank DESC,keyword ASC LIMIT 0,$limit";
 
+
+	print STDERR "$query\n";
 
 	my $dbh = getDB($r->ce);
 if($where) {
@@ -705,7 +884,7 @@ sub getDBListings {
         #$dbh->{mysql_enable_utf8} = 1;
         #$dbh->do("SET NAMES 'utf8'");
 
-print STDERR "$query\n\n\n";
+#print STDERR "$query\n\n\n";
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
@@ -732,6 +911,7 @@ sub getDirListings {
     my $topdir = $r->param('library_topdir');
     my $libraryRoot = $topdir; #$r->param('library_dir')."/".$r->param('library_subdir');
     my $topdir .= "/".$r->param('library_lib') if($r->param('library_lib') ne '--Select--');
+
     $libraryRoot = $libraryRoot."/".$r->param('library_lib') if($r->param('library_lib'));
     $libraryRoot = $libraryRoot."/".$r->param('library_dir') if($r->param('library_dir') ne 'All Dir');
     $libraryRoot = $libraryRoot."/".$r->param('library_subdir') if($r->param('library_subdir') ne 'All Subdir');
@@ -752,6 +932,7 @@ sub getDirListings {
     my @lis = eval { readDirectory($topdir) };
     my @pgfiles = grep { m/\.pg$/ and (not m/(Header|-text)(File)?\.pg$/) and -f "$topdir/$_"} @lis;
 =cut
+
     foreach (sort @lis) {
         my $filename = basename($_);
         my $pgpath   = dirname($_);
