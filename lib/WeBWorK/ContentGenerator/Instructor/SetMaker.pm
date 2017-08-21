@@ -43,6 +43,7 @@ require WeBWorK::Utils::ListingDB;
 
 # we use x to mark strings for maketext
 use constant SHOW_HINTS_DEFAULT => 0;
+use constant DEFAULT_KEYWORDS => 20;
 use constant SHOW_SOLUTIONS_DEFAULT => 0;
 use constant MAX_SHOW_DEFAULT => 20;
 use constant NO_LOCAL_SET_STRING => x('No sets in this course yet');
@@ -59,6 +60,9 @@ use constant ALL_TEXTBOOKS => 'All Textbooks';
 use constant ALL_LIBS => '--Select--';
 use constant ALL_DIRS => 'All Dir';
 use constant ALL_SUBDIRS => 'All Subdir';
+use constant VIEW_FORMS  => ["bank of free problems","open problem library","local problems","from this course","set definition files","specific directories"];
+#use constant VIEW_FORMS  => [qw(bpl opl blp ftc setdef spcf)];
+use constant ACTION_FORMS  => {'bank of free problems' => 'browse_library_panel5t', 'open problem library' => 'browse_library_panel2t', 'local problems' => 'browse_local_panelt', 'from this course' => 'browse_mysets_panelt', 'set definition files' => 'browse_setdef_panelt', 'specific directories' => 'browse_specific_panelt'};
 
 use constant LIB2_DATA => {
   'dbchapter' => {name => 'library_chapters', all => 'All Chapters'},
@@ -165,6 +169,7 @@ sub list_pg_files {
 sub get_sub_reps {
 	my $topdir = shift;
 	my @found_set_defs;
+   
         opendir(my $dh, $topdir) || print STDERR "Can't opendir $topdir: $!";
         while(readdir $dh) {
             next if /^\.+/;
@@ -227,7 +232,7 @@ sub getDBextras {
 	my $sourceFileName = shift;
 
 	if($sourceFileName =~ /^Library/) {
-		return @{WeBWorK::Utils::ListingDB::getDBextras($r, $sourceFileName)};
+	     return @{WeBWorK::Utils::ListingDB::getDBextras($r, $sourceFileName)};
 	}
 
 	my $filePath = $r->ce->{courseDirs}{templates}."/$sourceFileName";
@@ -488,7 +493,45 @@ sub browse_local_panel {
 		              $view_problem_line,
 	));
 }
+sub browse_local_panelt {
+	my $self = shift;
+	my $r = $self->r;	
+	my $library_selected = shift || 'OPL';
+	my $lib = shift || ''; $lib =~ s/^browse_//;
+	my $name = ($lib eq '')? $r->maketext('Local') : $problib{$lib};
+    
+	my $list_of_prob_dirs= get_problem_directories($r,$lib);
+	if(scalar(@$list_of_prob_dirs) == 0) {
+		$library_selected = $r->maketext("Found no directories containing problems");
+		unshift @{$list_of_prob_dirs}, $library_selected;
+	} else {
+		my $default_value = $r->maketext(SELECT_LOCAL_STRING);
+		if (not $library_selected or $library_selected eq $default_value) {
+			unshift @{$list_of_prob_dirs},	$default_value;
+			$library_selected = $default_value;
+		}
+	}
+	debug("library is $lib and sets are $library_selected");
+	my $view_problem_line = view_problems_line('view_local_set', $r->maketext('View Problems'), $self->r);
+	my @popup_menu_args = (
+		-name => 'library_sets',
+		-values => $list_of_prob_dirs,
+		-default => $library_selected,
+	);
+	# make labels without the $lib prefix -- reduces the width of the popup menu
+	if (length($lib)) {
+		my %labels = map { my($l)=$_=~/^$lib\/(.*)$/;$_=>$l } @$list_of_prob_dirs;
+		push @popup_menu_args, -labels => \%labels;
+	}
 
+	return   CGI::start_table().
+                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("[_1] Problems:", $name).' ',
+		              CGI::popup_menu(@popup_menu_args),
+		              CGI::br(),
+		              $view_problem_line,
+	            )).
+                 CGI::end_table();
+}
 #####	 Version 2 is local homework sets
 sub browse_mysets_panel {
 	my $self = shift;
@@ -505,16 +548,44 @@ sub browse_mysets_panel {
 	} 
 
 	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r);
-	print CGI::Tr({},
+	print   CGI::start_table(),
+                CGI::Tr({},
 		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:").' ',
 		CGI::popup_menu(-name=> 'library_sets', 
 		                -values=>$list_of_local_sets, 
 		                -default=> $library_selected),
 		CGI::br(), 
 		$view_problem_line
-	));
+	)),
+                CGI::end_table();
 }
+sub browse_mysets_panelt {
+	my $self = shift;
+	my $r = $self->r;	
+	my $library_selected = shift;
+	#my $list_of_local_sets = shift;
+	my $list_of_local_sets = [];
+	my $default_value = $r->maketext(SELECT_HMW_SET_STRING);
 
+	if(scalar(@$list_of_local_sets) == 0) {
+		$list_of_local_sets = [$r->maketext(NO_LOCAL_SET_STRING)];
+	} elsif (not $library_selected or $library_selected eq $default_value) { 
+		unshift @{$list_of_local_sets},	 $default_value; 
+		$library_selected = $default_value; 
+	} 
+
+	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r);
+	return CGI::start_table(),
+               CGI::Tr({},
+		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:").' ',
+		CGI::popup_menu(-name=> 'library_sets', 
+		                -values=>$list_of_local_sets, 
+		                -default=> $library_selected),
+		CGI::br(), 
+		$view_problem_line
+	         )),
+                CGI::end_table();
+}
 #####	 Version 3 is the problem library
 # 
 # This comes in 3 forms, problem library version 1, and for version 2 there
@@ -672,6 +743,73 @@ sub browse_library_panel2 {
 	 ));
 	
 }
+sub browse_library_panel2t {
+	my $self = shift;
+	my $r = $self->r;
+	my $ce = $r->ce;
+
+	my @subjs = WeBWorK::Utils::ListingDB::getAllDBsubjects($r);
+	unshift @subjs, LIB2_DATA->{dbsubject}{all};
+
+	my @chaps = WeBWorK::Utils::ListingDB::getAllDBchapters($r);
+	unshift @chaps, LIB2_DATA->{dbchapter}{all};
+
+	my @sects=();
+	@sects = WeBWorK::Utils::ListingDB::getAllDBsections($r);
+	unshift @sects, LIB2_DATA->{dbsection}{all};
+
+	my $subject_selected = $r->param('library_subjects') || LIB2_DATA->{dbsubject}{all};
+	my $chapter_selected = $r->param('library_chapters') || LIB2_DATA->{dbchapter}{all};
+	my $section_selected =	$r->param('library_sections') || LIB2_DATA->{dbsection}{all};
+
+	my $count_line = WeBWorK::Utils::ListingDB::countDBListings($r);
+	if($count_line==0) {
+		$count_line = $r->maketext("There are no matching WeBWorK problems");
+	} else {
+		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
+	}
+	my $view_problem_line = view_problems_line('lib_view', $r->maketext('View Problems'), $self->r);
+
+        return CGI::start_table({-width=>"100%"}),
+	       CGI::Tr({},
+	       CGI::td({-class=>"InfoPanel", -align=>"left"}, 
+	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
+	       CGI::start_table({-width=>"100%"}),
+	       CGI::Tr({},
+	       CGI::td([$r->maketext("Subject:"),
+				CGI::popup_menu(-name=> 'library_subjects', 
+					            -values=>\@subjs,
+					            -default=> $subject_selected,
+					            -onchange=>"lib_update('chapters', 'get');return true"
+				)]),
+#			CGI::td({-colspan=>2, -align=>"right"},
+#				CGI::submit(-name=>"lib_select_subject", -value=>"Update Chapter/Section Lists"))
+			CGI::td({-colspan=>2, -align=>"right"},
+					CGI::submit(-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
+		),
+		CGI::Tr({},
+			CGI::td([$r->maketext("Chapter:"),
+				CGI::popup_menu(-name=> 'library_chapters', 
+					            -values=>\@chaps,
+					            -default=> $chapter_selected,
+					            -onchange=>"lib_update('sections', 'get');return true"
+		    )]),
+		),
+		CGI::Tr({},
+			CGI::td([$r->maketext("Section:"),
+			CGI::popup_menu(-name=> 'library_sections', 
+					        -values=>\@sects,
+					        -default=> $section_selected,
+						-onchange=>"lib_update('count', 'clear');return true"
+		    )]),
+		 ),
+		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
+		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
+		 CGI::end_table()
+	 )),
+                 CGI::end_table();
+	
+}
 sub browse_library_panel5 {
 	my $self = shift;
 	my $r = $self->r;
@@ -755,7 +893,7 @@ sub browse_library_panel5 {
 		),
 		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
 		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
-		 CGI::Tr(CGI::td({-colspan=>3}, "<ul><p id='kword' class='kword'></p></ul>")),
+		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center"}, "<ul><span id='kword' class='kword'></span></ul>")),
 
 
 	        #CGI::Tr(CGI::td({-colspan=>3},
@@ -767,6 +905,105 @@ sub browse_library_panel5 {
                  #                                   -default=> $defaultMax))),
 		 CGI::end_table(),
 	 ));
+	
+}
+sub browse_library_panel5t {
+	my $self = shift;
+	my $r = $self->r;
+
+	my $ce = $r->ce;
+
+	my @subjs = WeBWorK::Utils::ListingDB::getAllDBsubjects($r,'BPL');
+	unshift @subjs, LIB2_DATA->{dbsubject}{all};
+
+	my @chaps = WeBWorK::Utils::ListingDB::getAllDBchapters($r,'BPL');
+	unshift @chaps, LIB2_DATA->{dbchapter}{all};
+
+	my @sects=();
+	@sects = WeBWorK::Utils::ListingDB::getAllDBsections($r,'BPL');
+	unshift @sects, LIB2_DATA->{dbsection}{all};
+
+	my $subject_selected = $r->param('blibrary_subjects') || LIB2_DATA->{dbsubject}{all};
+	my $chapter_selected = $r->param('blibrary_chapters') || LIB2_DATA->{dbchapter}{all};
+	my $section_selected =	$r->param('blibrary_sections') || LIB2_DATA->{dbsection}{all};
+	my $search_bpl       =	$r->param('search_bpl') || '';
+
+
+	my $count_line = WeBWorK::Utils::ListingDB::countDBListings($r,'BPL');
+	if($count_line==0) {
+		$count_line = $r->maketext("There are no matching WeBWorK problems");
+	} else {
+		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
+	}
+	my $view_problem_line = view_problems_line_bpl('lib_view', $r->maketext('View Problems'), $count_line,$self->r);
+
+        # Option of whether to show hints and solutions
+	my $defaultHints = $r->param('showHints') || SHOW_HINTS_DEFAULT;
+	$defaultHints = 1;
+	my $defaultSolutions = $r->param('showSolutions') || SHOW_SOLUTIONS_DEFAULT;
+	$defaultSolutions = 1;
+        my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+
+
+	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
+	my @active_modes = grep { exists $display_modes{$_} }
+		@{$r->ce->{pg}->{displayModes}};
+	push @active_modes, 'None';
+	# We have our own displayMode since its value may be None, which is illegal
+	# in other modules.
+	my $mydisplayMode = $r->param('mydisplayMode') || $r->ce->{pg}->{options}->{displayMode};
+        my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+
+
+	#return #CGI::Tr({},
+	    #CGI::td({-class=>"InfoPanel", -align=>"left"}, 
+		#CGI::hidden(-name=>"max_shown",-id=>"max_shown", -value=>$defaultMax),
+		#CGI::hidden(-name=>"showSolutions", -default=>1,-override=>1),
+		#CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
+		#CGI::hidden(-name=>"library_srchtype", -default=>'BPL',-override=>1,-value=>'BPL'),
+                my $defaultKeywords = $r->param('library_defkeywords') || DEFAULT_KEYWORDS;
+		return CGI::start_table({-width=>"100%"}),
+                CGI::Tr({},
+		    CGI::td([$r->maketext("Search:"),
+                    CGI::textfield(-name=>"search_bpl",
+                                     -id=>"search_bpl",
+                                     -default=>$search_bpl,
+                                     -class=>"search_bpl",
+                                           -example=>$r->maketext("Enter keyword"),
+                                           -autocomplete=>"off",
+                                           -override=>1, -size=>30                                             ),])
+		),
+		CGI::Tr({},
+			CGI::td([$r->maketext("Subject:"),
+				CGI::popup_menu(-name=> 'blibrary_subjects', 
+					            -values=>\@subjs,
+                                                    -id=>'blibrary_subjects',
+					            -default=> $subject_selected
+				)]),
+		),
+		CGI::Tr({},
+			CGI::td([$r->maketext("Chapter:"),
+				CGI::popup_menu(-name=> 'blibrary_chapters', 
+                                                    -id=>'blibrary_chapters',
+					            -values=>\@chaps,
+					            -default=> $chapter_selected
+		    )]),
+		),
+		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line,
+		                     CGI::hidden(-name=>"library_defkeywords",-id=>"library_defkeywords", -default=>$defaultKeywords,-override=>1))),
+		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"blibrary_count_line"}, $count_line)),
+		 CGI::Tr(CGI::td({-colspan=>3}, "<ul><p id='kword' class='kword'></p></ul><br /><div align=\"center\"><a href=\"#\" id=\"load_kw\">+ Load More</a></div>")),
+
+
+	        #CGI::Tr(CGI::td({-colspan=>3},
+                #       "<input type=\"checkbox\" name=\"showHints\" value=\"on\" checked />Hints&nbsp;<input type=\"checkbox\" name=\"showSolutions\" value=\"on\" checked />Solutions",
+                #CGI::checkbox(-name=>"showHints",-checked=>$defaultHints,-label=>$r->maketext("Hints")),
+	        #CGI::checkbox(-name=>"showSolutions",-checked=>$defaultSolutions,-label=>$r->maketext("Solutions")),
+                #CGI::popup_menu(-name=> 'max_shown',
+                #                                    -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
+                 #                                   -default=> $defaultMax))),
+		 CGI::end_table();
+	 #);
 	
 }
 sub browse_library_panel2adv {
@@ -959,7 +1196,7 @@ sub browse_specific_panel {
 	    @list_of_reps = sort(get_sub_reps($folder_to_check));
         }
         unshift @list_of_reps,ALL_DIRS;
-        if($dir_selected) {
+        if($dir_selected && $dir_selected ne 'All Dir') {
             $folder_to_check = $ce->{courseDirs}{templates}."/".$library_selected."/".$dir_selected;
 	    @list_of_sub_reps = sort(get_sub_reps($folder_to_check));
         }
@@ -1004,7 +1241,79 @@ sub browse_specific_panel {
        print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
 
 }
+sub browse_specific_panelt {
+	my $self = shift;
+	my $r = $self->r;
+	my $ce = $r->ce;
+	my $library_selected = shift || $r->param('library_lib');
+	my $dir_selected = shift || $r->param('library_dir');
+	my $subdir_selected = shift || $r->param('library_subdir');
+        my @libs = sort keys %problib;
+        my @list_of_reps = ( );
+        my @list_of_sub_reps = ( );
+        my ($library_dir,$library_subdir);
+        my $topdir = $ce->{courseDirs}{templates};
 
+	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
+        unshift @libs,ALL_LIBS;
+	# in the following line, the parens after sort are important. if they are
+	# omitted, sort will interpret get_set_defs as the name of the comparison
+	# function, and ($ce->{courseDirs}{templates}) as a single element list to
+	# be sorted. *barf*
+        my $folder_to_check = $ce->{courseDirs}{templates};
+        if($library_selected && $library_selected ne '--Select--') {
+            $folder_to_check = $ce->{courseDirs}{templates}."/".$library_selected;
+	    @list_of_reps = sort(get_sub_reps($folder_to_check));
+        }
+        unshift @list_of_reps,ALL_DIRS;
+        if($dir_selected && $dir_selected ne 'All Dir') {
+            $folder_to_check = $ce->{courseDirs}{templates}."/".$library_selected."/".$dir_selected;
+	    @list_of_sub_reps = sort(get_sub_reps($folder_to_check));
+        }
+        unshift @list_of_sub_reps,ALL_SUBDIRS;
+
+        my $count_line;
+        #my $count_line = WeBWorK::Utils::ListingDB::countDirListings($r);
+
+
+	my $view_problem_line = view_problems_line_bpl('lib_view_spcf', $r->maketext('View Problems'),undef, $self->r);
+	my $popupetc = CGI::popup_menu(-name=> 'library_lib',
+                                -values=>\@libs,
+				-onchange=>"dir_update('dir','get');return true",
+                                -default=> $library_selected,
+                                ).
+		CGI::hidden(-name=>"library_topdir", -default=>$topdir,-override=>1,-value=>$topdir).
+		CGI::br();
+
+	my $popupetc2 = CGI::popup_menu(-name=> 'library_dir',
+                                -values=>\@list_of_reps,
+				-onchange=>"dir_update('subdir','get');return true",
+                                -default=> $dir_selected).
+		CGI::br();
+	my $popupetc3 = CGI::popup_menu(-name=> 'library_subdir',
+                                -values=>\@list_of_sub_reps,
+				-onchange=>"dir_update('count','clear');return true",
+                                -default=> $subdir_selected).
+		CGI::br().CGI::br().  $view_problem_line;
+
+	if(scalar(@libs) == 0) {
+		$popupetc = "there are no set problem libraries course to look at.";
+	}
+
+	return CGI::start_table({-width=>"100%"}),
+        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library:")." ",
+		$popupetc
+	)),
+        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory:")." ",
+		$popupetc2
+	)),
+	CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Sub Directory:")." ",
+		$popupetc3
+	)),
+        CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"slibrary_count_line"}, $count_line)),
+        CGI::end_table();
+
+}
 #####	 Version 4 is the set definition file panel
 
 sub browse_setdef_panel {
@@ -1036,7 +1345,37 @@ sub browse_setdef_panel {
 		$popupetc
 	));
 }
-
+sub browse_setdef_panelt {
+	my $self = shift;
+	my $r = $self->r;
+	my $ce = $r->ce;
+	my $library_selected = shift;
+	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
+	# in the following line, the parens after sort are important. if they are
+	# omitted, sort will interpret get_set_defs as the name of the comparison
+	# function, and ($ce->{courseDirs}{templates}) as a single element list to
+	# be sorted. *barf*
+	my @list_of_set_defs = sort(get_set_defs($ce->{courseDirs}{templates}));
+	if(scalar(@list_of_set_defs) == 0) {
+		@list_of_set_defs = ($r->maketext(NO_LOCAL_SET_STRING));
+	} elsif (not $library_selected or $library_selected eq $default_value) { 
+		unshift @list_of_set_defs, $default_value; 
+		$library_selected = $default_value; 
+	}
+	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r);
+	my $popupetc = CGI::popup_menu(-name=> 'library_sets',
+                                -values=>\@list_of_set_defs,
+                                -default=> $library_selected).
+		CGI::br().  $view_problem_line;
+	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
+		$popupetc = "there are no set definition files in this course to look at."
+	}
+	return CGI::start_table({-width=>"100%"}),
+	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"})), $r->maketext("Browse from:")." "
+	       .$popupetc.
+               CGI::end_table();
+     
+}
 sub make_top_row {
 	my $self = shift;
 	my $r = $self->r;
@@ -1115,6 +1454,7 @@ sub make_top_row {
 		shift @{$list_of_local_sets};
 	}
 
+=comment
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"center"},
 		$r->maketext(" ").' ',
 		CGI::submit(-name=>"browse_bpl_library", -value=>$r->maketext("Bank of free problems"), -style=>$these_widths, @dis5),
@@ -1125,9 +1465,44 @@ sub make_top_row {
 		CGI::submit(-name=>"browse_spcf_library", -value=>$r->maketext("Specific Directories"), -style=>$these_widths, @dis6),
 		#$libs,
 	));
+=cut
+        my @formsToShow = @{ VIEW_FORMS() };
+        my $i = 0;
+        my @divArr = ();
+
+        foreach my $actionID (@formsToShow) {
+                # Check permissions
+                my $actionForm = %{ ACTION_FORMS() }->{$actionID};
+                #my $onChange = "document.problemsetlist.action[$i].checked=true";
+                my $onChange = "";
+                my %actionParams = $self->getActionParams($actionID);
+
+                # print CGI::Tr({-valign=>"top"},
+                        # CGI::td({}, CGI::input({-type=>"radio", -name=>"action", -value=>$actionID})),
+                        # CGI::td({}, $self->$actionForm($onChange, %actionParams))
+                # );
+
+                push @divArr, join("",
+                        #CGI::h3($r->maketext(ucfirst(WeBWorK::split_cap($actionID))))
+                        "<h3 onClick=\"javascript:alert('clck ehre');\">".$r->maketext(ucfirst(WeBWorK::split_cap($actionID)))."</h3>",
+                        #CGI::span({-class=>"radio_span"}, WeBWorK::CGI_labeled_input(-type=>"radio", -id=>$actionID."_id", -label_text=>$r->maketext(ucfirst(WeBWorK::split_cap($actionID))), -input_attr=>{-name=>"action", -value=>$actionID}, -label_attr=>{-class=>"radio_label"})),
+                        #'Hello',
+                        $self->$actionForm($onChange, %actionParams),
+                );
+                $i++;
+        }
+
+        my $divArrRef = \@divArr;
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"center"},
+              CGI::div({-class=>"tabber"},
+                CGI::div({-class=>"tabbertab"},$divArrRef))
+	));
+
+        
 
 	print CGI::hr();
 
+=comment
         if($browse_which eq 'browse_bpl_library') {
 		$self->browse_library_panel('BPL');
         } elsif($browse_which eq 'browse_spcf_library') {
@@ -1143,6 +1518,7 @@ sub make_top_row {
 	} else { ## handle other problem libraries
 		$self->browse_local_panel($library_selected,$browse_which);
 	}
+=cut
 
 	print CGI::Tr(CGI::td({class=>'table-separator'}));
 
@@ -1167,25 +1543,29 @@ sub make_top_row {
 	if (scalar(@pg_files)) {
                 $show_hide_path_button  = "";
 
-                my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+                my $defaultMax = $r->param('max_shownt') || MAX_SHOW_DEFAULT;
 
                 my $displayMax = ' '.$r->maketext('Max. Shown:').' '.
-                CGI::popup_menu(-name=> 'max_shown',
+                CGI::popup_menu(-name=> 'max_shownt',id=>'max_shownt',
                                 -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
                                 -onchange => 'document.mainform.max_shown.value=this.value;document.getElementById("lib_view").click();',
                                 -default=> $defaultMax);
 
-                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
-                $show_hide_path_button .= $displayMax if($r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
+                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" 
+                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+
+                $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>$these_widths,
-                                    -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
-			            -value=>$r->maketext("Add All")) if( $r->param('browse_which') eq 'browse_bpl_library' || $r->param('browse_which') eq 'browse_spcf_library');
+                                                       -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
+			                               -value=>$r->maketext("Add All")) 
+                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 
 
 
 		#$show_hide_path_button = CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
 		$show_hide_path_button .= CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
-		                         -value=>$r->maketext("Show all paths"),
+		                                      -value=>$r->maketext("Show all paths"),
 								 -id =>"toggle_paths",
 								 -onClick=>'return togglepaths()');
 		$show_hide_path_button .= " ".CGI::hidden(-name=>"toggle_path_current", -id=>"toggle_path_current", -default=>'show');
@@ -1193,11 +1573,13 @@ sub make_top_row {
 		$show_hide_path_button .= " ".CGI::hidden(-name=>"showtext", -id=>"showtext", -default=>$r->maketext("Show all paths"));
 	}
 	
+        my $divtag =  "<div id='ShowResultsMenu' name='showResultsMenu' class='showResultsMenu'>";
+
 	print CGI::Tr({},
 	        CGI::td({-class=>"InfoPanel", -align=>"center"},
 		      CGI::start_table({-border=>"0"}),
 		        CGI::Tr({}, CGI::td({ -align=>"center"},
-			$prev_button, " ", $next_button, " ", $show_hide_path_button
+			$divtag,$prev_button, " ", $next_button, " ", $show_hide_path_button."</div>"
 		     )), 
 	CGI::end_table()));
 =comment
@@ -1216,6 +1598,18 @@ sub make_top_row {
 		    #            -value=>"Rerandomize"),
 	#)), 
 }
+sub getActionParams {
+        my ($self, $actionID) = @_;
+        my $r = $self->{r};
+
+        my %actionParams;
+        foreach my $param ($r->param) {
+                next unless $param =~ m/^action\.$actionID\./;
+                $actionParams{$param} = [ $r->param($param) ];
+        }
+        return %actionParams;
+}
+
 
 sub make_data_row {
 	my $self = shift;
@@ -1416,10 +1810,10 @@ sub process_search {
 	my %mlt = ();
 	my $mltind;
 	for my $indx (0..$#dbsearch) {
-           if($r->param('browse_which') eq 'browse_bpl_library') {
+           if($r->param('bbrowse_which') eq 'browse_bpl_library') {
 		$dbsearch[$indx]->{filepath} = "BPL/".$dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
            } else {
-                if($r->param('browse_which') eq 'browse_spcf_library') {
+                if($r->param('bbrowse_which') eq 'browse_spcf_library') {
 		   $dbsearch[$indx]->{filepath} = $dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
                 } else {
 		   $dbsearch[$indx]->{filepath} = "Library/".$dbsearch[$indx]->{path}."/".$dbsearch[$indx]->{filename};
@@ -1584,7 +1978,7 @@ sub pre_header_initialize {
 
 	############# Default of which problem selector to display
 
-	my $browse_which = $r->param('browse_which') || 'browse_npl_library';
+	my $browse_which = $r->param('bbrowse_which') || 'browse_bpl_library';
 
 	## check for problem lib buttons
 	my $browse_lib = '';
@@ -1694,7 +2088,8 @@ sub pre_header_initialize {
  
 		@pg_files=();
                 my $typ = "";
-                if($r->param('browse_which') eq 'browse_bpl_library') {
+                #print STDERR "BROWSEWHICH: ".$r->param('bbrowse_which');
+                if($r->param('bbrowse_which') eq 'browse_bpl_library') {
                    $typ = 'BPL';
                 }
                 if($typ eq 'BPL') {
@@ -1713,7 +2108,7 @@ sub pre_header_initialize {
  
 		@pg_files=();
                 my $typ = '';
-                if($r->param('browse_which') eq 'browse_spcf_library') {
+                if($r->param('bbrowse_which') eq 'browse_spcf_library') {
                     $r->{showHints} = 1;
                     $r->{showSolutions} = 1;
                 }
@@ -1962,11 +2357,13 @@ sub body {
 	my @pg_html;
 	if ($last_index >= $first_index) {
 		my @plist = map {$_->{filepath}} @pg_files[$first_index..$last_index];
+                my $disp_mode = $r->param('mydisplayMode');
+		#displayMode => $r->param('mydisplayMode'),
 		@pg_html = renderProblems(
 			r=> $r,
 			user => $user,
 			problem_list => [@plist],
-			displayMode => $r->param('mydisplayMode'),
+			displayMode => $disp_mode,
 			showHints => $showHints,
 			showSolutions => $showSolutions,
 		);
@@ -1994,10 +2391,10 @@ sub body {
 	print CGI::start_form({-method=>"POST", -action=>$r->uri, -name=>'mainform', -id=>'mainform'}),
 		$self->hidden_authen_fields,
                 CGI::hidden({id=>'hidden_courseID',name=>'courseID',default=>$courseID }),
-			'<div align="center">',
+			'<div id="ShowResults" align="center">',
 	CGI::start_table({class=>"library-browser-table"});
 	$self->make_top_row('all_db_sets'=>\@all_db_sets, 'browse_which'=> $browse_which);
-	print CGI::hidden(-name=>'browse_which', -value=>$browse_which,-override=>1),
+	print CGI::hidden(-name=>'bbrowse_which', -value=>$browse_which,-override=>1),
 		CGI::hidden(-name=>'problem_seed', -value=>$problem_seed, -override=>1);
 	for ($j = 0 ; $j < scalar(@pg_files) ; $j++) {
 		print CGI::hidden(-name=>"all_past_list$j", -value=>$pg_files[$j]->{filepath}, -override=>1)."\n";
@@ -2037,9 +2434,11 @@ sub body {
 						 -value=>$r->maketext("Next page"));
 	}
 	if (scalar(@pg_files)>0) {
+                print "<div id='showResultsEnd'>\n";
 		print CGI::p(CGI::span({-id=>'what_shown'}, CGI::span({-id=>'firstshown'}, $first_shown+1)."-".CGI::span({-id=>'lastshown'}, $last_shown+1))." ".$r->maketext("of")." ".CGI::span({-id=>'totalshown'}, $total_probs).
 			" ".$r->maketext("shown").".", $prev_button, " ", $next_button,
 		);
+                print "</div>";
 		#print CGI::p('Some problems shown above represent multiple similar problems from the database.  If the (top) information line for a problem has a letter M for "More", hover your mouse over the M  to see how many similar problems are hidden, or click on the M to see the problems.  If you click to view these problems, the M becomes an L, which can be clicked on to hide the problems again.');
 	}
 	#	 }
@@ -2061,6 +2460,9 @@ sub output_JS {
   print qq!<script src="$webwork_htdocs_url/js/legacy/vendor/modernizr-2.0.6.js"></script>!;
   print qq!<script src="$webwork_htdocs_url/js/vendor/backbone/backbone.js"></script>!;
   print CGI::start_script({type=>"text/javascript", src=>"$webwork_htdocs_url/js/apps/Base64/Base64.js"}), CGI::end_script();
+  print CGI::start_script({type=>"text/javascript", src=>"$webwork_htdocs_url/js/vendor/tagify/js/tagify.js"}), CGI::end_script();
+
+
   print "\n";
   print qq{<script type="text/javascript" src="$webwork_htdocs_url/js/legacy/vendor/knowl.js"></script>};
   print "\n";
@@ -2076,6 +2478,7 @@ sub output_JS {
   print "\n";
   print qq!<script src="$webwork_htdocs_url/js/apps/SetMaker/setmaker.js"></script>!;
   print "\n";
+  print CGI::start_script({type=>"text/javascript", src=>"$webwork_htdocs_url/js/legacy/vendor/tabbert.js"}), CGI::end_script();
   if ($self->r->authz->hasPermissions(scalar($self->r->param('user')), "modify_tags")) {
 	my $site_url = $ce->{webworkURLs}->{htdocs};
 	print qq!<script src="$site_url/js/apps/TagWidget/tagwidget.js"></script>!;
@@ -2103,6 +2506,12 @@ sub output_CSS {
     #print qq!<link rel="stylesheet" href="$webwork_htdocs_url/js/vendor/FontAwesome/css/font-awesome.css">!;
 
   print qq!<link href="$webwork_htdocs_url/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css"/>!;
+  print qq{
+           <link href="$webwork_htdocs_url/css/bpl.css" rel="stylesheet" type="text/css" />};
+  print qq{
+           <link href="$webwork_htdocs_url/js/vendor/tagify/css/tagify.css" rel="stylesheet" type="text/css" />};
+
+
 
   print qq{
            <link href="$webwork_htdocs_url/css/knowlstyle.css" rel="stylesheet" type="text/css" />};
