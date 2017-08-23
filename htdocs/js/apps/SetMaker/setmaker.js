@@ -55,7 +55,7 @@ $(window).load(function() {
   lib_searchops("BPL",tagify);
   $("#search_bpl").hide();
   $('input[name=reset]').click(function() {
-       f_reset();
+       f_reset(0);
        return false;
   });
   $('a:contains("Load More")').click(function() {
