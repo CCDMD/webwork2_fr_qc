@@ -2507,7 +2507,7 @@ sub output_CSS {
 
   print qq!<link href="$webwork_htdocs_url/css/ui-lightness/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css"/>!;
   print qq{
-           <link href="$webwork_htdocs_url/css/bpl.css" rel="stylesheet" type="text/css" />};
+           <link href="$webwork_htdocs_url/themes/math4/bpl.css" rel="stylesheet" type="text/css" />};
   print qq{
            <link href="$webwork_htdocs_url/js/vendor/tagify/css/tagify.css" rel="stylesheet" type="text/css" />};
 
