@@ -60,9 +60,9 @@ use constant ALL_TEXTBOOKS => 'All Textbooks';
 use constant ALL_LIBS => '--Select--';
 use constant ALL_DIRS => 'All Dir';
 use constant ALL_SUBDIRS => 'All Subdir';
-use constant VIEW_FORMS  => ["bank of free problems","open problem library","local problems","from this course","set definition files","specific directories"];
+use constant VIEW_FORMS  => [ qw(bankOfFreeProblems openProblemLibrary localProblems fromThisCourse setDefinitionFiles specificDirectories)];
 #use constant VIEW_FORMS  => [qw(bpl opl blp ftc setdef spcf)];
-use constant ACTION_FORMS  => {'bank of free problems' => 'browse_library_panel5t', 'open problem library' => 'browse_library_panel2t', 'local problems' => 'browse_local_panelt', 'from this course' => 'browse_mysets_panelt', 'set definition files' => 'browse_setdef_panelt', 'specific directories' => 'browse_specific_panelt'};
+use constant ACTION_FORMS  => {bankOfFreeProblems => 'browse_library_panel5t', openProblemLibrary => 'browse_library_panel2t', localProblems => 'browse_local_panelt', fromThisCourse => 'browse_mysets_panelt', setDefinitionFiles => 'browse_setdef_panelt', specificDirectories => 'browse_specific_panelt'};
 
 use constant LIB2_DATA => {
   'dbchapter' => {name => 'library_chapters', all => 'All Chapters'},
@@ -1227,7 +1227,7 @@ sub browse_specific_panel {
 		CGI::br().CGI::br().  $view_problem_line;
 
 	if(scalar(@libs) == 0) {
-		$popupetc = "there are no set problem libraries course to look at.";
+		$popupetc = $r->maketext("there are no set problem libraries course to look at.");
 	}
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library:")." ",
 		$popupetc
@@ -1339,7 +1339,7 @@ sub browse_setdef_panel {
                                 -default=> $library_selected).
 		CGI::br().  $view_problem_line;
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
-		$popupetc = "there are no set definition files in this course to look at."
+		$popupetc = $r->maketext("there are no set definition files in this course to look at.")
 	}
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:")." ",
 		$popupetc
@@ -1483,9 +1483,9 @@ sub make_top_row {
                 # );
 
                 push @divArr, join("",
-                        #CGI::h3($r->maketext(ucfirst(WeBWorK::split_cap($actionID))))
-                        "<h3 onClick=\"javascript:alert('clck ehre');\">".$r->maketext(ucfirst(WeBWorK::split_cap($actionID)))."</h3>",
-                        #CGI::span({-class=>"radio_span"}, WeBWorK::CGI_labeled_input(-type=>"radio", -id=>$actionID."_id", -label_text=>$r->maketext(ucfirst(WeBWorK::split_cap($actionID))), -input_attr=>{-name=>"action", -value=>$actionID}, -label_attr=>{-class=>"radio_label"})),
+                       CGI::h3($r->maketext(ucfirst(WeBWorK::split_cap($actionID)))),
+                       # "<h3 onClick=\"javascript:alert('click here');\">".$r->maketext(ucfirst(WeBWorK::split_cap($actionID)))."</h3>",
+                       CGI::span({-class=>"radio_span"}, WeBWorK::CGI_labeled_input(-type=>"radio", -id=>$actionID."_id", -label_text=>$r->maketext(ucfirst(WeBWorK::split_cap($actionID))), -input_attr=>{-name=>"action", -value=>$actionID}, -label_attr=>{-class=>"radio_label"})),
                         #'Hello',
                         $self->$actionForm($onChange, %actionParams),
                 );
@@ -2005,7 +2005,7 @@ sub pre_header_initialize {
 		$use_previous_problems = 0; @pg_files = (); ## clear old problems
 	} elsif ($r->param('browse_spcf_library')) {
 		$browse_which = 'browse_spcf_library';
-		$self->{current_library_set} = "browse_setdefs";
+		$self->{current_library_set} = "";
 		$use_previous_problems = 0; @pg_files = (); ## clear old problems
 	} elsif ($r->param('browse_npl_library')) {
 		$browse_which = 'browse_npl_library';
