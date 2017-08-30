@@ -204,6 +204,8 @@ sub pre_header_initialize {
 		    library_srchtype	    => $r->param("library_srchtype") ||undef,
 		    library_subjects	    => $r->param("library_subjects") ||undef,
 		    library_chapters	    => $r->param("library_chapters") ||undef,
+		    blibrary_subjects	    => $r->param("blibrary_subjects") ||undef,
+		    blibrary_chapters	    => $r->param("blibrary_chapters") ||undef,
 		    library_sections	    => $r->param("library_sections") ||undef,
 		    library_levels		    => $r->param("library_levels") ||undef,
 		    library_status		    => $r->param("library_status") ||undef,
