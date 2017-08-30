@@ -61,6 +61,7 @@ use constant ALL_LIBS => '--Select--';
 use constant ALL_DIRS => 'All Dir';
 use constant ALL_SUBDIRS => 'All Subdir';
 use constant VIEW_FORMS  => [ qw(bankOfFreeProblems openProblemLibrary localProblems fromThisCourse setDefinitionFiles specificDirectories)];
+
 #use constant VIEW_FORMS  => [qw(bpl opl blp ftc setdef spcf)];
 use constant ACTION_FORMS  => {bankOfFreeProblems => 'browse_library_panel5t', openProblemLibrary => 'browse_library_panel2t', localProblems => 'browse_local_panelt', fromThisCourse => 'browse_mysets_panelt', setDefinitionFiles => 'browse_setdef_panelt', specificDirectories => 'browse_specific_panelt'};
 
@@ -377,6 +378,7 @@ sub get_problem_directories {
 	my $source = $ce->{courseDirs}{templates};
 	my $main = $r->maketext(MY_PROBLEMS); my $isTop = 1;
 	if ($lib) {$source .= "/$lib"; $main = $r->maketext(MAIN_PROBLEMS); $isTop = 2}
+print STDERR "LIB: $lib, SOURCE: $source\n";
 	my @all_problem_directories = get_library_sets($isTop, $source);
 	my $includetop = shift @all_problem_directories;
 	my $j;
@@ -393,7 +395,8 @@ sub view_problems_line {
 	my $internal_name = shift;
 	my $label = shift;
 	my $r = shift; # so we can get parameter values
-	my $result = CGI::submit(-name=>"$internal_name", -value=>$label);
+        my $t = shift;
+	my $result = CGI::submit(-name=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$t);");
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -429,7 +432,9 @@ sub view_problems_line_bpl {
 	my $label = shift;
         my $count_line = shift;
 	my $r = shift; # so we can get parameter values
-	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label);
+        my $j = 0;
+        $j = 5 if($internal_name eq "lib_view_spcf");
+	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$j);");
         $result .= CGI::reset(-id=>"reset",-name=>"reset", -value=> $r->maketext('Reset'));
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
@@ -496,25 +501,30 @@ sub browse_local_panel {
 sub browse_local_panelt {
 	my $self = shift;
 	my $r = $self->r;	
-	my $library_selected = shift || 'OPL';
+	#my $library_selected = $self->{llibrary_set};
+	my $library_selected = $self->{current_library_set};
 	my $lib = shift || ''; $lib =~ s/^browse_//;
+	#my $lib = shift || 'browse_local'; $lib =~ s/^browse_//;
 	my $name = ($lib eq '')? $r->maketext('Local') : $problib{$lib};
     
 	my $list_of_prob_dirs= get_problem_directories($r,$lib);
+
+	my $default_value = $r->maketext(SELECT_LOCAL_STRING);
+	unshift @{$list_of_prob_dirs},	$default_value;
+
 	if(scalar(@$list_of_prob_dirs) == 0) {
 		$library_selected = $r->maketext("Found no directories containing problems");
 		unshift @{$list_of_prob_dirs}, $library_selected;
 	} else {
-		my $default_value = $r->maketext(SELECT_LOCAL_STRING);
 		if (not $library_selected or $library_selected eq $default_value) {
-			unshift @{$list_of_prob_dirs},	$default_value;
+			#unshift @{$list_of_prob_dirs},	$default_value;
 			$library_selected = $default_value;
 		}
 	}
 	debug("library is $lib and sets are $library_selected");
-	my $view_problem_line = view_problems_line('view_local_set', $r->maketext('View Problems'), $self->r);
+	my $view_problem_line = view_problems_line('view_local_set', $r->maketext('View Problems'), $self->r, 2);
 	my @popup_menu_args = (
-		-name => 'library_sets',
+		-name => 'llibrary_sets',
 		-values => $list_of_prob_dirs,
 		-default => $library_selected,
 	);
@@ -562,23 +572,26 @@ sub browse_mysets_panel {
 sub browse_mysets_panelt {
 	my $self = shift;
 	my $r = $self->r;	
-	my $library_selected = shift;
+	#my $library_selected = shift;
+        my $set_selected = $r->param('local_sets');
+        my $library_selected = $self->{current_library_set};
 	#my $list_of_local_sets = shift;
-	my $list_of_local_sets = [];
+	my $list_of_local_sets = $self->{all_db_sets};
+
 	my $default_value = $r->maketext(SELECT_HMW_SET_STRING);
+	unshift @{$list_of_local_sets},	 $default_value; 
 
 	if(scalar(@$list_of_local_sets) == 0) {
 		$list_of_local_sets = [$r->maketext(NO_LOCAL_SET_STRING)];
 	} elsif (not $library_selected or $library_selected eq $default_value) { 
-		unshift @{$list_of_local_sets},	 $default_value; 
 		$library_selected = $default_value; 
 	} 
 
-	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r);
+	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r, 3 );
 	return CGI::start_table(),
                CGI::Tr({},
 		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:").' ',
-		CGI::popup_menu(-name=> 'library_sets', 
+		CGI::popup_menu(-name=> 'mlibrary_sets', 
 		                -values=>$list_of_local_sets, 
 		                -default=> $library_selected),
 		CGI::br(), 
@@ -768,7 +781,7 @@ sub browse_library_panel2t {
 	} else {
 		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
 	}
-	my $view_problem_line = view_problems_line('lib_view', $r->maketext('View Problems'), $self->r);
+	my $view_problem_line = view_problems_line('lib_view', $r->maketext('View Problems'), $self->r, 1);
 
         return CGI::start_table({-width=>"100%"}),
 	       CGI::Tr({},
@@ -1227,7 +1240,7 @@ sub browse_specific_panel {
 		CGI::br().CGI::br().  $view_problem_line;
 
 	if(scalar(@libs) == 0) {
-		$popupetc = $r->maketext("there are no set problem libraries course to look at.");
+		$popupetc =  $r->maketext("there are no set problem libraries course to look at.");
 	}
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library:")." ",
 		$popupetc
@@ -1272,8 +1285,13 @@ sub browse_specific_panelt {
         }
         unshift @list_of_sub_reps,ALL_SUBDIRS;
 
-        my $count_line;
-        #my $count_line = WeBWorK::Utils::ListingDB::countDirListings($r);
+        #my $count_line  = "";
+        my $count_line = WeBWorK::Utils::ListingDB::countDirListings($r);
+        if($count_line==0) {
+                $count_line = $r->maketext("There are no matching WeBWorK problems");
+        } else {
+                $count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
+        }
 
 
 	my $view_problem_line = view_problems_line_bpl('lib_view_spcf', $r->maketext('View Problems'),undef, $self->r);
@@ -1297,7 +1315,7 @@ sub browse_specific_panelt {
 		CGI::br().CGI::br().  $view_problem_line;
 
 	if(scalar(@libs) == 0) {
-		$popupetc = "there are no set problem libraries course to look at.";
+		$popupetc = $r->maketext("there are no set problem libraries course to look at.");
 	}
 
 	return CGI::start_table({-width=>"100%"}),
@@ -1339,7 +1357,7 @@ sub browse_setdef_panel {
                                 -default=> $library_selected).
 		CGI::br().  $view_problem_line;
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
-		$popupetc = $r->maketext("there are no set definition files in this course to look at.")
+		$popupetc = $r->maketext("there are no set definition files in this course to look at.");
 	}
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:")." ",
 		$popupetc
@@ -1362,13 +1380,13 @@ sub browse_setdef_panelt {
 		unshift @list_of_set_defs, $default_value; 
 		$library_selected = $default_value; 
 	}
-	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r);
-	my $popupetc = CGI::popup_menu(-name=> 'library_sets',
+	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r, 4);
+	my $popupetc = CGI::popup_menu(-name=> 'slibrary_sets',
                                 -values=>\@list_of_set_defs,
                                 -default=> $library_selected).
 		CGI::br().  $view_problem_line;
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
-		$popupetc = "there are no set definition files in this course to look at."
+		$popupetc = $r->maketext("there are no set definition files in this course to look at.");
 	}
 	return CGI::start_table({-width=>"100%"}),
 	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"})), $r->maketext("Browse from:")." "
@@ -1483,10 +1501,9 @@ sub make_top_row {
                 # );
 
                 push @divArr, join("",
-                       CGI::h3($r->maketext(ucfirst(WeBWorK::split_cap($actionID)))),
-                       # "<h3 onClick=\"javascript:alert('click here');\">".$r->maketext(ucfirst(WeBWorK::split_cap($actionID)))."</h3>",
-                       CGI::span({-class=>"radio_span"}, WeBWorK::CGI_labeled_input(-type=>"radio", -id=>$actionID."_id", -label_text=>$r->maketext(ucfirst(WeBWorK::split_cap($actionID))), -input_attr=>{-name=>"action", -value=>$actionID}, -label_attr=>{-class=>"radio_label"})),
-                        #'Hello',
+                        CGI::h3($r->maketext(ucfirst(WeBWorK::split_cap($actionID)))),
+                        # "<h3 onClick=\"javascript:alert('click here');\">".$r->maketext(ucfirst(WeBWorK::split_cap($actionID)))."</h3>",
+                        CGI::span({-class=>"radio_span"}, WeBWorK::CGI_labeled_input(-type=>"radio", -id=>$actionID."_id", -label_text=>$r->maketext(ucfirst(WeBWorK::split_cap($actionID))), -input_attr=>{-name=>"action", -value=>$actionID}, -label_attr=>{-class=>"radio_label"})),
                         $self->$actionForm($onChange, %actionParams),
                 );
                 $i++;
@@ -1548,7 +1565,7 @@ sub make_top_row {
                 my $displayMax = ' '.$r->maketext('Max. Shown:').' '.
                 CGI::popup_menu(-name=> 'max_shownt',id=>'max_shownt',
                                 -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
-                                -onchange => 'document.mainform.max_shown.value=this.value;document.getElementById("lib_view").click();',
+                                -onchange => 'document.getElementById("lib_view").click();',
                                 -default=> $defaultMax);
 
                 $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />Hints&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />Solutions&nbsp;" 
@@ -1558,8 +1575,8 @@ sub make_top_row {
 
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>$these_widths,
                                                        -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
-			                               -value=>$r->maketext("Add All")) 
-                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+			                               -value=>$r->maketext("Add All"));
+                                                     #if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 
 
 
@@ -1896,7 +1913,7 @@ sub pre_header_initialize {
 	$self->{error}=0;
 	my $ce = $r->ce;
 	my $db = $r->db;
-	my $maxShown = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+	my $maxShown =  $r->param('max_shownt') || $r->param('max_shown') || MAX_SHOW_DEFAULT;
 	$maxShown = 10000000 if($maxShown eq $r->maketext("All")); # let's hope there aren't more
 	my $library_basic = $r->param('library_is_basic') || 1;
 	$self->{problem_seed} = $r->param('problem_seed') || 1234;
@@ -1906,7 +1923,20 @@ sub pre_header_initialize {
 	}
 	##  Grab library sets to display from parameters list.  We will
 	##  modify this as we go through the if/else tree
-	$self->{current_library_set} =  $r->param('library_sets');
+        my $check_library = "llibrary_sets";
+        my $browse_which = $r->param('bbrowse_which') || 'browse_bpl_library';
+
+        if($browse_which eq 'browse_local') {
+           $check_library = 'llibrary_sets';
+        }
+        if($browse_which eq 'browse_mysets') {
+           $check_library = 'mlibrary_sets';
+        }
+        if($browse_which eq 'browse_setdefs') {
+           $check_library = 'slibrary_sets';
+        }
+
+	$self->{current_library_set} =  $r->param($check_library);
     
 	##	These directories will have individual buttons
 	%problib = %{$ce->{courseFiles}{problibs}} if $ce->{courseFiles}{problibs};
@@ -2005,7 +2035,7 @@ sub pre_header_initialize {
 		$use_previous_problems = 0; @pg_files = (); ## clear old problems
 	} elsif ($r->param('browse_spcf_library')) {
 		$browse_which = 'browse_spcf_library';
-		$self->{current_library_set} = "";
+		$self->{current_library_set} = "browse_setdefs";
 		$use_previous_problems = 0; @pg_files = (); ## clear old problems
 	} elsif ($r->param('browse_npl_library')) {
 		$browse_which = 'browse_npl_library';
@@ -2088,7 +2118,7 @@ sub pre_header_initialize {
  
 		@pg_files=();
                 my $typ = "";
-                #print STDERR "BROWSEWHICH: ".$r->param('bbrowse_which');
+                print STDERR "BROWSEWHICH: ".$r->param('bbrowse_which');
                 if($r->param('bbrowse_which') eq 'browse_bpl_library') {
                    $typ = 'BPL';
                 }
@@ -2097,8 +2127,12 @@ sub pre_header_initialize {
                     $r->{showSolutions} = 1;
                 }
                
-
-		my @dbsearch = WeBWorK::Utils::ListingDB::getSectionListings($r, $typ);
+                my @dbsearch;
+                if($typ eq 'BPL') {
+		    @dbsearch = WeBWorK::Utils::ListingDB::getBPLDBListings($r,0, $typ);
+                } else {
+		    @dbsearch = WeBWorK::Utils::ListingDB::getSectionListings($r, $typ);
+                }
 		@pg_files = process_search($r,$typ, @dbsearch);
 		$use_previous_problems=0;
 
@@ -2129,6 +2163,7 @@ sub pre_header_initialize {
 				or $set_to_display eq $r->maketext(NO_LOCAL_SET_STRING)) {
 			$self->addbadmessage($r->maketext("You need to select a set definition file to view."));
 		} else {
+#print STDERR "COMEHERE1: $set_to_display\n";
 			@pg_files= $self->read_set_def($set_to_display);
 			@pg_files = map {{'filepath'=> $_, 'morelt'=>0}} @pg_files;
 		}	
