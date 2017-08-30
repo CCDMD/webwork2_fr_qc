@@ -291,7 +291,12 @@ tabberObj.prototype.init = function(e)
 
   this.cookie = 'tabber';
   var i = parseInt(getCookie(this.cookie));
-  if (!isNaN(i)) { defaultTab = i; }
+  if (!isNaN(i)) { 
+       defaultTab = i; 
+       setBrowseWhich(i);
+       setCookie('tabber', 0);
+
+  }
 
   this.tabShow(defaultTab);
 
@@ -564,16 +569,11 @@ function radioSelect(){
 function settabprops(i) {
 
     var c = 'tabber';
-    setCookie(c, i);
+    //setCookie(c, i);
 
     f_reset(i);
 
-    if(i == 5)
-      document.getElementsByName('bbrowse_which')[0].value  = 'browse_spcf_library';
-    if(i == 1)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_npl_library';
-    if(i == 0)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_bpl_library';
+    setBrowseWhich(i);
 
     return;
 
@@ -613,3 +613,21 @@ function deleteCookie(name, path, domain) {
     }
 }
 
+function setBrowseWhich(i) {
+
+    if(i == 0)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_bpl_library';
+    if(i == 1)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_npl_library';
+    if(i == 2)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_local';
+    if(i == 3)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_mysets';
+    if(i == 4)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_setdefs';
+    if(i == 5)
+      document.getElementsByName('bbrowse_which')[0].value  = 'browse_spcf_library';
+
+    return;
+
+}
