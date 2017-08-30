@@ -1191,13 +1191,17 @@ sub browse_specific_panel {
 	my $library_selected = shift || $r->param('library_lib');
 	my $dir_selected = shift || $r->param('library_dir');
 	my $subdir_selected = shift || $r->param('library_subdir');
-        my @libs = sort keys %problib;
-        my @list_of_reps = ( );
+        my @libs = ( );
+	my @list_of_reps = ( );
         my @list_of_sub_reps = ( );
         my ($library_dir,$library_subdir);
         my $topdir = $ce->{courseDirs}{templates};
 
 	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
+
+	foreach my $lib (sort(keys(%problib))) {
+		push @libs, $lib if(-d "$ce->{courseDirs}{templates}/$lib");
+	}
         unshift @libs,ALL_LIBS;
 	# in the following line, the parens after sort are important. if they are
 	# omitted, sort will interpret get_set_defs as the name of the comparison
@@ -1261,13 +1265,18 @@ sub browse_specific_panelt {
 	my $library_selected = shift || $r->param('library_lib');
 	my $dir_selected = shift || $r->param('library_dir');
 	my $subdir_selected = shift || $r->param('library_subdir');
-        my @libs = sort keys %problib;
-        my @list_of_reps = ( );
+        my @libs = ( );
+	my @list_of_reps = ( );
         my @list_of_sub_reps = ( );
         my ($library_dir,$library_subdir);
         my $topdir = $ce->{courseDirs}{templates};
 
 	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
+	
+	foreach my $lib (sort(keys(%problib))) {
+                push @libs, $lib if(-d "$ce->{courseDirs}{templates}/$lib");
+        }
+
         unshift @libs,ALL_LIBS;
 	# in the following line, the parens after sort are important. if they are
 	# omitted, sort will interpret get_set_defs as the name of the comparison
