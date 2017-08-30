@@ -1549,12 +1549,12 @@ sub make_top_row {
 	my @pg_files = @{$self->{pg_files}};
 	my $stringalert = $r->maketext(SELECT_SET_STRING);
 	if ($first_index > 0) {
-		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:15ex",
+		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Previous page"));
 	}
 	# This will have to be trickier with MLT
 	if ((1+$last_index)<scalar(@pg_files)) {
-		$next_button = CGI::submit(-name=>"next_page", -style=>"width:15ex",
+		$next_button = CGI::submit(-name=>"next_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Next page"));
 	}
 	if (scalar(@pg_files)) {
@@ -1573,7 +1573,7 @@ sub make_top_row {
 
                 $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 
-		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>$these_widths,
+		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>"width:29ex",
                                                        -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			                               -value=>$r->maketext("Add All"));
                                                      #if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
@@ -1581,7 +1581,7 @@ sub make_top_row {
 
 
 		#$show_hide_path_button = CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
-		$show_hide_path_button .= CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
+		$show_hide_path_button .= CGI::submit(-id=>"toggle_paths", -style=>"width:29ex",
 		                                      -value=>$r->maketext("Show all paths"),
 								 -id =>"toggle_paths",
 								 -onClick=>'return togglepaths()');

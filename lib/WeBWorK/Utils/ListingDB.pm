@@ -876,6 +876,7 @@ sub getDBListings {
          }
          }
 
+print STDERR "QUERY: $query\n";
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
