@@ -309,7 +309,7 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_subjects} = $rh->{library_subjects};
 		my @chaps = WeBWorK::Utils::ListingDB::getAllDBchapters($self);
 		$out->{ra_out} = \@chaps;
-        $out->{text} = encode_base64("Chapters loaded.");
+                $out->{text} = encode_base64("Chapters loaded.");
 
 		return($out);		
 	};
@@ -381,6 +381,8 @@ sub searchLib {    #API for searching the NPL database
 	'countDBListings' eq $subcommand && do {
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
+		$self->{blibrary_subjects} = $rh->{blibrary_subjects};
+		$self->{blibrary_chapters} = $rh->{blibrary_chapters};
 		$self->{library_sections} = $rh->{library_sections};
 		$self->{library_keywords} = $rh->{library_keywords};
 		$self->{library_textbook} = $rh->{library_textbook};
