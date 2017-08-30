@@ -18,15 +18,15 @@ var tagify;
 $(window).load(function() {
 
 
-
+   //setCookie('tabber', 0);
    var input1 = document.querySelector('input[name=search_bpl]');
    if($('[name="bbrowse_which"]').val() == 'browse_spcf_library' ) {
        if($('[name="library_lib"] option:selected').index() == 0) {
            $("#lib_view_spcf").attr("disabled","disabled");
        }
-       
    }
-   
+
+  
    if(!input1) { 
        var brw = $('[name="bbrowse_which"]').val();
        if(brw == 'browse_spcf_library') {
@@ -55,7 +55,12 @@ $(window).load(function() {
   lib_searchops("BPL",tagify);
   $("#search_bpl").hide();
   $('input[name=reset]').click(function() {
-       f_reset(0);
+       var brw = $('[name="bbrowse_which"]').val();
+       var k = 0;
+       if(brw == 'browse_spcf_library') {
+           k = 5;
+       }
+       f_reset(k);
        return false;
   });
   $('a:contains("Load More")').click(function() {
@@ -85,10 +90,13 @@ function f_reset(v) {
 
        //location.href = location.href;
        //return false;
-       if(v != 0 && v!= 5) {
-           //lib_update('count', 'clear' );
-           return;
-       }
+       $('[name="library_subjects"]').prop("selectedIndex",0);
+       lib_update('chapters', 'clear');
+       lib_update('count', 'clear' );
+       $('[name="llibrary_sets"]').prop("selectedIndex",0);
+       $('[name="mlibrary_sets"]').prop("selectedIndex",0);
+       $('[name="slibrary_sets"]').prop("selectedIndex",0);
+         //  return;
        tagify = bpl_reset(tagify,1);
        //blib_update('subjects', 'clear', tagify, 'BPL' );
        $('[name="blibrary_subjects"]').prop("selectedIndex",0);
@@ -96,10 +104,18 @@ function f_reset(v) {
        blib_update('count', 'clear', tagify, 'BPL' );
        lib_searchops("BPL",tagify);
 
+       $("#library_defkeywords").val(20);
+       lib_top20keywords("BPL",tagify);
+
        //reset spdir tab
-       $('[name="library_lib"]').prop("selectedIndex",0);
-       dir_update('dir', 'clear', tagify, 'BPL' );
-       dir_update('count', 'clear', tagify, 'BPL' );
+       //if(v == 5) {
+           $('[name="library_lib"]').prop("selectedIndex",0);
+           //$('[name="library_dir"]').prop("selectedIndex",0);
+           //$('[name="library_subdir"]').prop("selectedIndex",0);
+           $("#lib_view_spcf").attr("disabled","disabled");
+           dir_update('dir', 'clear', tagify, 'BPL' );
+           //dir_update('count', 'clear', tagify, 'BPL' );
+       //}
 
        $(".showResultsMenu").hide().css("visibility", "hidden");
        $('#showResults').hide().css("visibility", "hidden");
@@ -337,7 +353,7 @@ function lib_update(who, what, tg, typ) {
 function blib_update(who, what, tg, typ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
-  //nomsg();
+  nomsg();
   var all = 'All ' + capFirstLetter(who);
 
   var mydefaultRequestObject = init_webservice('searchLib');
@@ -357,6 +373,8 @@ function blib_update(who, what, tg, typ) {
   if(chap == 'All Chapters') { chap = '';};
   //if(sect == 'All Sections') { sect = '';};
 
+  mydefaultRequestObject.blibrary_subjects = subj;
+  mydefaultRequestObject.blibrary_chapters = chap;
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_srchtype = typ;
@@ -490,6 +508,9 @@ function dir_update(who, what ) {
 		       if(arr == "1") {
 			   line = maketext("There is 1 matching WeBWorK problem")
 		       }
+                       if($("select[name='library_lib'] option:selected").index() == 0) {
+                             line = '';
+                       }
 		       $('#slibrary_count_line').html(line);
 		       return true;
 		   },
@@ -542,8 +563,8 @@ function lib_searchops(lib,tg) {
   }
   //var keyp = $('input#search_bpl').val();
   //var keyp = str;
-  var subj = $('[name="library_subjects"] option:selected').val();
-  var chap = $('[name="library_chapters"] option:selected').val();
+  var subj = $('[name="blibrary_subjects"] option:selected').val();
+  var chap = $('[name="blibrary_chapters"] option:selected').val();
 
   //mydefaultRequestObject.library_keywords = keyp;
   mydefaultRequestObject.library_subjects = subj;
