@@ -53,6 +53,7 @@ my %BPLtables = (
  pgfile_keyword => 'BPL_pgfile_keyword',
  keywordmap => 'BPL_keyword_chapters',
  keyworddim => 'BPL_keyword_dim',
+ keywordrank => 'BPL_keyword_rank',
  textbook => 'BPL_textbook',
  chapter => 'BPL_chapter',
  section => 'BPL_section',
@@ -166,6 +167,11 @@ my $lib = 'BPL';
 	keyword_id int(15) NOT NULL auto_increment,
 	keyword varchar(256) NOT NULL,
 	KEY (keyword),
+	PRIMARY KEY (keyword_id)
+'],
+[$tables{keywordrank}, '
+	keyword_id int(15) NOT NULL auto_increment,
+	rank int(15) NOT NULL,
 	PRIMARY KEY (keyword_id)
 '],
 [$tables{keywordmap}, '
@@ -381,6 +387,7 @@ sub maybenewtext {
 
 print "\nCreating master table for all keywords,subject,chapter,pgfile...\n";
 $dbh->do("INSERT INTO BPL_keyword_dim select distinct k.keyword_id,k.keyword,c.DBchapter_id,c.name as chapter,s.DBsubject_id,s.name as subject,pg.pgfile_id from BPL_keyword_chapters kc, BPL_keyword k, BPL_DBchapter c, BPL_DBsubject s, BPL_pgfile_keyword pg where kc.bplkeyword_id = k.keyword_id and c.DBchapter_id = kc.bpldbchapter_id and pg.keyword_id = k.keyword_id and s.DBsubject_id = c.DBsubject_id");
+$dbh->do("INSERT INTO BPL_keyword_rank select keyword_id,count(distinct pgfile_id) as rank from BPL_pgfile_keyword GROUP BY keyword_id");
 
 if ($ce->{problemLibrary}{showLibraryLocalStats} ||
     $ce->{problemLibrary}{showLibraryGlobalStats}) {
