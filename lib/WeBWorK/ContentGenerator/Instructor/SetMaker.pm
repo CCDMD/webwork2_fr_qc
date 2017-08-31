@@ -1600,12 +1600,18 @@ sub make_top_row {
 	}
 	
         my $divtag =  "<div id='ShowResultsMenu' name='showResultsMenu' class='showResultsMenu'>";
+        my $bbrowse_which = $r->param('bbrowse_which') || 'browse_bpl_library';
+        my $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
+                               -style=>"width: 30ex",
+                                 -onclick=>"f_reset();return false;",
+                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library');
+
 
 	print CGI::Tr({},
 	        CGI::td({-class=>"InfoPanel", -align=>"center"},
 		      CGI::start_table({-border=>"0"}),
 		        CGI::Tr({}, CGI::td({ -align=>"center"},
-			$divtag,$prev_button, " ", $next_button, " ", $show_hide_path_button."</div>"
+			$divtag,$prev_button, " ", $next_button, " ",$clear_prob_btn, $show_hide_path_button."</div>"
 		     )), 
 	CGI::end_table()));
 =comment
