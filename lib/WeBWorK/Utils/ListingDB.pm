@@ -348,7 +348,7 @@ sub getAllDBsubjects {
 	my %tables = getTables($r->ce, $typ);
 	my @results=();
 	my @row;
-	my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY name";
+	my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY CONVERT(name using utf8) COLLATE utf8_bin";
 	my $dbh = getDB($r->ce);
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
@@ -663,7 +663,7 @@ sub getAllDBchapters {
                                 FROM `$tables{dbchapter}` c, 
 				`$tables{dbsubject}` t
                  WHERE c.DBsubject_id = t.DBsubject_id AND
-                 t.name = \"$subject\" ORDER BY c.name";
+                 t.name = \"$subject\" ORDER BY CONVERT(c.name using utf8) COLLATE utf8_bin";
 
 	my $all_chaps_ref = $dbh->selectall_arrayref($query);
 	my @results = map { $_->[0] } @{$all_chaps_ref};
