@@ -142,12 +142,14 @@ function bpl_reset(tg,rs) {
        });
        tagify.on('add', ()=>{
            blib_update('count', 'clear', tagify, 'BPL' );
+           $("#library_defkeywords").val(20);
            lib_top20keywords('BPL',tagify);
            //lib_searchops('BPL',tagify);
        });
        tagify.on('remove', ()=>{
            blib_update('count', 'clear', tagify, 'BPL' );
            //lib_searchops('BPL',tagify);
+           $("#library_defkeywords").val(20);
            lib_top20keywords('BPL',tagify);
        });
        blib_update('count', 'clear', tagify, 'BPL' );
