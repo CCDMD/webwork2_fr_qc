@@ -458,7 +458,7 @@ sub getAllKeyWords {
                      WHERE a.keyword_id=b.bplkeyword_id 
                       AND  b.bpldbchapter_id = d.DBchapter_id
                       AND  c.DBsubject_id = d.DBsubject_id
-                      $where";
+                      $where ORDER BY keyword DESC";
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
 
 	my $dbh = getDB($r->ce);
@@ -497,7 +497,7 @@ sub getTop20KeyWords {
         #$subject = encoder($subject)->utf8 if($subject!~/[^[:ascii:]]/);
         #$chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
 
-        my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s LEFT OUTER JOIN `BPL_keyword_rank` r ON r.keyword_id=s.keyword_id";
+        my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s , `$tables{keywordrank}` r WHERE r.keyword_id = s.keyword_id";
 
         my $hash = $dbh->selectall_arrayref($query);
         foreach my $r (@$hash) {
@@ -555,14 +555,7 @@ sub getTop20KeyWords {
         }
         my @results = sort { $AllKeyWords->{$b}{rank} <=> $AllKeyWords->{$a}{rank} } keys %$AllKeyWords;
         $limit = (scalar(@results) > $limit) ? $limit : scalar(@results);
-        return @results[0..$limit-1]; 
-=comment
-	while (@row = $sth->fetchrow_array()) {
-	    push @results, $row[0];
-	}
-	# @results = sortByName(undef, @results);
-	return @results;
-=cut
+        return sort @results[0..$limit-1];
 }
 sub _getTop20KeyWords {
 	my $r = shift;
@@ -749,9 +742,6 @@ sub getDBListings {
 	my $dbh = getDB($ce);
         my $sth;
        
-        $sth = $dbh->prepare("UPDATE `$tables{keywordrank}` SET rank=rank+1 WHERE keyword_id=(select keyword_id from `$tables{keyword}` WHERE keyword=?)") if($typ eq 'BPL');
-        
-
 	# Next could be an array, an array reference, or nothing
 	my @levels = $r->param('level');
 	if(scalar(@levels) == 1 and ref($levels[0]) eq 'ARRAY') {
@@ -876,7 +866,6 @@ sub getDBListings {
          }
          }
 
-print STDERR "QUERY: $query\n";
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
@@ -916,8 +905,6 @@ sub getBPLDBListings {
 	my $dbh = getDB($ce);
         my $sth;
        
-        $sth = $dbh->prepare("UPDATE `$tables{keywordrank}` SET rank=rank+1 WHERE keyword_id=(select keyword_id from `$tables{keyword}` WHERE keyword=?)") if($typ eq 'BPL');
-        
 
 	# Next could be an array, an array reference, or nothing
 	my @levels = $r->param('level');
@@ -930,13 +917,13 @@ sub getBPLDBListings {
         #Hack for BPL new interface
         if($keywords ne "") {
             my @tags = split(',',$keywords);
-            my $k1 = shift(@tags);
+            #my $k1 = shift(@tags);
             my $k=0;
-            my $op = '=';
-            $op = '<>' if($k1=~/^-/);
-            $k1 = encoder($k1)->utf8 if($k1!~/[^[:ascii:]]/);
-            $k1 =~s/^-//;
-            $sth->execute($k1) if(!$amcounter);
+            #my $op = '=';
+            #$op = '<>' if($k1=~/^-/);
+            #$k1 = encoder($k1)->utf8 if($k1!~/[^[:ascii:]]/);
+            #$k1 =~s/^-//;
+            #$sth->execute($k1) if(!$amcounter);
 
 	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
 	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
@@ -944,7 +931,7 @@ sub getBPLDBListings {
                      AND kw.keyword_id=kc.bplkeyword_id 
                      AND pgkey.pgfile_id=pgf.pgfile_id";
 
-            $kw2 .= " AND kw.keyword $op \"$k1\" " if($k1 ne "");
+            #$kw2 .= " AND kw.keyword $op \"$k1\" " if($k1 ne "");
 
             if(scalar(@tags) > 0) {
               foreach my $t (@tags) {
@@ -960,10 +947,10 @@ sub getBPLDBListings {
                 }
                 ###Rank them here 
                 $t =~s/^-//;
-                $sth->execute($t) if(!$amcounter);
+                #$sth->execute($t) if(!$amcounter);
               }
             }
-            $sth->finish;
+            #$sth->finish;
         }
 
 	my $extrawhere = '';
@@ -1020,10 +1007,6 @@ sub getBPLDBListings {
                          $kw2";
         }
 
-
-
-
-print STDERR "BPLQUERY: $query\n";
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
