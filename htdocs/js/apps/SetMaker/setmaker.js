@@ -42,6 +42,9 @@ $(window).load(function() {
        blib_update('chapters', 'get', tagify, 'BPL' );
        lib_searchops("BPL",tagify);
        blib_update('count', 'clear', tagify, 'BPL' );
+
+       $("#library_defkeywords").val(20);
+       lib_top20keywords("BPL",tagify);
        return true;
    });
 
@@ -49,6 +52,8 @@ $(window).load(function() {
        tagify = bpl_reset(tagify,1);
        lib_searchops("BPL",tagify);
        blib_update('count', 'clear', tagify, 'BPL' );
+       $("#library_defkeywords").val(20);
+       lib_top20keywords("BPL",tagify);
        return true;
    });
 
