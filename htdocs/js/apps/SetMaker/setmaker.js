@@ -270,7 +270,6 @@ function lib_update(who, what, tg, typ) {
   var subj = $('[name="library_subjects"] option:selected').val();
   var chap = $('[name="library_chapters"] option:selected').val();
   var sect = $('[name="library_sections"] option:selected').val();
-  var keywd = $('[name="search_bpl"]').val();
 
   if(subj == 'All Subjects') { subj = '';};
   if(chap == 'All Chapters') { chap = '';};
@@ -287,7 +286,6 @@ function lib_update(who, what, tg, typ) {
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_sections = sect;
   mydefaultRequestObject.library_srchtype = typ;
-  mydefaultRequestObject.library_keywords = keywd;
 
   mydefaultRequestObject.library_textbooks = lib_text;
   mydefaultRequestObject.library_textchapter = lib_textchap;
