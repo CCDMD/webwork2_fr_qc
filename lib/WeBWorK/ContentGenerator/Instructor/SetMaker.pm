@@ -47,7 +47,7 @@ use constant DEFAULT_KEYWORDS => 20;
 use constant SHOW_SOLUTIONS_DEFAULT => 0;
 use constant MAX_SHOW_DEFAULT => 20;
 use constant NO_LOCAL_SET_STRING => x('No sets in this course yet');
-use constant SELECT_SET_STRING => x('Select a Set from this Course');
+use constant SELECT_SET_STRING => x('Select');
 use constant SELECT_LOCAL_STRING => x('Select a Problem Collection');
 use constant SELECT_HMW_SET_STRING => x('Select a Homework Set');
 use constant SELECT_SETDEF_FILE_STRING => x('Select a Set Definition File');
@@ -60,10 +60,10 @@ use constant ALL_TEXTBOOKS => 'All Textbooks';
 use constant ALL_LIBS => '--Select--';
 use constant ALL_DIRS => 'All Dir';
 use constant ALL_SUBDIRS => 'All Subdir';
-use constant VIEW_FORMS  => [ qw(bankOfFreeProblems openProblemLibrary localProblems fromThisCourse setDefinitionFiles specificDirectories)];
+use constant VIEW_FORMS  => [ qw(frenchProblemLibrary openProblemLibrary localProblems fromThisCourse setDefinitionFiles specificDirectories)];
 
 #use constant VIEW_FORMS  => [qw(bpl opl blp ftc setdef spcf)];
-use constant ACTION_FORMS  => {bankOfFreeProblems => 'browse_library_panel5t', openProblemLibrary => 'browse_library_panel2t', localProblems => 'browse_local_panelt', fromThisCourse => 'browse_mysets_panelt', setDefinitionFiles => 'browse_setdef_panelt', specificDirectories => 'browse_specific_panelt'};
+use constant ACTION_FORMS  => {frenchProblemLibrary => 'browse_library_panel5t', openProblemLibrary => 'browse_library_panel2t', localProblems => 'browse_local_panelt', fromThisCourse => 'browse_mysets_panelt', setDefinitionFiles => 'browse_setdef_panelt', specificDirectories => 'browse_specific_panelt'};
 
 use constant LIB2_DATA => {
   'dbchapter' => {name => 'library_chapters', all => 'All Chapters'},
@@ -1252,7 +1252,7 @@ sub browse_specific_panel {
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory:")." ",
 		$popupetc2
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Sub Directory:")." ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory:")." ",
 		$popupetc3
 	));
        print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
@@ -1334,7 +1334,7 @@ sub browse_specific_panelt {
         CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory:")." ",
 		$popupetc2
 	)),
-	CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Sub Directory:")." ",
+	CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory:")." ",
 		$popupetc3
 	)),
         CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"slibrary_count_line"}, $count_line)),
@@ -1444,11 +1444,11 @@ sub make_top_row {
         my $courseID = $self->r->urlpath->arg("courseID");
 
         #Tusar - 3/25/17
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},CGI::b($r->maketext("Assignment in which to add problems in this course")).' ',
+	 print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},CGI::b($r->maketext("Homework set to add problems to")).' ',
 		CGI::br(), 
 		CGI::br(), 
            ));
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},$r->maketext("Choose an existing assignment").' ',
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},$r->maketext("Select an Existing Set").' ',
 	        #print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Add problems to").' ',
 		#CGI::b($r->maketext("Target Set:").' '),
 		CGI::popup_menu(-name=> 'local_sets', 
@@ -1460,7 +1460,7 @@ sub make_top_row {
 		CGI::hidden(-name=>"selfassign", -default=>0,-override=>1).
 		CGI::br(), 
 		CGI::br(), 
-		$r->maketext("Create a new duty"),
+		$r->maketext("Create a New Set"),
 		CGI::textfield(-name=>"new_set_name", 
 					   -example=>$r->maketext("Name for new set here"),
 					   -override=>1, -size=>30),

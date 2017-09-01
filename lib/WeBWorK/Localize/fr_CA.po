@@ -129,6 +129,14 @@ msgstr " fichier de problème non attribué :  "
 msgid "All"
 msgstr "Tous"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:61
+msgid "All Directories"
+msgstr "Tous les répertoires"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:62
+msgid "All Subdirectories"
+msgstr "Tous les sous-répertoires"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/PGProblemEditor2.pm:604
 msgid "blank problem"
 msgstr "problème vide"
@@ -1627,6 +1635,10 @@ msgstr ""
 msgid "Causes a single homework problem to be worth twice as much."
 msgstr ""
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:63
+msgid "French Problem Library"
+msgstr "Banque de problèmes libres"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:936
 msgid "Change Course Title to:"
 msgstr ""
@@ -2101,6 +2113,10 @@ msgstr ""
 msgid "Create a New Set in This Course:"
 msgstr "Créer un nouveau devoir vide :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1463
+msgid "Create a New Set"
+msgstr "Créer un nouveau devoir vide"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/AchievementList.pm:696
 msgid "Create a new achievement with ID"
 msgstr ""
@@ -2298,6 +2314,10 @@ msgstr "Impossible de reconnaître l'action à effectuer"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:154
 msgid "Directory"
 msgstr "Répertoire"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1252
+msgid "Directory:"
+msgstr "Répertoire :"
 
 #. ($file, $!)
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:679
@@ -3546,6 +3566,10 @@ msgstr "Indices"
 msgid "Hmwk Sets Editor"
 msgstr "Éditeur de devoirs"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1447
+msgid "Homework set to add problems to"
+msgstr "Devoir dans lequel ajouter des problèmes"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator.pm:734
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSet.pm:117
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:258
@@ -3839,6 +3863,10 @@ msgstr ""
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:768
 msgid "Level:"
 msgstr "Niveau :"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1249
+msgid "Library:"
+msgstr "Banque :"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator.pm:847
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1610
@@ -5497,6 +5525,10 @@ msgstr ""
 msgid "Scroll of Ressurection"
 msgstr ""
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:882
+msgid "Search:"
+msgstr "Recherche :"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList.pm:771
 msgid "Secondary sort"
 msgstr "Tri secondaire"
@@ -5540,7 +5572,7 @@ msgstr "Seed"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList.pm:442
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/UserList.pm:1773
 msgid "Select"
-msgstr "Sélectionner"
+msgstr "Choisir"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:50
 msgid "Select a Problem Collection"
@@ -5606,6 +5638,10 @@ msgstr "Choisir une action à effectuer "
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/UserList.pm:517
 msgid "Select an action to perform:"
 msgstr "Choisir une action à effectuer :"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1451
+msgid "Select an Existing Set"
+msgstr "Choisir un devoir existant"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:1692
 msgid "Select course(s) to archive."
@@ -6045,6 +6081,10 @@ msgstr ""
 "cours. L'identifiant du cours ne peut contenir que des caractères "
 "alphanumériques, sans accents ni tirets."
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instrucor/SetMaker.pm:63
+msgid "Specific Directories"
+msgstr "Répertoires spécifiques"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/Localize.pm:392
 msgid "Standard"
 msgstr "Standard"
@@ -6142,6 +6182,10 @@ msgstr "Progrès individuel de %2 pour %1"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Hardcopy.pm:581
 msgid "Student answers"
 msgstr "Réponses de l'étudiant"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1255
+msgid "SubDirectory:"
+msgstr "Sous-répertoire :"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SendMail.pm:386
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SendMail.pm:558
