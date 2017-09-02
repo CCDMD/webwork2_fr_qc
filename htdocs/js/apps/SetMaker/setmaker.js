@@ -30,8 +30,8 @@ $(window).load(function() {
    if(!input1) { 
        var brw = $('[name="bbrowse_which"]').val();
        if(brw == 'browse_spcf_library') {
-          $('a:contains("Solution:")').hide();
-          $('a:contains("Hint:")').hide();
+          $('a:contains("'+maketext('Solution')+'")').hide();
+          $('a:contains("'+maketext('Hint')+'")').hide();
        }
        return;
    }
@@ -68,7 +68,7 @@ $(window).load(function() {
        f_reset(k);
        return false;
   });
-  $('a:contains("Load More")').click(function() {
+  $("#load_kw").click(function() {
        f_loadmore();
        return false;
   });
@@ -76,8 +76,8 @@ $(window).load(function() {
   //alert(typeof(x));
 
   //hide solutions and hints to be toggled
-  $('a:contains("Solution:")').hide();
-  $('a:contains("Hint:")').hide();
+  $('a:contains("'+maketext('Solution')+'")').hide();
+  $('a:contains("'+maketext('Hint')+'")').hide();
 });
 function f_loadmore() {
 
@@ -160,16 +160,16 @@ function bpl_reset(tg,rs) {
 
 function toggleSolution(t) {
     if (t.is(':checked')) {
-         $('a:contains("Solution:")').show();
+         $('a:contains('+maketext('Solution')+')').show();
     } else {
-         $('a:contains("Solution:")').hide();
+         $('a:contains('+maketext('Solution')+')').hide();
     }
 }
 function toggleHint(t) {
     if (t.is(':checked')) {
-         $('a:contains("Hint:")').show();
+         $('a:contains('+maketext('Hint')+')').show();
     } else {
-         $('a:contains("Hint:")').hide();
+         $('a:contains('+maketext('Hint')+')').hide();
     }
 }
 
@@ -257,6 +257,7 @@ function lib_update(who, what, tg, typ) {
 
   nomsg();
   var all = 'All ' + capFirstLetter(who);
+  all = maketext(all);
 
   var mydefaultRequestObject = init_webservice('searchLib');
   if(mydefaultRequestObject == null) {
@@ -271,17 +272,26 @@ function lib_update(who, what, tg, typ) {
   var chap = $('[name="library_chapters"] option:selected').val();
   var sect = $('[name="library_sections"] option:selected').val();
 
-  if(subj == 'All Subjects') { subj = '';};
-  if(chap == 'All Chapters') { chap = '';};
-  if(sect == 'All Sections') { sect = '';};
+  var subjind = $('[name="library_subjects"] option:selected').index();
+  var chapind = $('[name="library_chapters"] option:selected').index();
+  var sectind = $('[name="library_sections"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+  if(sectind == 0) { sect = '';};
 
   var lib_text = $('[name="library_textbook"] option:selected').val();
   var lib_textchap = $('[name="library_textchapter"] option:selected').val();
   var lib_textsect = $('[name="library_textsection"] option:selected').val();
 
-  if(lib_text == 'All Textbooks') { lib_text = '';};
-  if(lib_textchap == 'All Chapters') { lib_textchap = '';};
-  if(lib_textsect == 'All Sections') { lib_textsect = '';};
+  var lib_textind = $('[name="library_textbook"] option:selected').index();
+  var lib_textchapind = $('[name="library_textchapter"] option:selected').index();
+  var lib_textsectind = $('[name="library_textsection"] option:selected').index();
+
+  if(lib_textind == 0) { lib_text = '';};
+  if(lib_textchapind == 0) { lib_textchap = '';};
+  if(lib_textsectind == 0) { lib_textsect = '';};
+
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_sections = sect;
@@ -360,6 +370,8 @@ function blib_update(who, what, tg, typ) {
 
   nomsg();
   var all = 'All ' + capFirstLetter(who);
+  all = maketext(all);
+  
 
   var mydefaultRequestObject = init_webservice('searchLib');
   if(mydefaultRequestObject == null) {
@@ -372,10 +384,12 @@ function blib_update(who, what, tg, typ) {
 
   var subj = $('[name="blibrary_subjects"] option:selected').val();
   var chap = $('[name="blibrary_chapters"] option:selected').val();
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
   var keywd = $('[name="search_bpl"]').val();
 
-  if(subj == 'All Subjects') { subj = '';};
-  if(chap == 'All Chapters') { chap = '';};
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
   //if(sect == 'All Sections') { sect = '';};
 
   mydefaultRequestObject.blibrary_subjects = subj;
@@ -452,9 +466,11 @@ function blib_update(who, what, tg, typ) {
 }
 function dir_update(who, what ) {
   var child = { lib : 'dir', dir : 'subdir', subdir : 'count'};
+  var childe = { lib : 'libraries', dir : 'directories', subdir : 'subdirectories', count : ''};
 
   //nomsg();
-  var all = 'All '+ capFirstLetter(who);
+  var all = 'All '+ capFirstLetter(childe[who]);
+  all = maketext(all);
 
   var mydefaultRequestObject = init_webservice('searchLib');
   if(mydefaultRequestObject == null) {
@@ -472,12 +488,16 @@ function dir_update(who, what ) {
   var lib    = $('[name="library_lib"] option:selected').val();
   var dir    = $('[name="library_dir"] option:selected').val();
   var subdir = $('[name="library_subdir"] option:selected').val();
+
+  var libind    = $('[name="library_lib"] option:selected').index();
+  var dirind    = $('[name="library_dir"] option:selected').index();
+  var subdirind = $('[name="library_subdir"] option:selected').index();
   var topdir = $('[name="library_topdir"]').val();
 
 
-  if(lib == '--Select--') { lib = '';};
-  if(dir == 'All Dir') { dir = '';};
-  if(subdir == 'All Subdir') { subdir = '';};
+  if(libind == 0) { lib = '';};
+  if(dirind == 0) { dir = '';};
+  if(subdirind == 0) { subdir = '';};
 
   topdir = topdir+'/'+lib+'/'+dir+'/'+subdir;
 
@@ -492,6 +512,7 @@ function dir_update(who, what ) {
           $("#lib_view_spcf").attr("disabled","disabled");
       }
   }
+
 
   if(who == 'count') {
     mydefaultRequestObject.command = 'countDirListings';
@@ -524,7 +545,16 @@ function dir_update(who, what ) {
 		  },
 		  });
       
+  }  
+  if(what == 'clear') {
+    setselect('library_'+who, [all]);
+    return dir_update(child[who], 'clear');
   }
+
+ 
+  if(who=='dir' && lib=='') { return dir_update(who, 'clear'); }
+  if(who=='subdir' && dir=='') { return dir_update(who, 'clear'); }
+
   var subcommand = "getAllDirs";
   if(what == 'clear') {
     setselect('library_'+who, [all]);
@@ -571,9 +601,18 @@ function lib_searchops(lib,tg) {
   var subj = $('[name="blibrary_subjects"] option:selected').val();
   var chap = $('[name="blibrary_chapters"] option:selected').val();
 
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+
+  var keywd = $('[name="search_bpl"]').val();
+
   //mydefaultRequestObject.library_keywords = keyp;
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.library_keywords = keywd;
 
   var subcommand = "getAllKeywords";
 
@@ -643,6 +682,11 @@ function lib_top20keywords (lib,tg) {
   var tags = $("input#search_bpl").val();
   var kwn  = $("input#library_defkeywords").val();
 
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
 
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
