@@ -1246,13 +1246,13 @@ sub browse_specific_panel {
 	if(scalar(@libs) == 0) {
 		$popupetc =  $r->maketext("there are no set problem libraries course to look at.");
 	}
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library")."&nbsp;:&nbsp;",
 		$popupetc
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory")."&nbsp;:&nbsp;",
 		$popupetc2
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory")."&nbsp;:&nbsp;",
 		$popupetc3
 	));
        print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
@@ -1328,13 +1328,13 @@ sub browse_specific_panelt {
 	}
 
 	return CGI::start_table({-width=>"100%"}),
-        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library").": ",
+        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library")."&nbsp;:&nbsp;",
 		$popupetc
 	)),
-        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory").": ",
+        CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory")."&nbsp;:&nbsp;",
 		$popupetc2
 	)),
-	CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory").": ",
+	CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory")."&nbsp;:&nbsp;",
 		$popupetc3
 	)),
         CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"slibrary_count_line"}, $count_line)),
@@ -1526,7 +1526,7 @@ sub make_top_row {
 
         
 
-	print CGI::hr();
+#	print CGI::hr();
 
 =comment
         if($browse_which eq 'browse_bpl_library') {
@@ -2499,11 +2499,11 @@ sub body {
 	#	 if($first_shown>0 or (1+$last_shown)<scalar(@pg_files)) {
 	my ($next_button, $prev_button) = ("", "");
 	if ($first_index > 0) {
-		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:15ex",
+		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Previous page"));
 	}
 	if ((1+$last_index)<scalar(@pg_files)) {
-		$next_button = CGI::submit(-name=>"next_page", -style=>"width:15ex",
+		$next_button = CGI::submit(-name=>"next_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Next page"));
 	}
 	if (scalar(@pg_files)>0) {

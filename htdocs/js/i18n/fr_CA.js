@@ -12,7 +12,7 @@ var translate = {
 	"in target set" : "dans le devoir choisi",
 	"Operations" : "Opérations",
 	"Problem Set" : "Les problèmes du devoir",
-	"was reordered" : "ont été renuméroter",
+	"was reordered" : "ont été renumérotés",
 	"Loading Please Wait..." : "Chargement en cours, veuillez patienter...",
 	"Remaining time :" : "Temps restant :",
 	"* You are out of time! *\n" : "* Vous avez dépassé la limite de temps!     *\n",
@@ -23,10 +23,10 @@ var translate = {
 	"* this assignment. You should finish it very soon! *" : "* ce test. Vous devez terminé rapidement!       *",
         "All Chapters" : "Tous les chapitres",
         "All Subjects" : "Tous les sujets",
-        "All Sections" : "Tous les sections",
-        "All Directories" : "Tous les annuaires",
+        "All Sections" : "Toutes les sections",
+        "All Directories" : "Tous les répertoires",
         "All Subdirectories" : "Tous les sous-répertoires",
-        "Select Library" : "Sélectionnez la bibliothèque",
+        "Select Library" : "Choisir une banque",
         "Hint" : "Indice",
         "Solution" : "Solution"
         
