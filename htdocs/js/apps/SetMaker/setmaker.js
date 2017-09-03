@@ -128,6 +128,7 @@ function f_reset(v) {
        $(".lb-problem-header").css("display", "none");
        //$(".RenderSolo").css("visibility", "hidden");
        $(".RenderSolo").css("display", "none");
+       $(".lb-mlt-group").css("visibility", "hidden");
        $(".AuthorComment").css("display", "none");
        $('#showResultsEnd').hide().css("visibility", "hidden");
 }
