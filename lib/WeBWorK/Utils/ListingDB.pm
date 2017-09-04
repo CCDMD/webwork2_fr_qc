@@ -24,7 +24,6 @@ use File::Basename;
 use WeBWorK::Debug;
 use File::Find::Rule;
 use Encode::Encoder qw(encoder);
-use Unicode::Collate;
 
 use constant LIBRARY_STRUCTURE => {
 	textbook => { select => 'tbk.textbook_id,tbk.title,tbk.author,tbk.edition',
@@ -339,6 +338,7 @@ sub getDBTextbooks {
 Returns an array of DBsubject names                                             
                                                                                 
 $r is the Apache request object
+
                                                                                 
 =cut                                                                            
 
@@ -349,7 +349,7 @@ sub getAllDBsubjects {
 	my %tables = getTables($r->ce, $typ);
 	my @results=();
 	my @row;
-	my $query = "SELECT DISTINCT convert(name using utf8) as name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY convert(name using utf8) COLLATE utf8_bin";
+	my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY  CONVERT(CAST(name as BINARY) USING utf8)";
 	my $dbh = getDB($r->ce);
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
@@ -515,7 +515,7 @@ sub getAllDBchapters {
                                 FROM `$tables{dbchapter}` c, 
 				`$tables{dbsubject}` t
                  WHERE c.DBsubject_id = t.DBsubject_id AND
-                 t.name = \"$subject\" ORDER BY CONVERT(c.name using utf8) COLLATE utf8_bin";
+                 t.name = \"$subject\"  ORDER BY  CONVERT(CAST(c.name as BINARY) USING utf8)";
 
 	my $all_chaps_ref = $dbh->selectall_arrayref($query);
 	my @results = map { $_->[0] } @{$all_chaps_ref};
