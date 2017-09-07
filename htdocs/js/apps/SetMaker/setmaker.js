@@ -76,8 +76,36 @@ $(window).load(function() {
   //alert(typeof(x));
 
   //hide solutions and hints to be toggled
-  $('a:contains("'+maketext('Solution')+'")').hide();
-  $('a:contains("'+maketext('Hint')+'")').hide();
+  if($("input[name='showSolutiont']").is(':checked')) {
+      $('a:contains("'+maketext('Solution')+'")').show();
+  } else {
+      $('a:contains("'+maketext('Solution')+'")').hide();
+  }
+  if($("input[name='showHintt']").is(':checked')) {
+      $('a:contains("'+maketext('Hint')+'")').show();
+  } else {
+      $('a:contains("'+maketext('Hint')+'")').hide();
+  }
+
+  //OPL Advanced search handle
+  $("#library_advanced").click(function (event) {
+        var txt = $(this).val();
+        if(txt == maketext('Basic Search')) {
+            $(this).val(maketext('Advanced Search'));
+            $('[name="library_adv_btn"]').val('');
+            //change index
+            $('[name="library_textbook"]').prop("selectedIndex",0);
+            $('[name="library_textbook"]').trigger( "change" );
+            
+            //lib_update('count','clear');
+        } else {
+            $('[name="library_adv_btn"]').val('1');
+            $(this).val(maketext('Basic Search'));
+        }
+        $('#opladv tr.opladvsrch').toggle();
+        event.preventDefault();
+   });
+
 });
 function f_loadmore() {
 
@@ -95,6 +123,8 @@ function f_reset(v) {
 
        //location.href = location.href;
        //return false;
+       nomsg();
+
        $('[name="library_subjects"]').prop("selectedIndex",0);
        lib_update('chapters', 'clear');
        lib_update('count', 'clear' );
@@ -173,8 +203,6 @@ function toggleHint(t) {
          $('a:contains('+maketext('Hint')+')').hide();
     }
 }
-
-
 
 // Messaging
 function nomsg() {
@@ -256,7 +284,7 @@ function init_webservice(command) {
 function lib_update(who, what, tg, typ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
-  nomsg();
+  //nomsg();
   var all = 'All ' + capFirstLetter(who);
   all = maketext(all);
 
@@ -369,7 +397,7 @@ function lib_update(who, what, tg, typ) {
 function blib_update(who, what, tg, typ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
-  nomsg();
+  //nomsg();
   var all = 'All ' + capFirstLetter(who);
   all = maketext(all);
   
@@ -747,6 +775,11 @@ function settop20keywords(arr,tg) {
    }
    kwRows += '</div>';
    document.getElementById("kword").innerHTML = kwRows;keywordclick(tg,arr);
+   if(arrayLength < parseInt($("#library_defkeywords").val())) {
+      $("#load_kw").hide();
+   } else {
+      $("#load_kw").show();
+   }
 
 }
 function onRemoveTag(e){
