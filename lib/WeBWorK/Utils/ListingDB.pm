@@ -24,14 +24,15 @@ use File::Basename;
 use WeBWorK::Debug;
 use File::Find::Rule;
 use Encode::Encoder qw(encoder);
+use Encode qw( decode encode );
 
 use constant LIBRARY_STRUCTURE => {
 	textbook => { select => 'tbk.textbook_id,tbk.title,tbk.author,tbk.edition',
-	name => 'library_textbook', where => 'tbk.textbook_id'},
+	name => 'library_textbook', where => 'tbk.textbook_id', all => 'All Textbooks'},
 	textchapter => { select => 'tc.number,tc.name', name=>'library_textchapter',
-	where => 'tc.name'},
+	where => 'tc.name', all => 'All Chapters'},
 	textsection => { select => 'ts.number,ts.name', name=>'library_textsection',
-	where => 'ts.name'},
+	where => 'ts.name', all => 'All Sections'},
 	problem => { select => 'prob.name' },
 	};
 
@@ -270,8 +271,12 @@ sub getDBTextbooks {
 	my $extrawhere = '';
 	# Handle DB* restrictions
 	my $subj = $r->param('library_subjects') || "";
+        $subj = "" if($subj eq $r->maketext("All Subjects"));
 	my $chap = $r->param('library_chapters') || "";
+        $chap = "" if($chap eq $r->maketext("All Chapters"));
 	my $sec = $r->param('library_sections') || "";
+        $sec = "" if($sec eq $r->maketext("All Sections"));
+
 	if($subj) {
 		$subj =~ s/'/\\'/g;
 		$extrawhere .= " AND t.name = \'$subj\'\n";
@@ -286,6 +291,7 @@ sub getDBTextbooks {
 	}
 	my $textextrawhere = '';
 	my $textid = $r->param('library_textbook') || '';
+        $textid = "" if($textid eq $r->maketext("All Textbooks"));
 	if($textid and $thing ne 'textbook') {
 		$textextrawhere .= " AND tbk.textbook_id=\"$textid\" ";
 	} else {
@@ -293,6 +299,8 @@ sub getDBTextbooks {
 	}
 
 	my $textchap = $r->param('library_textchapter') || '';
+        $textchap = "" if($textchap eq $r->maketext("All Chapters"));
+
 	$textchap =~ s/^\s*\d+\.\s*//;
 	if($textchap and $thing eq 'textsection') {
 		$textextrawhere .= " AND tc.name=\"$textchap\" ";
@@ -316,6 +324,9 @@ sub getDBTextbooks {
             ts.chapter_id=tc.chapter_id AND
             tc.textbook_id=tbk.textbook_id
             $extrawhere $textextrawhere ";
+
+print STDERR "$query\n";
+
 #$query =~ s/\n/ /g;
 #warn $query;
 	my $text_ref = $dbh->selectall_arrayref($query);
@@ -350,6 +361,7 @@ sub getAllDBsubjects {
 	my @results=();
 	my @row;
 	my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}` ORDER BY  CONVERT(CAST(name as BINARY) USING utf8)";
+	#my $query = "SELECT DISTINCT name, DBsubject_id FROM `$tables{dbsubject}`";
 	my $dbh = getDB($r->ce);
 	my $sth = $dbh->prepare($query);
 	$sth->execute();
@@ -390,7 +402,7 @@ sub getAllKeyWords {
                      WHERE a.keyword_id=b.bplkeyword_id 
                       AND  b.bpldbchapter_id = d.DBchapter_id
                       AND  c.DBsubject_id = d.DBsubject_id
-                      $where ORDER BY keyword DESC";
+                      $where ORDER BY keyword ASC";
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
 
 	my $dbh = getDB($r->ce);
@@ -490,7 +502,14 @@ sub getTop20KeyWords {
         }
         my @results = sort { $AllKeyWords->{$b}{rank} <=> $AllKeyWords->{$a}{rank} } keys %$AllKeyWords;
         $limit = (scalar(@results) > $limit) ? $limit : scalar(@results);
-        return sort @results[0..$limit-1];
+        $dbh->do("CREATE TEMPORARY TABLE topkeywords (keyword varchar(100)) DEFAULT CHARSET=latin1");
+        s/'/\\'/g for @results;
+        my $kwinsert =  join "'),('", @results[0..$limit-1];
+        $kwinsert = "('".$kwinsert."')";
+        $dbh->do("INSERT INTO topkeywords (keyword) values $kwinsert");
+        my $keywords = $dbh->selectcol_arrayref("SELECT keyword from topkeywords ORDER BY CONVERT(CAST(keyword as BINARY) USING utf8)");
+
+        return @$keywords;
 }
 
 =item getAllDBchapters($r)
@@ -572,24 +591,15 @@ sub getDBListings {
 	my $ce = $r->ce;
 	my %tables = getTables($ce,$typ);
 
-        my ($subj_col,$chap_col);
-        if($typ eq "BPL") {
-            $subj_col = "blibrary_subjects";
-            $chap_col = "blibrary_chapters";
-        } else {
-            $subj_col = "library_subjects";
-            $chap_col = "library_chapters";
-        }
-	my $subj = $r->param($subj_col) || "";
-	#my $subj = $r->param('library_subjects') || "";
-	my $chap = $r->param($chap_col) || "";
-	#my $chap = $r->param('library_chapters') || "";
-        #$subj = encoder($subj)->utf8;
-        $subj = encoder($subj)->utf8 if($subj!~/[^[:ascii:]]/);
-        $chap = encoder($chap)->utf8 if($chap!~/[^[:ascii:]]/);
-        
+	my $subj = $r->param('library_subjects') || "";
+	my $chap = $r->param('library_chapters') || "";
 	my $sec = $r->param('library_sections') || "";
-	my $keywords =  $r->param('library_keywords') || $r->param('search_bpl') || "";
+
+        $subj = "" if ($subj eq $r->maketext("All Subjects"));
+        $chap = "" if ($chap eq $r->maketext("All Chapters"));
+        $sec = "" if ($sec eq $r->maketext("All Sections"));
+
+	my $keywords =  $r->param('library_keywords') || "";
 	my $dbh = getDB($ce);
         my $sth;
        
@@ -607,45 +617,6 @@ sub getDBListings {
 			 pgkey.pgfile_id=pgf.pgfile_id ". 
 			makeKeywordWhere($keywords) ;
 	}
-
-        #Hack for BPL new interface
-        if($typ eq "BPL" && $keywords ne "") {
-            my @tags = split(',',$keywords);
-            my $k1 = shift(@tags);
-            my $k=0;
-            my $op = '=';
-            $op = '<>' if($k1=~/^-/);
-            $k1 = encoder($k1)->utf8 if($k1!~/[^[:ascii:]]/);
-            $k1 =~s/^-//;
-            $sth->execute($k1) if(!$amcounter);
-
-	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
-	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
-                     AND kc.bpldbchapter_id = dbc.DBchapter_id 
-                     AND kw.keyword_id=kc.bplkeyword_id 
-                     AND pgkey.pgfile_id=pgf.pgfile_id";
-
-            $kw2 .= " AND kw.keyword $op \"$k1\" " if($k1 ne "");
-
-            if(scalar(@tags) > 0) {
-              foreach my $t (@tags) {
-                $t=~s/\s+$//g;
-                $t=~s/^\s+//g;
-                $k++;
-                $t = encoder($t)->utf8 if($t!~/[^[:ascii:]]/);
-                if($t=~/^-/) {
-                    $t =~s/^-//;
-                    $kw2 .= " AND NOT EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
-                } else {
-                    $kw2 .= " AND EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
-                }
-                ###Rank them here 
-                $t =~s/^-//;
-                $sth->execute($t) if(!$amcounter);
-              }
-            }
-            $sth->finish;
-        }
 
 	my $extrawhere = '';
 	if($subj) {
@@ -669,6 +640,7 @@ sub getDBListings {
         my $haveTextInfo=0;
 	for my $j (qw( textbook textchapter textsection )) {
 		my $foo = $r->param(LIBRARY_STRUCTURE->{$j}{name}) || '';
+                $foo = "" if($foo eq $r->maketext( LIBRARY_STRUCTURE->{$j}{all} ));
 		$foo =~ s/^\s*\d+\.\s*//;
 		if($foo) {
                         $haveTextInfo=1;
@@ -690,31 +662,19 @@ sub getDBListings {
         $query .= " ORDER BY pgf.filename" if($typ eq 'BPL');
 
 	if($haveTextInfo) {
-        if($typ eq 'BPL') {
-      $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
-        `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
-		`$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
-		`$tables{chapter}` tc ts $kw1
-        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
-              pgf.pgfile_id = pgp.pgfile_id AND
-              pgp.problem_id = prob.problem_id AND
-              tc.textbook_id = tbk.textbook_id \n $extrawhere \n $textextrawhere
-              $kw2";
-         } else {
-      $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
-        `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
-		`$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
-		`$tables{chapter}` tc, `$tables{section}` ts $kw1
-        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
-              dbc.DBchapter_id = dbsc.DBchapter_id AND
-              dbsc.DBsection_id = pgf.DBsection_id AND
-              pgf.pgfile_id = pgp.pgfile_id AND
-              pgp.problem_id = prob.problem_id AND
-              tc.textbook_id = tbk.textbook_id AND
-              ts.chapter_id = tc.chapter_id AND
-              prob.section_id = ts.section_id \n $extrawhere \n $textextrawhere
-              $kw2";
-         }
+            $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+                         `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
+		         `$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
+		         `$tables{chapter}` tc, `$tables{section}` ts $kw1
+                      WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
+                            dbc.DBchapter_id = dbsc.DBchapter_id AND
+                            dbsc.DBsection_id = pgf.DBsection_id AND
+                            pgf.pgfile_id = pgp.pgfile_id AND
+                            pgp.problem_id = prob.problem_id AND
+                            tc.textbook_id = tbk.textbook_id AND
+                            ts.chapter_id = tc.chapter_id AND
+                            prob.section_id = ts.section_id \n $extrawhere \n $textextrawhere
+                       $kw2";
          }
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
@@ -768,13 +728,7 @@ sub getBPLDBListings {
         #Hack for BPL new interface
         if($keywords ne "") {
             my @tags = split(',',$keywords);
-            #my $k1 = shift(@tags);
             my $k=0;
-            #my $op = '=';
-            #$op = '<>' if($k1=~/^-/);
-            #$k1 = encoder($k1)->utf8 if($k1!~/[^[:ascii:]]/);
-            #$k1 =~s/^-//;
-            #$sth->execute($k1) if(!$amcounter);
 
 	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
 	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
@@ -798,40 +752,22 @@ sub getBPLDBListings {
                 }
                 ###Rank them here 
                 $t =~s/^-//;
-                #$sth->execute($t) if(!$amcounter);
               }
             }
-            #$sth->finish;
         }
 
 	my $extrawhere = '';
 	if($subj) {
 		$subj =~ s/'/\\'/g;
 		$extrawhere .= " AND dbsj.name=\"$subj\" ";
-		#$extrawhere .= " AND dbsj.name=CONVERT(CONVERT(\"$subj\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($chap) {
 		$chap =~ s/'/\\'/g;
 		$extrawhere .= " AND dbc.name=\"$chap\" ";
-		#$extrawhere .= " AND dbc.name=CONVERT(CONVERT(\"$chap\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($sec) {
 		$sec =~ s/'/\\'/g;
 		$extrawhere .= " AND dbsc.name=\"$sec\" ";
-	}
-	if(scalar(@levels)) {
-		$extrawhere .= " AND pgf.level IN (".join(',', @levels).") ";
-	}
-	my $textextrawhere = '';
-        my $haveTextInfo=0;
-	for my $j (qw( textbook textchapter textsection )) {
-		my $foo = $r->param(LIBRARY_STRUCTURE->{$j}{name}) || '';
-		$foo =~ s/^\s*\d+\.\s*//;
-		if($foo) {
-                        $haveTextInfo=1;
-			$foo =~ s/'/\\'/g;
-			$textextrawhere .= " AND ".LIBRARY_STRUCTURE->{$j}{where}."=\"$foo\" ";
-		}
 	}
 
 	my $selectwhat = 'DISTINCT pgf.pgfile_id';
@@ -845,18 +781,6 @@ sub getBPLDBListings {
               \n $extrawhere 
               $kw2";
         $query .= " ORDER BY pgf.filename" if($typ eq 'BPL');
-
-	if($haveTextInfo) {
-              $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
-                         `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
-		          `$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
-		          `$tables{chapter}` tc ts $kw1
-                        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
-                              pgf.pgfile_id = pgp.pgfile_id AND
-                              pgp.problem_id = prob.problem_id AND
-                              tc.textbook_id = tbk.textbook_id \n $extrawhere \n $textextrawhere
-                         $kw2";
-        }
 
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
@@ -884,18 +808,24 @@ sub getDirListings {
     my $libraryRoot = $topdir; #$r->param('library_dir')."/".$r->param('library_subdir');
     my $topdir .= "/".$r->param('library_lib') if($r->param('library_lib') ne $r->maketext("Select Library"));
 
-    $libraryRoot = $libraryRoot."/".$r->param('library_lib') if($r->param('library_lib'));
+
+
+    $libraryRoot = $libraryRoot."/".$r->param('library_lib') if($r->param('library_lib') ne $r->maketext("Select Library"));
     $libraryRoot = $libraryRoot."/".$r->param('library_dir') if($r->param('library_dir') ne $r->maketext("All Directories"));
     $libraryRoot = $libraryRoot."/".$r->param('library_subdir') if($r->param('library_subdir') ne $r->maketext("All Subdirectories"));
 
 
     my @results = ();
     my $level = 4;
+    my @lis;
 
-    my @lis = File::Find::Rule->file()
+    eval {
+    @lis = File::Find::Rule->file()
                             ->name('*.pg')
                             ->maxdepth($level)
+                            ->extras({ follow => 1 })
                             ->in($libraryRoot);
+    };
     if($amcounter) {
          return(scalar(@lis));
     }
