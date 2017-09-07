@@ -781,12 +781,73 @@ sub browse_library_panel2t {
 	} else {
 		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
 	}
+
+        my $texts = WeBWorK::Utils::ListingDB::getDBTextbooks($r);
+	my @textarray = map { $_->[0] }  @{$texts};
+	my %textlabels = ();
+	for my $ta (@{$texts}) {
+		$textlabels{$ta->[0]} = $ta->[1]." by ".$ta->[2]." (edition ".$ta->[3].")";
+	}
+	if(! grep { $_ eq $r->param('library_textbook') } @textarray) {
+		$r->param('library_textbook', '');
+	}
+	unshift @textarray, $r->maketext(LIB2_DATA->{textbook}{all});
+	my $atb = $r->maketext(LIB2_DATA->{textbook}{all}); $textlabels{$atb} = $r->maketext(LIB2_DATA->{textbook}{all});
+
+	my $textchap_ref = WeBWorK::Utils::ListingDB::getDBTextbooks($r, 'textchapter');
+	my @textchaps = map { $_->[0] } @{$textchap_ref};
+	if(! grep { $_ eq $r->param('library_textchapter') } @textchaps) {
+		$r->param('library_textchapter', '');
+	}
+	unshift @textchaps, $r->maketext(LIB2_DATA->{textchapter}{all});
+
+	my $textsec_ref = WeBWorK::Utils::ListingDB::getDBTextbooks($r, 'textsection');
+	my @textsecs = map { $_->[0] } @{$textsec_ref};
+	if(! grep { $_ eq $r->param('library_textsection') } @textsecs) {
+		$r->param('library_textsection', '');
+	}
+	unshift @textsecs, $r->maketext(LIB2_DATA->{textsection}{all});
+
+	my %selected = ();
+	for my $j (qw( dbsection dbchapter dbsubject textbook textchapter textsection )) {
+		$selected{$j} = $r->param(LIB2_DATA->{$j}{name}) || $r->maketext(LIB2_DATA->{$j}{all});
+	}
+
+	my $text_popup = CGI::popup_menu(-name => 'library_textbook',
+									 -values =>\@textarray,
+									 -labels => \%textlabels,
+									 -default=>$selected{textbook},
+									 -onchange=>"setCookie('tabber',1);submit();return true");
+
+	
+	my $library_keywords = $r->param('library_keywords') || '';
+
+
 	my $view_problem_line = view_problems_line('lib_view', $r->maketext('View Problems'), $self->r, 1);
 
-        return CGI::start_table({-width=>"100%"}),
+	# Formatting level checkboxes by hand
+	my @selected_levels_arr = $r->param('level');
+	my %selected_levels = ();
+	for my $j (@selected_levels_arr) {
+		$selected_levels{$j} = 1;
+	}
+	my $mylevelline = '<table width="100%"><tr>';
+	for my $j (1..6) {
+		my $selected = '';
+		$selected = ' checked' if(defined($selected_levels{$j}));
+		$mylevelline .= "<td><label><input type='checkbox' name='level' value='$j' ";
+		$mylevelline .= q/onchange="lib_update('count', 'clear');return true" /;
+		$mylevelline .= "$selected />$j</label></td>";
+	}
+	$mylevelline .= "<td>".$self->helpMacro("Levels")."</td>";
+	$mylevelline .= '</tr></table>';
+        my $defAdv = $r->param('library_adv_btn') || '';
+
+        return CGI::start_table({-width=>"100%",-id=>"opladv"}),
 	       CGI::Tr({},
 	       CGI::td({-class=>"InfoPanel", -align=>"left"}, 
 	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
+	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
 	       CGI::start_table({-width=>"100%"}),
 	       CGI::Tr({},
 	       CGI::td([$r->maketext("Subject:"),
@@ -798,7 +859,7 @@ sub browse_library_panel2t {
 #			CGI::td({-colspan=>2, -align=>"right"},
 #				CGI::submit(-name=>"lib_select_subject", -value=>"Update Chapter/Section Lists"))
 			CGI::td({-colspan=>2, -align=>"right"},
-					CGI::submit(-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
+					CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
 		),
 		CGI::Tr({},
 			CGI::td([$r->maketext("Chapter:"),
@@ -816,6 +877,37 @@ sub browse_library_panel2t {
 						-onchange=>"lib_update('count', 'clear');return true"
 		    )]),
 		 ),
+
+                 CGI::Tr({-class=>'opladvsrch'},
+			CGI::td([$r->maketext("Textbook:"), $text_popup]),
+		 ),
+		 CGI::Tr({-class=>'opladvsrch'},
+			CGI::td([$r->maketext("Text chapter:"),
+			CGI::popup_menu(-name=> 'library_textchapter', 
+					        -values=>\@textchaps,
+					        -default=> $selected{textchapter},
+							-onchange=>"setCookie('tabber',1);submit();return true"
+		    )]),
+		 ),
+		 CGI::Tr({-class=>'opladvsrch'},
+			CGI::td([$r->maketext("Text section:"),
+			CGI::popup_menu(-name=> 'library_textsection', 
+					        -values=>\@textsecs,
+					        -default=> $selected{textsection},
+							-onchange=>"setCookie('tabber',1);submit();return true"
+		    )]),
+		 ),
+		 CGI::Tr({-class=>'opladvsrch'},
+				 CGI::td($r->maketext("Level:")),
+				 "<td>$mylevelline</td>"
+		 ),
+		 CGI::Tr({-class=>'opladvsrch'},
+		     CGI::td($r->maketext("Keywords:")),CGI::td({-colspan=>2},
+			 CGI::textfield(-name=>"library_keywords",
+							-default=>$library_keywords,
+							-override=>1,
+							-size=>40))),
+
 		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
 		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
 		 CGI::end_table()
@@ -1246,13 +1338,13 @@ sub browse_specific_panel {
 	if(scalar(@libs) == 0) {
 		$popupetc =  $r->maketext("there are no set problem libraries course to look at.");
 	}
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library")."&nbsp;:&nbsp;",
 		$popupetc
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory")."&nbsp;:&nbsp;",
 		$popupetc2
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory").": ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory")."&nbsp;:&nbsp;",
 		$popupetc3
 	));
        print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
@@ -1330,9 +1422,9 @@ sub browse_specific_panelt {
 
 	return CGI::start_table({-width=>"60%"}),
 
-        CGI::Tr(CGI::td([$r->maketext("Library").": ", $popupetc])),
-        CGI::Tr(CGI::td([$r->maketext("Directory").": ", $popupetc2])),
-        CGI::Tr(CGI::td([$r->maketext("SubDirectory").": ", $popupetc3])),
+        CGI::Tr(CGI::td([$r->maketext("Library")."&nbsp;:&nbsp;", $popupetc])),
+        CGI::Tr(CGI::td([$r->maketext("Directory")."&nbsp;:&nbsp;", $popupetc2])),
+        CGI::Tr(CGI::td([$r->maketext("SubDirectory")."&nbsp;:&nbsp;", $popupetc3])),
 
         CGI::Tr(CGI::td({-colspan=>2, -align=>"center"},[$popupetc4])),
         CGI::Tr(CGI::td({-colspan=>2, -align=>"center", -id=>"slibrary_count_line"}, $count_line)),
@@ -1524,7 +1616,7 @@ sub make_top_row {
 
         
 
-	print CGI::hr();
+	#print CGI::hr();
 
 =comment
         if($browse_which eq 'browse_bpl_library') {
@@ -1583,18 +1675,31 @@ sub make_top_row {
 		$next_button = CGI::submit(-name=>"next_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Next page"),-onclick=>"setCookie('tabber',$c);");
 	}
+        my $clear_prob_btn = "";
 	if (scalar(@pg_files)) {
                 $show_hide_path_button  = "";
+                my $bbrowse_which = $r->param('bbrowse_which') || 'browse_bpl_library';
 
                 my $defaultMax = $r->param('max_shownt') || MAX_SHOW_DEFAULT;
 
+                my $t = 0;
+                $t = 5 if($bbrowse_which eq "browse_spcf_library");
+                my $btn_click = "lib_view";
+                $btn_click = "lib_view_spcf" if($bbrowse_which eq "browse_spcf_library");
                 my $displayMax = ' '.$r->maketext('Max. Shown:').' '.
                 CGI::popup_menu(-name=> 'max_shownt',id=>'max_shownt',
                                 -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
-                                -onchange => 'document.getElementById("lib_view").click();',
+                                -onchange => "setCookie('tabber',$t);document.getElementById(\"$btn_click\").click();",
                                 -default=> $defaultMax);
-
-                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" />".$r->maketext("Solutions")."&nbsp;" 
+                my ($chk_hintt,$chk_solnt) = ("","");
+                if($r->param('showHintt')) {
+                   $chk_hintt = " checked";
+                }
+                if($r->param('showSolutiont')) {
+                   $chk_solnt = " checked";
+                }
+                
+                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
                                                      if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 
                 $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
@@ -1603,32 +1708,30 @@ sub make_top_row {
                                                        -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			                               -value=>$r->maketext("Add All"));
                                                      #if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+                $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
+                               -style=>"width: 30ex",
+                                 -onclick=>"f_reset();return false;",
+                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library');
+                $show_hide_path_button .= $clear_prob_btn;
+                $show_hide_path_button .= $prev_button."&nbsp;".$next_button;
 
 
 
 		#$show_hide_path_button = CGI::submit(-id=>"toggle_paths", -style=>"width:25ex",
-		$show_hide_path_button .= CGI::submit(-id=>"toggle_paths", -style=>"width:29ex",
-		                                      -value=>$r->maketext("Show all paths"),
-								 -id =>"toggle_paths",
-								 -onClick=>'return togglepaths()');
+		$show_hide_path_button .= CGI::submit(-id=>"toggle_paths", -style=>"width:29ex", -value=>$r->maketext("Show all paths"), -id =>"toggle_paths", -onClick=>'return togglepaths()');
 		$show_hide_path_button .= " ".CGI::hidden(-name=>"toggle_path_current", -id=>"toggle_path_current", -default=>'show');
 		$show_hide_path_button .= " ".CGI::hidden(-name=>"hidetext", -id=>"hidetext", -default=>$r->maketext("Hide all paths"));
 		$show_hide_path_button .= " ".CGI::hidden(-name=>"showtext", -id=>"showtext", -default=>$r->maketext("Show all paths"));
 	}
 	
         my $divtag =  "<div id='ShowResultsMenu' name='showResultsMenu' class='showResultsMenu'>";
-        my $bbrowse_which = $r->param('bbrowse_which') || 'browse_bpl_library';
-        my $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
-                               -style=>"width: 30ex",
-                                 -onclick=>"f_reset();return false;",
-                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library');
 
 
 	print CGI::Tr({},
 	        CGI::td({-class=>"InfoPanel", -align=>"center"},
 		      CGI::start_table({-border=>"0"}),
 		        CGI::Tr({}, CGI::td({ -align=>"center"},
-			$divtag,$prev_button, " ", $next_button, " ",$clear_prob_btn, $show_hide_path_button."</div>"
+			$divtag,$show_hide_path_button."</div>"
 		     )), 
 	CGI::end_table()));
 =comment
@@ -2497,11 +2600,11 @@ sub body {
 	#	 if($first_shown>0 or (1+$last_shown)<scalar(@pg_files)) {
 	my ($next_button, $prev_button) = ("", "");
 	if ($first_index > 0) {
-		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:15ex",
+		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Previous page"));
 	}
 	if ((1+$last_index)<scalar(@pg_files)) {
-		$next_button = CGI::submit(-name=>"next_page", -style=>"width:15ex",
+		$next_button = CGI::submit(-name=>"next_page", -style=>"width:18ex",
 						 -value=>$r->maketext("Next page"));
 	}
 	if (scalar(@pg_files)>0) {
