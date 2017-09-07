@@ -299,7 +299,9 @@ tabberObj.prototype.init = function(e)
   }
 
   this.tabShow(defaultTab);
+  toggleAdvSrch();
 
+  //$('#opladv tr.opladvsrch').toggle(0);
   /* If the user specified an onLoad function, call it now. */
   if (typeof this.onLoad == 'function') {
     this.onLoad({tabber:this});
@@ -630,4 +632,14 @@ function setBrowseWhich(i) {
 
     return;
 
+}
+function toggleAdvSrch() {
+  var advbt = $('[name="library_adv_btn"]').val();
+  if(advbt == 1) {
+       $("#library_advanced").val(maketext('Basic Search'));
+       $('#opladv tr.opladvsrch').toggle(true);
+  } else {
+       $("#library_advanced").val(maketext('Advanced Search'));
+       $('#opladv tr.opladvsrch').toggle(false);
+  }
 }
