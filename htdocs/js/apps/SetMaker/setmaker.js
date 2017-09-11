@@ -125,6 +125,10 @@ function f_reset(v) {
        //return false;
        nomsg();
 
+       
+       $('#showHintt').prop('checked', false);
+       $('#showSolutiont').prop('checked', false);
+
        $('[name="library_subjects"]').prop("selectedIndex",0);
        lib_update('chapters', 'clear');
        lib_update('count', 'clear' );
@@ -140,6 +144,7 @@ function f_reset(v) {
        lib_searchops("BPL",tagify);
 
        $("#library_defkeywords").val(20);
+       $("#lib_deftab").val(v);
        lib_top20keywords("BPL",tagify);
 
        //reset spdir tab
