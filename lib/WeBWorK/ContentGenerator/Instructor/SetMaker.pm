@@ -1562,7 +1562,7 @@ sub make_top_row {
 						-default=> $set_selected,
                                                 -onchange=> "return markinset()",
 						-override=>1),
-		CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set")),
+		CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set"),-onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);" ),
 		CGI::hidden(-name=>"selfassign", -default=>0,-override=>1).
 		CGI::hidden(-name=>"lib_deftab", -default=>$c,-override=>1).
 		CGI::br(), 
