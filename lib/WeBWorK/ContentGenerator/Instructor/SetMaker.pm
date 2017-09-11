@@ -1538,6 +1538,22 @@ sub make_top_row {
 		CGI::br(), 
 		CGI::br(), 
            ));
+        my $c = 0;
+        if($self->{browse_which} eq 'browse_spcf_library') {
+           $c = 5;
+        }
+        if($self->{browse_which} eq 'browse_npl_library') {
+           $c = 1;
+        }
+        if($self->{browse_which} eq 'browse_local') {
+           $c = 2;
+        }
+        if($self->{browse_which} eq 'browse_mysets') {
+           $c = 3;
+        }
+        if($self->{browse_which} eq 'browse_setdefs') {
+           $c = 4;
+        }
         print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},$r->maketext("Select an Existing Set").' ',
 	        #print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Add problems to").' ',
 		#CGI::b($r->maketext("Target Set:").' '),
@@ -1548,6 +1564,7 @@ sub make_top_row {
 						-override=>1),
 		CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set")),
 		CGI::hidden(-name=>"selfassign", -default=>0,-override=>1).
+		CGI::hidden(-name=>"lib_deftab", -default=>$c,-override=>1).
 		CGI::br(), 
 		CGI::br(), 
 		$r->maketext("Create a New Set"),
@@ -1555,7 +1572,7 @@ sub make_top_row {
 					   -example=>$r->maketext("Name for new set here"),
 					   -override=>1, -size=>30),
 		CGI::submit(-name=>"new_local_set", -value=>$r->maketext("Create"),
-		                                    -onclick=>"document.mainform.selfassign.value=1"      #       $myjs
+		                                    -onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);document.mainform.selfassign.value=1"      #       $myjs
 		),
 		"  ",
 		CGI::br(), 
@@ -1648,22 +1665,7 @@ sub make_top_row {
 	my @pg_files = @{$self->{pg_files}};
 	my $stringalert = $r->maketext(SELECT_SET_STRING);
 
-        my $c = 0;
-        if($self->{browse_which} eq 'browse_spcf_library') {
-           $c = 5;
-        }
-        if($self->{browse_which} eq 'browse_npl_library') {
-           $c = 1;
-        }
-        if($self->{browse_which} eq 'browse_local') {
-           $c = 2;
-        }
-        if($self->{browse_which} eq 'browse_mysets') {
-           $c = 3;
-        }
-        if($self->{browse_which} eq 'browse_setdefs') {
-           $c = 4;
-        }
+
 
 
 	if ($first_index > 0) {
@@ -1699,14 +1701,14 @@ sub make_top_row {
                    $chk_solnt = " checked";
                 }
                 
-                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
-                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
-
-                $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>"width:29ex",
                                                        -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			                               -value=>$r->maketext("Add All"));
+                $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
+                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+
                                                      #if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
                 $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
                                -style=>"width: 30ex",
@@ -2253,13 +2255,14 @@ sub pre_header_initialize {
  
 		@pg_files=();
                 my $typ = "";
+
                 if($r->param('bbrowse_which') eq 'browse_bpl_library') {
-                   $typ = 'BPL';
-                }
-                if($typ eq 'BPL') {
+                    $typ = 'BPL';
                     $r->{showHints} = 1;
                     $r->{showSolutions} = 1;
                 }
+
+                
                
                 my @dbsearch;
                 if($typ eq 'BPL') {
@@ -2511,10 +2514,12 @@ sub body {
 	my $showHints = $r->param('showHints');
 	my $showSolutions = $r->param('showSolutions');
 
-        if($self->{browse_which} eq "browse_bpl_library") {
+=comment
+        if($self->{browse_which} eq "browse_bpl_library" || $self->{browse_which} eq "browse_spcf_library") {
 	    $showHints = 1;
 	    $showSolutions = 1;
         }
+=cut
 
 	##########	Extract information computed in pre_header_initialize
 
@@ -2599,13 +2604,30 @@ sub body {
 	print '</div>';
 	#	 if($first_shown>0 or (1+$last_shown)<scalar(@pg_files)) {
 	my ($next_button, $prev_button) = ("", "");
+        my $c = 0;
+        if($browse_which eq 'browse_spcf_library') {
+           $c = 5;
+        }
+        if($browse_which eq 'browse_npl_library') {
+           $c = 1;
+        }
+        if($browse_which eq 'browse_local') {
+           $c = 2;
+        }
+        if($browse_which eq 'browse_mysets') {
+           $c = 3;
+        }
+        if($browse_which eq 'browse_setdefs') {
+           $c = 4;
+        }
+
 	if ($first_index > 0) {
 		$prev_button = CGI::submit(-name=>"prev_page", -style=>"width:18ex",
-						 -value=>$r->maketext("Previous page"));
+						 -value=>$r->maketext("Previous page"),-onclick=>"setCookie('tabber',$c);");
 	}
 	if ((1+$last_index)<scalar(@pg_files)) {
 		$next_button = CGI::submit(-name=>"next_page", -style=>"width:18ex",
-						 -value=>$r->maketext("Next page"));
+						 -value=>$r->maketext("Next page"),-onclick=>"setCookie('tabber',$c);");
 	}
 	if (scalar(@pg_files)>0) {
                 print "<div id='showResultsEnd'>\n";
