@@ -2162,6 +2162,9 @@ sub pre_header_initialize {
     debug("browse_mysets", $r->param("browse_mysets"));
     debug("browse_setdefs", $r->param("browse_setdefs"));
 	##### Asked to browse certain problems
+        if($r->param('edit_local') || $r->param('new_local_set')) {
+	    $use_previous_problems = 0; @pg_files = (); ## clear old problems
+        }
 	if ($browse_lib ne '') {
 		$browse_which = $browse_lib;
 		$self->{current_library_set} = "";
@@ -2466,15 +2469,15 @@ sub pre_header_initialize {
 	   $ce->{problemLibrary}{showLibraryLocalStats} ) {
 	    $library_stats_handler = WeBWorK::Utils::LibraryStats->new($ce);
 	}
+        
 
 	############# Now store data in self for retreival by body
+	$self->{browse_which} = $browse_which;
 	$self->{first_shown} = $first_shown;
 	$self->{last_shown} = $last_shown;
 	$self->{first_index} = $first_index;
 	$self->{last_index} = $last_index;
 	$self->{total_probs} = $total_probs;
-	$self->{browse_which} = $browse_which;
-	#$self->{problem_seed} = $problem_seed;
 	$self->{pg_files} = \@pg_files;
 	$self->{all_db_sets} = \@all_db_sets;
 	$self->{library_basic} = $library_basic;
