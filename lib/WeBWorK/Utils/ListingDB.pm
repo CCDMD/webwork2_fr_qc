@@ -586,23 +586,16 @@ Here, we search on all known fields out of r
 sub getDBListings {
 	my $r = shift;
 	my $amcounter = shift;  # 0-1 if I am a counter.
-        my $typ = shift || "";
-
 	my $ce = $r->ce;
-	my %tables = getTables($ce,$typ);
-
+	my %tables = getTables($ce);
 	my $subj = $r->param('library_subjects') || "";
 	my $chap = $r->param('library_chapters') || "";
 	my $sec = $r->param('library_sections') || "";
-
+	my $keywords = $r->param('library_keywords') || "";
         $subj = "" if ($subj eq $r->maketext("All Subjects"));
         $chap = "" if ($chap eq $r->maketext("All Chapters"));
         $sec = "" if ($sec eq $r->maketext("All Sections"));
 
-	my $keywords =  $r->param('library_keywords') || "";
-	my $dbh = getDB($ce);
-        my $sth;
-       
 	# Next could be an array, an array reference, or nothing
 	my @levels = $r->param('level');
 	if(scalar(@levels) == 1 and ref($levels[0]) eq 'ARRAY') {
@@ -610,24 +603,23 @@ sub getDBListings {
 	}
 	@levels = grep { defined($_) && m/\S/ } @levels;
 	my ($kw1, $kw2) = ('','');
-
-	if($keywords ne "" && $typ ne "BPL") {
+	if($keywords) {
 		$kw1 = ", `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
 		$kw2 = " AND kw.keyword_id=pgkey.keyword_id AND
 			 pgkey.pgfile_id=pgf.pgfile_id ". 
 			makeKeywordWhere($keywords) ;
 	}
 
+	my $dbh = getDB($ce);
+
 	my $extrawhere = '';
 	if($subj) {
 		$subj =~ s/'/\\'/g;
 		$extrawhere .= " AND dbsj.name=\"$subj\" ";
-		#$extrawhere .= " AND dbsj.name=CONVERT(CONVERT(\"$subj\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($chap) {
 		$chap =~ s/'/\\'/g;
 		$extrawhere .= " AND dbc.name=\"$chap\" ";
-		#$extrawhere .= " AND dbc.name=CONVERT(CONVERT(\"$chap\" USING BINARY) USING latin1) " if($typ eq 'BPL');
 	}
 	if($sec) {
 		$sec =~ s/'/\\'/g;
@@ -637,13 +629,14 @@ sub getDBListings {
 		$extrawhere .= " AND pgf.level IN (".join(',', @levels).") ";
 	}
 	my $textextrawhere = '';
-        my $haveTextInfo=0;
+    my $haveTextInfo=0;
 	for my $j (qw( textbook textchapter textsection )) {
 		my $foo = $r->param(LIBRARY_STRUCTURE->{$j}{name}) || '';
                 $foo = "" if($foo eq $r->maketext( LIBRARY_STRUCTURE->{$j}{all} ));
+
 		$foo =~ s/^\s*\d+\.\s*//;
 		if($foo) {
-                        $haveTextInfo=1;
+            $haveTextInfo=1;
 			$foo =~ s/'/\\'/g;
 			$textextrawhere .= " AND ".LIBRARY_STRUCTURE->{$j}{where}."=\"$foo\" ";
 		}
@@ -659,30 +652,28 @@ sub getDBListings {
               dbsc.DBsection_id = pgf.DBsection_id 
               \n $extrawhere 
               $kw2";
-        $query .= " ORDER BY pgf.filename" if($typ eq 'BPL');
-
 	if($haveTextInfo) {
-            $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
-                         `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
-		         `$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
-		         `$tables{chapter}` tc, `$tables{section}` ts $kw1
-                      WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
-                            dbc.DBchapter_id = dbsc.DBchapter_id AND
-                            dbsc.DBsection_id = pgf.DBsection_id AND
-                            pgf.pgfile_id = pgp.pgfile_id AND
-                            pgp.problem_id = prob.problem_id AND
-                            tc.textbook_id = tbk.textbook_id AND
-                            ts.chapter_id = tc.chapter_id AND
-                            prob.section_id = ts.section_id \n $extrawhere \n $textextrawhere
-                       $kw2";
-         }
-
+      $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+        `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj,
+		`$tables{pgfile_problem}` pgp, `$tables{problem}` prob, `$tables{textbook}` tbk ,
+		`$tables{chapter}` tc, `$tables{section}` ts $kw1
+        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
+              dbc.DBchapter_id = dbsc.DBchapter_id AND
+              dbsc.DBsection_id = pgf.DBsection_id AND
+              pgf.pgfile_id = pgp.pgfile_id AND
+              pgp.problem_id = prob.problem_id AND
+              tc.textbook_id = tbk.textbook_id AND
+              ts.chapter_id = tc.chapter_id AND
+              prob.section_id = ts.section_id \n $extrawhere \n $textextrawhere
+              $kw2";
+     }
+#$query =~ s/\n/ /g;
+#warn $query;
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
 	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
 	if($amcounter) {
-	    return(@pg_ids[0]);
+		return(@pg_ids[0]);
 	}
-
 	my @results=();
 	for my $pgid (@pg_ids) {
 		$query = "SELECT path, filename, morelt_id, pgfile_id, static, MO FROM `$tables{pgfile}` pgf, `$tables{path}` p 
@@ -691,9 +682,9 @@ sub getDBListings {
 		push @results, {'path' => $row->[0], 'filename' => $row->[1], 'morelt' => $row->[2], 'pgid'=> $row->[3], 'static' => $row->[4], 'MO' => $row->[5] };
 		
 	}
-        $dbh->disconnect;
 	return @results;
 }
+
 sub getBPLDBListings {
 	my $r = shift;
 	my $amcounter = shift;  # 0-1 if I am a counter.
