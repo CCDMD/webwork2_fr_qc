@@ -630,6 +630,7 @@ function setBrowseWhich(i) {
     if(i == 5)
       document.getElementsByName('bbrowse_which')[0].value  = 'browse_spcf_library';
 
+    document.getElementsByName('lib_deftab')[0].value = i;
     return;
 
 }
@@ -638,8 +639,10 @@ function toggleAdvSrch() {
   if(advbt == 1) {
        $("#library_advanced").val(maketext('Basic Search'));
        $('#opladv tr.opladvsrch').toggle(true);
+       $('#opladv td.opladvsrch').toggle(true);
   } else {
        $("#library_advanced").val(maketext('Advanced Search'));
        $('#opladv tr.opladvsrch').toggle(false);
+       $('#opladv td.opladvsrch').toggle(false);
   }
 }
