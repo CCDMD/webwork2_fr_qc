@@ -415,14 +415,16 @@ sub view_problems_line {
 		                -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
 		                -default=> $defaultMax);
 	# Option of whether to show hints and solutions
-	my $defaultHints = $r->param('showHints') || SHOW_HINTS_DEFAULT;
+	my $defaultHints = $r->param('showHints_'.$t) || SHOW_HINTS_DEFAULT;
         my ($chk_hints,$chk_soln) = ('','');
         $chk_hints = " checked" if($defaultHints);
+        my $chk_hints_id = "showHints_".$t;
 	#$result .= "&nbsp;".CGI::checkbox(-name=>"showHints",-checked=>$defaultHints,-label=>$r->maketext("Hints"));
-	my $defaultSolutions = $r->param('showSolutions') || SHOW_SOLUTIONS_DEFAULT;
+	my $defaultSolutions = $r->param('showSolutions_'.$t) || SHOW_SOLUTIONS_DEFAULT;
         $chk_soln = " checked" if($defaultSolutions);
+        my $chk_soln_id = "showSolutions_".$t;
 	#$result .= "&nbsp;".CGI::checkbox(-name=>"showSolutions",-checked=>$defaultSolutions,-label=>$r->maketext("Solutions"));
-        $result .= "&nbsp;<input type=\"checkbox\" name=\"showHints\" value=\"on\"  $chk_hints />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" name=\"showSolutions\" value=\"on\"  $chk_soln />".$r->maketext("Solutions");
+        $result .= "&nbsp;<input type=\"checkbox\" id=\"$chk_hints_id\" name=\"$chk_hints_id\" value=\"on\"  $chk_hints />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" name=\"$chk_soln_id\"  id=\"$chk_soln_id\" value=\"on\"  $chk_soln />".$r->maketext("Solutions");
 	$result .= "\n".CGI::hidden(-name=>"original_displayMode", -default=>$mydisplayMode)."\n";
 	
 	return($result);
@@ -447,6 +449,7 @@ sub view_problems_line_bpl {
 	$result .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$r->maketext('Display Mode:').' '.CGI::popup_menu(-name=> 'mydisplayMode',
 	                                                            -values=>\@active_modes,
 	                                                            -default=> $mydisplayMode);
+
 	$result .= "\n".CGI::hidden(-name=>"showSolutions", -default=>1)."\n";
 	$result .= "\n".CGI::hidden(-name=>"showHints", -default=>1)."\n";
 =comment
@@ -2218,6 +2221,8 @@ sub pre_header_initialize {
 
 	} elsif ($r->param('view_local_set')) {
 
+                #$r->{showHints} = 1 if($r->param('showHints_2'));
+                #$r->{showSolutions} = 1 if($r->param('showSolutions_2'));
 		my $set_to_display = $self->{current_library_set};
 		if (not defined($set_to_display) or $set_to_display eq $r->maketext(SELECT_LOCAL_STRING) or $set_to_display eq "Found no directories containing problems") {
 			$self->addbadmessage($r->maketext('You need to select a set to view.'));
@@ -2233,6 +2238,9 @@ sub pre_header_initialize {
 		##### View problems selected from the a set in this course
 
 	} elsif ($r->param('view_mysets_set')) {
+
+                #$r->{showHints} = 1 if($r->param('showHints_3'));
+                #$r->{showSolutions} = 1 if($r->param('showSolutions_3'));
 
 		my $set_to_display = $self->{current_library_set};
 		debug("set_to_display is $set_to_display");
@@ -2271,6 +2279,9 @@ sub pre_header_initialize {
                     $r->{showSolutions} = 1;
                 }
 
+                #$r->{showHints} = 1 if($r->param('showHints_1'));
+                #$r->{showSolutions} = 1 if($r->param('showSolutions_1'));
+
                 
                
                 my @dbsearch;
@@ -2302,6 +2313,8 @@ sub pre_header_initialize {
 
 	} elsif ($r->param('view_setdef_set')) {
 
+                #$r->{showHints} = 1 if($r->param('showHints_4'));
+                #$r->{showSolutions} = 1 if($r->param('showSolutions_4'));
 		my $set_to_display = $self->{current_library_set};
 		debug("set_to_display is $set_to_display");
 		if (not defined($set_to_display) 
@@ -2520,10 +2533,25 @@ sub body {
 		CGI::em("You are not authorized to access the Instructor tools.")));
 	}
 
-	my $showHints = $r->param('showHints');
-	my $showSolutions = $r->param('showSolutions');
+
+        my $tb = $r->param('lib_deftab') || '0';
+        my $prm1 = "showHints_".$tb;
+        my $prm2 = "showSolutions_".$tb;
+        
+	my $showHints = $r->param($prm1);
+	my $showSolutions = $r->param($prm2);
+
+        $showHints = 1 if($tb == 0 || $tb == 5);
+        $showSolutions = 1 if($tb == 0 || $tb == 5);
+
 
 =comment
+        foreach my $tb (1..4) {
+            $showHints = 1 if($r->param($prm1));
+            $showSolutions = 1 if($r->param($prm2));
+
+        }
+
         if($self->{browse_which} eq "browse_bpl_library" || $self->{browse_which} eq "browse_spcf_library") {
 	    $showHints = 1;
 	    $showSolutions = 1;
