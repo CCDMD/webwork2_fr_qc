@@ -842,6 +842,7 @@ sub browse_library_panel2t {
 	$mylevelline .= "<td>".$self->helpMacro("Levels")."</td>";
 	$mylevelline .= '</tr></table>';
         my $defAdv = $r->param('library_adv_btn') || '';
+        my $right_button_style = "width: 18ex";
 
         return CGI::start_table({-width=>"100%",-id=>"opladv"}),
 	       CGI::Tr({},
@@ -856,11 +857,9 @@ sub browse_library_panel2t {
 					            -default=> $subject_selected,
 					            -onchange=>"lib_update('chapters', 'get');return true"
 				)]),
-#			CGI::td({-colspan=>2, -align=>"right"},
-#				CGI::submit(-name=>"lib_select_subject", -value=>"Update Chapter/Section Lists"))
-			CGI::td({-colspan=>2, -align=>"right"},
-					CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
-		),
+                        CGI::td({-colspan=>2, -align=>"right",-class=>"opladvsrch"},
+                                CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),-onclick=>"setCookie('tabber',1);",
+                                        -style=> $right_button_style))),
 		CGI::Tr({},
 			CGI::td([$r->maketext("Chapter:"),
 				CGI::popup_menu(-name=> 'library_chapters', 
@@ -868,6 +867,9 @@ sub browse_library_panel2t {
 					            -default=> $chapter_selected,
 					            -onchange=>"lib_update('sections', 'get');return true"
 		    )]),
+                       CGI::td({-colspan=>2, -align=>"right",-class=>"opladvsrch"},
+                                        CGI::submit(-name=>"library_reset", -value=>$r->maketext("Reset"),-onclick=>"setCookie('tabber',1);",
+                                        -style=>$right_button_style))
 		),
 		CGI::Tr({},
 			CGI::td([$r->maketext("Section:"),
@@ -876,6 +878,8 @@ sub browse_library_panel2t {
 					        -default=> $section_selected,
 						-onchange=>"lib_update('count', 'clear');return true"
 		    )]),
+			CGI::td({-align=>"right",-colspan=>2},
+					CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
 		 ),
 
                  CGI::Tr({-class=>'opladvsrch'},
@@ -2162,7 +2166,9 @@ sub pre_header_initialize {
     debug("browse_mysets", $r->param("browse_mysets"));
     debug("browse_setdefs", $r->param("browse_setdefs"));
 	##### Asked to browse certain problems
-        if($r->param('edit_local') || $r->param('new_local_set')) {
+        if($r->param('edit_local') || $r->param('new_local_set') 
+                 || !( $r->param('next_page') || $r->param('prev_page') || $r->param('lib_view') || $r->param('lib_view_spcf') || $r->param('view_setdef_set') || $r->param('view_mysets_set') || $r->param('view_local_set')) 
+               ) {
 	    $use_previous_problems = 0; @pg_files = (); ## clear old problems
         }
 	if ($browse_lib ne '') {
