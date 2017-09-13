@@ -131,19 +131,29 @@ Tagify.prototype = {
                 that = this;
 
             if( e.key == "Backspace" && (s == "" || s.charCodeAt(0) == 8203) ){
+                this.DOM.datalist.innerHTML = '';
                 this.removeTag( this.DOM.scope.querySelectorAll('tag:not(.tagify--hide)').length - 1 );
+            }
+            if(e.key == "Backspace") {
+              if(s.length == 1)
+                this.DOM.datalist.innerHTML = '';
             }
             if( e.key == "Escape" ){
                 e.target.value = '';
+                this.DOM.datalist.innerHTML = '';
                 e.target.blur();
             }
             if( e.key == "Enter" ){
                 e.preventDefault(); // solves Chrome bug - http://stackoverflow.com/a/20398191/104380
-                if( this.addTag(s) )
+                if( this.addTag(s) ) {
+                    e.target.blur();
                     e.target.value = '';
+                    this.DOM.datalist.innerHTML = '';
+                }
                 return false;
             }
             else{
+                //this.DOM.datalist.innerHTML = '';
                 if( this.noneDatalistInput ) clearTimeout(this.noneDatalistInput);
                 this.noneDatalistInput = setTimeout(function(){ that.noneDatalistInput = null }, 50);
             }
@@ -160,6 +170,8 @@ Tagify.prototype = {
 
             if( value.indexOf(',') != -1 || isDatalistInput ){
                 this.addTag( value );
+                e.target.blur();
+                this.DOM.datalist.innerHTML = '';
                 e.target.value = ''; // clear the input field's value
             }
             
@@ -203,8 +215,9 @@ Tagify.prototype = {
         },
 
         onClickScope : function(e){
-            if( e.target.tagName == "TAGS" )
+            if( e.target.tagName == "TAGS" ) {
                 this.DOM.input.focus();
+            }
             if( e.target.tagName == "X" ){
                 this.removeTag( this.getNodeIndex(e.target.parentNode) );
             }
