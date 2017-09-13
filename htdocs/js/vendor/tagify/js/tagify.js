@@ -82,8 +82,11 @@ Tagify.prototype = {
         this.on = target.addEventListener.bind(target);
         this.trigger = function(eventName, data){
             if( !eventName ) return;
-            var e = new CustomEvent(eventName, {"detail":data});
-            target.dispatchEvent(e);
+            var evt = document.createEvent("CustomEvent");
+            //var e = new CustomEvent(eventName, {"detail":data});
+            evt.initCustomEvent(eventName,false,false, {"detail":data});
+    
+            target.dispatchEvent(evt);
         }
     },
 
@@ -160,12 +163,12 @@ Tagify.prototype = {
         },
 
         onInput : function(e){
+           
             var value = e.target.value,
                 lastChar = value[value.length - 1],
                 isDatalistInput = !this.noneDatalistInput && value.length > 1,
                 showSuggestions = value.length >= this.settings.suggestionsMinChars,
                 datalistInDOM;
-            //alert(value);
             e.target.style.width = ((e.target.value.length + 1) * 7) + 'px';
 
             if( value.indexOf(',') != -1 || isDatalistInput ){
@@ -261,7 +264,16 @@ Tagify.prototype = {
     },
 
     markTagByValue : function(value){
-        var tagIdx = this.value.findIndex(function(item){ return value.toLowerCase() === item.toLowerCase() }),
+        var findIndex = function(arr, fn) {
+            return arr.reduce(function(carry, item, idx) {
+            if(fn(item, idx)) {
+               return idx;
+            }
+            return carry;
+            } , -1);
+        };
+        //var tagIdx = this.value.findIndex(function(item){ return value.toLowerCase() === item.toLowerCase() }),
+        var tagIdx = findIndex(this.value,function(item){ return value.toLowerCase() === item.toLowerCase() }),
             tag = this.DOM.scope.querySelectorAll('tag')[tagIdx];
 
         if( tag ){
