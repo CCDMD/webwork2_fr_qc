@@ -402,7 +402,7 @@ sub getAllKeyWords {
                      WHERE a.keyword_id=b.bplkeyword_id 
                       AND  b.bpldbchapter_id = d.DBchapter_id
                       AND  c.DBsubject_id = d.DBsubject_id
-                      $where ORDER BY keyword ASC";
+                      $where ORDER BY keyword DESC";
 	#my $query = "SELECT keyword FROM `$tables{keyword}` a, `$tables{keywordmap}` b WHERE a.keyword_id=b.bplkeyword_id $where ORDER BY keyword";
 
 	my $dbh = getDB($r->ce);
