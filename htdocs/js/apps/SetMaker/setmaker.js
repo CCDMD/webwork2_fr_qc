@@ -103,6 +103,7 @@ $(window).load(function() {
             $(this).val(maketext('Basic Search'));
         }
         $('#opladv tr.opladvsrch').toggle();
+        $('#opladv td.opladvsrch').toggle();
         event.preventDefault();
    });
 
@@ -125,7 +126,6 @@ function f_reset(v) {
        //return false;
        nomsg();
 
-       
        $('#showHintt').prop('checked', false);
        $('#showSolutiont').prop('checked', false);
 
