@@ -12,10 +12,216 @@ var basicRequestObject = {
 };
 
 var basicWebserviceURL = "/webwork2/instructorXMLHandler";
+var tagify;
 
+
+$(window).load(function() {
+
+
+   //setCookie('tabber', 0);
+   var input1 = document.querySelector('input[name=search_bpl]');
+   if($('[name="bbrowse_which"]').val() == 'browse_spcf_library' ) {
+       if($('[name="library_lib"] option:selected').index() == 0) {
+           $("#lib_view_spcf").attr("disabled","disabled");
+       }
+   }
+
+  
+   if(!input1) { 
+       var brw = $('[name="bbrowse_which"]').val();
+       if(brw == 'browse_spcf_library') {
+          $('a:contains("'+maketext('Solution')+'")').hide();
+          $('a:contains("'+maketext('Hint')+'")').hide();
+       }
+       return;
+   }
+   tagify = bpl_reset(null,0);
+   //alert(input1.val());
+   $("#blibrary_subjects").change ( function() {
+       tagify = bpl_reset(tagify,1);
+       blib_update('chapters', 'get', tagify, 'BPL' );
+       lib_searchops("BPL",tagify);
+       blib_update('count', 'clear', tagify, 'BPL' );
+
+       $("#library_defkeywords").val(20);
+       lib_top20keywords("BPL",tagify);
+       return true;
+   });
+
+   $("#blibrary_chapters").change ( function() {
+       tagify = bpl_reset(tagify,1);
+       lib_searchops("BPL",tagify);
+       blib_update('count', 'clear', tagify, 'BPL' );
+       $("#library_defkeywords").val(20);
+       lib_top20keywords("BPL",tagify);
+       return true;
+   });
+
+  lib_searchops("BPL",tagify);
+  $("#search_bpl").hide();
+  $('input[name=reset]').click(function() {
+       var brw = $('[name="bbrowse_which"]').val();
+       var k = 0;
+       if(brw == 'browse_spcf_library') {
+           k = 5;
+       }
+       f_reset(k);
+       return false;
+  });
+  $("#load_kw").click(function() {
+       f_loadmore();
+       return false;
+  });
+  //var x = tabberAutomatic(tabberOptions);
+  //alert(typeof(x));
+
+  //hide solutions and hints to be toggled
+  if($("input[name='showSolutiont']").is(':checked') ) {
+      $('a:contains("'+maketext('Solution')+'")').show();
+  } else {
+     if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
+        $('a:contains("'+maketext('Solution')+'")').show();
+     } else {
+        $('a:contains("'+maketext('Solution')+'")').hide();
+     }
+  }
+  if($("input[name='showHintt']").is(':checked')) {
+      $('a:contains("'+maketext('Hint')+'")').show();
+  } else {
+     if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
+      $('a:contains("'+maketext('Hint')+'")').show();
+     } else {
+      $('a:contains("'+maketext('Hint')+'")').hide();
+     }
+  }
+
+  //OPL Advanced search handle
+  $("#library_advanced").click(function (event) {
+        var txt = $(this).val();
+        if(txt == maketext('Basic Search')) {
+            $(this).val(maketext('Advanced Search'));
+            $('[name="library_adv_btn"]').val('');
+            //change index
+            $('[name="library_textbook"]').prop("selectedIndex",0);
+            $('[name="library_textbook"]').trigger( "change" );
+            
+            //lib_update('count','clear');
+        } else {
+            $('[name="library_adv_btn"]').val('1');
+            $(this).val(maketext('Basic Search'));
+        }
+        $('#opladv tr.opladvsrch').toggle();
+        $('#opladv td.opladvsrch').toggle();
+        event.preventDefault();
+   });
+
+});
+function f_loadmore() {
+
+
+       //alert('Load more keywords');
+       var k = parseInt($("#library_defkeywords").val()) + 20;
+       
+       $("#library_defkeywords").val(k);
+       lib_top20keywords("BPL",tagify);
+       return false;
+
+}
+
+function f_reset(v) {
+
+       //location.href = location.href;
+       //return false;
+       nomsg();
+
+       $('#showHintt').prop('checked', false);
+       $('#showSolutiont').prop('checked', false);
+
+       $('[name="library_subjects"]').prop("selectedIndex",0);
+       lib_update('chapters', 'clear');
+       lib_update('count', 'clear' );
+       $('[name="llibrary_sets"]').prop("selectedIndex",0);
+       $('[name="mlibrary_sets"]').prop("selectedIndex",0);
+       $('[name="slibrary_sets"]').prop("selectedIndex",0);
+         //  return;
+       tagify = bpl_reset(tagify,1);
+       
+       if(v > 0 && v < 5) {
+          $('#showHints_'+v).attr('checked', false);
+          $('#showSolutions_'+v).attr('checked', false);
+
+          //$("#showHints").val('');
+          //$("#showSolutions").val('');
+       }
+       //blib_update('subjects', 'clear', tagify, 'BPL' );
+       $('[name="blibrary_subjects"]').prop("selectedIndex",0);
+       blib_update('chapters', 'clear', tagify, 'BPL' );
+       blib_update('count', 'clear', tagify, 'BPL' );
+       lib_searchops("BPL",tagify);
+
+       $("#library_defkeywords").val(20);
+       $("#lib_deftab").val(v);
+       lib_top20keywords("BPL",tagify);
+
+           $('[name="library_lib"]').prop("selectedIndex",0);
+           $("#lib_view_spcf").attr("disabled","disabled");
+           dir_update('dir', 'clear', tagify, 'BPL' );
+
+       $(".showResultsMenu").hide().css("visibility", "hidden");
+       $('#showResults').hide().css("visibility", "hidden");
+       //$(".lb-problem-header").css("visibility", "hidden");
+       $(".lb-problem-header").css("display", "none");
+       //$(".RenderSolo").css("visibility", "hidden");
+       $(".RenderSolo").css("display", "none");
+       $(".lb-mlt-group").css("visibility", "hidden");
+       $(".AuthorComment").css("display", "none");
+       $('#showResultsEnd').hide().css("visibility", "hidden");
+}
+function bpl_reset(tg,rs) {
+       var input1 = document.querySelector('input[name=search_bpl]');
+       if(rs)
+         input1.value = '';
+       if(tg)
+         tg.destroy();
+       tagify = new Tagify(input1, {
+           suggestionsMinChars : 1, autocomplete: 1,
+       });
+       //tagify.on('add', ()=>{
+       tagify.on('add', function (x){
+           blib_update('count', 'clear', tagify, 'BPL' );
+           $("#library_defkeywords").val(20);
+           lib_top20keywords('BPL',tagify);
+           //lib_searchops('BPL',tagify);
+       });
+       //tagify.on('remove', ()=>{
+       tagify.on('remove', function (x){
+           blib_update('count', 'clear', tagify, 'BPL' );
+           //lib_searchops('BPL',tagify);
+           $("#library_defkeywords").val(20);
+           lib_top20keywords('BPL',tagify);
+       });
+       blib_update('count', 'clear', tagify, 'BPL' );
+       lib_top20keywords('BPL',tagify);
+       return tagify;
+}
+
+
+function toggleSolution(t) {
+    if (t.is(':checked')) {
+         $('a:contains('+maketext('Solution')+')').show();
+    } else {
+         $('a:contains('+maketext('Solution')+')').hide();
+    }
+}
+function toggleHint(t) {
+    if (t.is(':checked')) {
+         $('a:contains('+maketext('Hint')+')').show();
+    } else {
+         $('a:contains('+maketext('Hint')+')').hide();
+    }
+}
 
 // Messaging
-
 function nomsg() {
   $(".Message").html("");
 }
@@ -27,7 +233,6 @@ function goodmsg(msg) {
 function badmsg(msg) {
   $(".Message").html('<div class="ResultsWithError">'+msg+"</div>");
 }
-
 
 function settoggle(id, text1, text2) {
   $('#'+id).toggle(function() {$('#'+id).html(text2)}, 
@@ -93,11 +298,12 @@ function init_webservice(command) {
   return mydefaultRequestObject;
 }
 
-function lib_update(who, what) {
+function lib_update(who, what, tg, typ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
-  nomsg();
+  //nomsg();
   var all = 'All ' + capFirstLetter(who);
+  all = maketext(all);
 
   var mydefaultRequestObject = init_webservice('searchLib');
   if(mydefaultRequestObject == null) {
@@ -105,21 +311,38 @@ function lib_update(who, what) {
     // console.log("Could not get webservice request object");
     return false;
   }
+
+  typ = 'OPL';
+
   var subj = $('[name="library_subjects"] option:selected').val();
   var chap = $('[name="library_chapters"] option:selected').val();
   var sect = $('[name="library_sections"] option:selected').val();
-  if(subj == 'All Subjects') { subj = '';};
-  if(chap == 'All Chapters') { chap = '';};
-  if(sect == 'All Sections') { sect = '';};
+
+  var subjind = $('[name="library_subjects"] option:selected').index();
+  var chapind = $('[name="library_chapters"] option:selected').index();
+  var sectind = $('[name="library_sections"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+  if(sectind == 0) { sect = '';};
+
   var lib_text = $('[name="library_textbook"] option:selected').val();
   var lib_textchap = $('[name="library_textchapter"] option:selected').val();
   var lib_textsect = $('[name="library_textsection"] option:selected').val();
-  if(lib_text == 'All Textbooks') { lib_text = '';};
-  if(lib_textchap == 'All Chapters') { lib_textchap = '';};
-  if(lib_textsect == 'All Sections') { lib_textsect = '';};
+
+  var lib_textind = $('[name="library_textbook"] option:selected').index();
+  var lib_textchapind = $('[name="library_textchapter"] option:selected').index();
+  var lib_textsectind = $('[name="library_textsection"] option:selected').index();
+
+  if(lib_textind == 0) { lib_text = '';};
+  if(lib_textchapind == 0) { lib_textchap = '';};
+  if(lib_textsectind == 0) { lib_textsect = '';};
+
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_sections = sect;
+  mydefaultRequestObject.library_srchtype = typ;
+
   mydefaultRequestObject.library_textbooks = lib_text;
   mydefaultRequestObject.library_textchapter = lib_textchap;
   mydefaultRequestObject.library_textsection = lib_textsect;
@@ -144,6 +367,8 @@ function lib_update(who, what) {
 			   line = maketext("There is 1 matching WeBWorK problem")
 		       }
 		       $('#library_count_line').html(line);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
 		       return true;
 		   },
 		  error: function (data) {
@@ -155,7 +380,7 @@ function lib_update(who, what) {
   var subcommand = "getAllDBchapters";
   if(what == 'clear') {
     setselect('library_'+who, [all]);
-    return lib_update(child[who], 'clear');
+    return lib_update(child[who], 'clear' , tg , typ);
   }
   if(who=='chapters' && subj=='') { return lib_update(who, 'clear'); }
   if(who=='sections' && chap=='') { return lib_update(who, 'clear'); }
@@ -176,13 +401,410 @@ function lib_update(who, what) {
 		       var arr = response.result_data;
 		       arr.splice(0,0,all);
 		       setselect('library_'+who, arr);
-		       lib_update(child[who], 'clear');
+		       lib_update(child[who], 'clear', tg);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
 		       return true;
 		   },
 		  error: function (data) {
 		      alert(basicWebserviceURL+': '+data.statusText);
 		  },
 		  });
+}
+function blib_update(who, what, tg, typ) {
+  var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
+
+  //nomsg();
+  var all = 'All ' + capFirstLetter(who);
+  all = maketext(all);
+  
+
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+
+  typ = 'BPL';
+
+  var subj = $('[name="blibrary_subjects"] option:selected').val();
+  var chap = $('[name="blibrary_chapters"] option:selected').val();
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
+  var keywd = $('[name="search_bpl"]').val();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+  //if(sect == 'All Sections') { sect = '';};
+
+  mydefaultRequestObject.blibrary_subjects = subj;
+  mydefaultRequestObject.blibrary_chapters = chap;
+  mydefaultRequestObject.library_subjects = subj;
+  mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.library_srchtype = typ;
+  mydefaultRequestObject.library_keywords = keywd;
+
+  if(who == 'count') {
+    mydefaultRequestObject.command = 'countDBListings';
+    // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+			   reportWWerror(data);		   
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr = arr[0];
+		       var line = maketext("There are") + " " + arr + " " + maketext("matching WeBWorK problems")
+		       if(arr == "1") {
+			   line = maketext("There is 1 matching WeBWorK problem")
+		       }
+		       $('#blibrary_count_line').html(line);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+      
+  }
+  var subcommand = "getAllDBchapters";
+  if(what == 'clear') {
+    setselect('blibrary_'+who, [all]);
+    return blib_update(child[who], 'clear' , tg , typ);
+  }
+  if(who=='chapters' && subj=='') { return blib_update(who, 'clear'); }
+  if(who=='sections' && chap=='') { return blib_update(who, 'clear'); }
+  if(who=='sections') { subcommand = "getSectionListings";}
+  mydefaultRequestObject.command = subcommand;
+  // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0,all);
+		       setselect('blibrary_'+who, arr);
+		       blib_update(child[who], 'clear', tg);
+                       //if(typ == 'BPL')
+                       //    lib_searchops('BPL',tg);
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+function dir_update(who, what ) {
+  var child = { lib : 'dir', dir : 'subdir', subdir : 'count'};
+  var childe = { lib : 'libraries', dir : 'directories', subdir : 'subdirectories', count : ''};
+
+  //nomsg();
+  var all = 'All '+ capFirstLetter(childe[who]);
+  all = maketext(all);
+
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  if(who == 'dir' && what == 'get') {
+      $('[name="library_dir"]').prop("selectedIndex",0);
+      $('[name="library_subdir"]').prop("selectedIndex",0);
+  }
+  if(who == 'subdir' && what == 'get') {
+      $('[name="library_subdir"]').prop("selectedIndex",0);
+  }
+  var lib    = $('[name="library_lib"] option:selected').val();
+  var dir    = $('[name="library_dir"] option:selected').val();
+  var subdir = $('[name="library_subdir"] option:selected').val();
+
+  var libind    = $('[name="library_lib"] option:selected').index();
+  var dirind    = $('[name="library_dir"] option:selected').index();
+  var subdirind = $('[name="library_subdir"] option:selected').index();
+  var topdir = $('[name="library_topdir"]').val();
+
+
+  if(libind == 0) { lib = '';};
+  if(dirind == 0) { dir = '';};
+  if(subdirind == 0) { subdir = '';};
+
+  topdir = topdir+'/'+lib+'/'+dir+'/'+subdir;
+
+  mydefaultRequestObject.library_topdir = topdir;
+  //mydefaultRequestObject.library_lib = lib;
+  //mydefaultRequestObject.library_dir = dir;
+  //mydefaultRequestObject.library_subdir = subdir;
+  if(who == 'dir' && what == 'get' && $('[name="library_lib"] option:selected').index() > 0) {
+      $("#lib_view_spcf").removeAttr("disabled");
+  } else {
+      if($('[name="library_lib"] option:selected').index() == 0) {
+          $("#lib_view_spcf").attr("disabled","disabled");
+      }
+  }
+
+
+  if(who == 'count') {
+    mydefaultRequestObject.command = 'countDirListings';
+    // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+			   reportWWerror(data);		   
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr = arr[0];
+		       var line = maketext("There are") + " " + arr + " " + maketext("matching WeBWorK problems")
+		       if(arr == "1") {
+			   line = maketext("There is 1 matching WeBWorK problem")
+		       }
+                       if($("select[name='library_lib'] option:selected").index() == 0) {
+                             line = '';
+                       }
+		       $('#slibrary_count_line').html(line);
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+      
+  }  
+  if(what == 'clear') {
+    setselect('library_'+who, [all]);
+    return dir_update(child[who], 'clear');
+  }
+
+ 
+  if(who=='dir' && lib=='') { return dir_update(who, 'clear'); }
+  if(who=='subdir' && dir=='') { return dir_update(who, 'clear'); }
+
+  var subcommand = "getAllDirs";
+  if(what == 'clear') {
+    setselect('library_'+who, [all]);
+    return dir_update(child[who], 'clear' );
+  }
+  //if(who=='lib' && lib=='') { return dir_update(who, 'clear'); }
+  //if(who=='dir' && dir=='') { return dir_update(who, 'clear'); }
+  if( who == 'dir' || who=='subdir') { subcommand = "getAllDirs";}
+  mydefaultRequestObject.command = subcommand;
+  // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       // console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0,all);
+		       setselect('library_'+who, arr);
+		       dir_update(child[who], 'clear');
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+function lib_searchops(lib,tg) {
+
+  //nomsg();
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  //var keyp = $('input#search_bpl').val();
+  //var keyp = str;
+  var subj = $('[name="blibrary_subjects"] option:selected').val();
+  var chap = $('[name="blibrary_chapters"] option:selected').val();
+
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+
+  var keywd = $('[name="search_bpl"]').val();
+
+  //mydefaultRequestObject.library_keywords = keyp;
+  mydefaultRequestObject.library_subjects = subj;
+  mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.library_keywords = keywd;
+
+  var subcommand = "getAllKeywords";
+
+  mydefaultRequestObject.command = subcommand;
+  // console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0);
+		       setkeywords( arr,tg);
+                       return arr;
+		       //return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+
+function setkeywords(arr,tg) {
+
+  tg.settings.whitelist = arr;
+  tg.settings.enforeWhitelist    = true;
+  tg.DOM.datalist = tg.buildDataList();
+  lib_top20keywords("BPL",tg);
+
+}
+
+function keywordclick(tg,ar) {
+
+   $(".keyword").click( function() {
+        kw = $(this).attr("keyword");
+        var tags = $("input#search_bpl").val();
+
+        $("input#search_bpl").val(tags+','+kw);
+        $("input#search_bpl").trigger("input");
+        tg.addTag(kw);
+        blib_update('count', 'clear', tagify, 'BPL' );
+        var ir = ar.indexOf(kw);
+        if(ir > -1) 
+            ar.splice(ir,1);
+        settop20keywords(ar,tg);
+
+    });
+}
+
+function lib_top20keywords (lib,tg) {
+
+  //nomsg();
+  var mydefaultRequestObject = init_webservice('searchLib');
+  if(mydefaultRequestObject == null) {
+    // We failed
+    // console.log("Could not get webservice request object");
+    return false;
+  }
+  var subj = $('[name="blibrary_subjects"] option:selected').val();
+  var chap = $('[name="blibrary_chapters"] option:selected').val();
+  var tags = $("input#search_bpl").val();
+  var kwn  = $("input#library_defkeywords").val();
+
+  var subjind = $('[name="blibrary_subjects"] option:selected').index();
+  var chapind = $('[name="blibrary_chapters"] option:selected').index();
+
+  if(subjind == 0) { subj = '';};
+  if(chapind == 0) { chap = '';};
+
+  mydefaultRequestObject.library_subjects = subj;
+  mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.library_keywords = tags;
+  mydefaultRequestObject.library_defkeywords = kwn;
+  //mydefaultRequestObject.library_srchtype = 'top20';
+
+  var subcommand = "getTop20KeyWords";
+
+  mydefaultRequestObject.command = subcommand;
+   console.log(mydefaultRequestObject);
+    return $.ajax({type:'post',
+		   url: basicWebserviceURL,
+		   data: mydefaultRequestObject,
+		   timeout: 10000, //milliseconds
+		   success: function (data) {
+		       if (data.match(/WeBWorK error/)) {
+		       	   reportWWerror(data);
+		       }
+
+		       var response = $.parseJSON(data);
+		       console.log(response);
+		       var arr = response.result_data;
+		       arr.splice(0,0);
+		       settop20keywords( arr, tg);
+                       //return arr;
+		       return true;
+		   },
+		  error: function (data) {
+		      alert(basicWebserviceURL+': '+data.statusText);
+		  },
+		  });
+}
+function settop20keywords(arr,tg) {
+
+   //Add the keywords to div kword
+   var kwRows = '<div align="left" style="line-height: .8em;">';
+   var arrayLength = arr.length;
+   var tags = $("input#search_bpl").val();
+   var tarr = tags.split(',');
+    
+   var wd = 0;
+   for (var i = 0; i < arrayLength; i++)
+   {
+        // Do something
+        //Check if arr[i] is already in tags
+        if($.inArray(arr[i], tarr) > -1) {
+          continue; 
+        }
+        wd += arr[i].length;
+        kwRows += '<span id="keyword" class="keyword" keyword="'+arr[i]+'" style="font-size: 13px; line-height: 200%;">'+arr[i]+'</span> ';
+        if(wd > 100) { 
+           kwRows += '<br />';
+           wd = 0;
+        }
+        
+   }
+   kwRows += '</div>';
+   document.getElementById("kword").innerHTML = kwRows;keywordclick(tg,arr);
+   if(arrayLength < parseInt($("#library_defkeywords").val())) {
+      $("#load_kw").hide();
+   } else {
+      $("#load_kw").show();
+   }
+
+}
+function onRemoveTag(e){
+    blib_update('count', 'clear', e, 'BPL' );
+}
+
+function onAddTag(e){
+    blib_update('count', 'clear', e, 'BPL' );
 }
 
 function setselect(selname, newarray) {

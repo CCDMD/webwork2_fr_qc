@@ -20,5 +20,14 @@ var translate = {
 	"* You have less than 45 seconds left! *\n" : "* Il vous reste moins de 45 secondes! *\n",
 	"*      Press Grade very soon!         *"   : "* Soumettez votre test très bientôt!  *",
 	"* You only have less than 90 sec left to complete  *\n" : "* Il vous reste moins de 90 sec. pour compléter *\n",
-	"* this assignment. You should finish it very soon! *" : "* ce test. Vous devez terminé rapidement!       *"
+	"* this assignment. You should finish it very soon! *" : "* ce test. Vous devez terminé rapidement!       *",
+        "All Chapters" : "Tous les chapitres",
+        "All Subjects" : "Tous les sujets",
+        "All Sections" : "Toutes les sections",
+        "All Directories" : "Tous les répertoires",
+        "All Subdirectories" : "Tous les sous-répertoires",
+        "Select Library" : "Choisir une banque",
+        "Hint" : "Indice",
+        "Solution" : "Solution"
+        
 }

@@ -129,6 +129,26 @@ msgstr " fichier de problème non attribué :  "
 msgid "All"
 msgstr "Tous"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:
+msgid "All Chapters"
+msgstr "Tous les chapitres"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:61
+msgid "All Directories"
+msgstr "Tous les répertoires"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:
+msgid "All Sections"
+msgstr "Toutes les sections"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:62
+msgid "All Subdirectories"
+msgstr "Tous les sous-répertoires"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:
+msgid "All Subjects"
+msgstr "Tous les sujets"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/PGProblemEditor2.pm:604
 msgid "blank problem"
 msgstr "problème vide"
@@ -1627,6 +1647,10 @@ msgstr ""
 msgid "Causes a single homework problem to be worth twice as much."
 msgstr ""
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:63
+msgid "French Problem Library"
+msgstr "Banque de problèmes libres"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:936
 msgid "Change Course Title to:"
 msgstr ""
@@ -2101,6 +2125,10 @@ msgstr ""
 msgid "Create a New Set in This Course:"
 msgstr "Créer un nouveau devoir vide :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1463
+msgid "Create a New Set"
+msgstr "Créer un nouveau devoir vide"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/AchievementList.pm:696
 msgid "Create a new achievement with ID"
 msgstr ""
@@ -2296,6 +2324,7 @@ msgid "Didn't recognize action"
 msgstr "Impossible de reconnaître l'action à effectuer"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:154
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1252
 msgid "Directory"
 msgstr "Répertoire"
 
@@ -3536,6 +3565,10 @@ msgstr "Cacher le chemin :"
 msgid "Hint:"
 msgstr "Indice :"
 
+#: /opt/webwork/pg/macros/PGbasicmacros.pl:1538
+msgid "Hint"
+msgstr "Indice"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Hardcopy.pm:593
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:390
 msgid "Hints"
@@ -3545,6 +3578,10 @@ msgstr "Indices"
 #: /opt/webwork/webwork2/lib/WeBWorK/URLPath.pm:414
 msgid "Hmwk Sets Editor"
 msgstr "Éditeur de devoirs"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1447
+msgid "Homework set to add problems to"
+msgstr "Devoir dans lequel ajouter des problèmes"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator.pm:734
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSet.pm:117
@@ -3840,6 +3877,10 @@ msgstr ""
 msgid "Level:"
 msgstr "Niveau :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1249
+msgid "Library"
+msgstr "Banque"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator.pm:847
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1610
 #: /opt/webwork/webwork2/lib/WeBWorK/URLPath.pm:503
@@ -3879,6 +3920,10 @@ msgstr ""
 #: /opt/webwork/webwork2/lib/WeBWorK/Localize.pm:262
 msgid "List of options for Show Me Another button"
 msgstr "Liste des options pour le bouton <b>Montrer un autre problème</b>"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1008
+msgid "Load More"
+msgstr "Afficher plus"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:406
 msgid "Local"
@@ -5497,6 +5542,10 @@ msgstr ""
 msgid "Scroll of Ressurection"
 msgstr ""
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:882
+msgid "Search:"
+msgstr "Recherche :"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList.pm:771
 msgid "Secondary sort"
 msgstr "Tri secondaire"
@@ -5540,7 +5589,7 @@ msgstr "Seed"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList.pm:442
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/UserList.pm:1773
 msgid "Select"
-msgstr "Sélectionner"
+msgstr "Choisir"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:50
 msgid "Select a Problem Collection"
@@ -5607,6 +5656,10 @@ msgstr "Choisir une action à effectuer "
 msgid "Select an action to perform:"
 msgstr "Choisir une action à effectuer :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1451
+msgid "Select an Existing Set"
+msgstr "Choisir un devoir existant"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:1692
 msgid "Select course(s) to archive."
 msgstr "Choisir le(s) cours à archiver."
@@ -5614,6 +5667,10 @@ msgstr "Choisir le(s) cours à archiver."
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:3043
 msgid "Select course(s) to hide or unhide."
 msgstr "Choisir le(s) cours à cacher ou afficher."
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instruction/SetMaker.pm:60
+msgid "Select Library"
+msgstr "Choisir une banque"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/Assigner.pm:95
 msgid ""
@@ -5956,6 +6013,10 @@ msgstr ""
 msgid "Solution:"
 msgstr "Solution :"
 
+#: /opt/webwork/pg/macros/PGbasicmacros.pl:1536
+msgid "Solution"
+msgstr "Solution"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Hardcopy.pm:599
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:392
 msgid "Solutions"
@@ -6044,6 +6105,10 @@ msgstr ""
 "Spécifier un identifiant, un titre et un établissement pour le nouveau "
 "cours. L'identifiant du cours ne peut contenir que des caractères "
 "alphanumériques, sans accents ni tirets."
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instrucor/SetMaker.pm:63
+msgid "Specific Directories"
+msgstr "Répertoires spécifiques"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/Localize.pm:392
 msgid "Standard"
@@ -6142,6 +6207,10 @@ msgstr "Progrès individuel de %2 pour %1"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Hardcopy.pm:581
 msgid "Student answers"
 msgstr "Réponses de l'étudiant"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1255
+msgid "SubDirectory"
+msgstr "Sous-répertoire"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SendMail.pm:386
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SendMail.pm:558
@@ -7195,6 +7264,10 @@ msgstr ""
 "Ce problème est décomposé en sous-problèmes auxquels vous pouvez accéder en "
 "cliquant sur leurs liens dans le menu à gauche ou en retournant à la page "
 "principale du devoir."
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1697
+msgid "This problem produced an error"
+msgstr "Ce problème a généré une erreur."
 
 #. ($shownYet{$problemFile})
 #. ($prettyID)
