@@ -2,6 +2,7 @@
 Ã‰ric Gaul
 */
 
+/* Mis en commentaire par Veronique Pivetta - Raison : regles trop generales causant des problemes d'affichage...
 
 body {
 background: #FDFDFD;
@@ -23,8 +24,13 @@ ul {
 list-style: none;
 margin-left: 2em;
 padding-left: 1em;
-/*text-indent: -1em;*/
+text-indent: -1em;
 }
+
+VP-fin...
+*/
+
+
 /*
 a {
 color: #D98D20;
@@ -105,16 +111,19 @@ border-radius: 4px;
 
 .keyword {
 line-height: 160%;
-color: #114499;
+color: #000000; /* #114499; */
 font-size: 90%;
-background: #FFFFFF;
+background: #E5E5E5; /*#FFFFFF;*/
 text-decoration: none;
 border-radius: 6px;
-padding: 1px;
-border-style: ridge;
+padding: 0px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
 border-width: 2px;
 white-space: nowrap;
 overflow: hidden;
+border: 2px solid #E5E5E5;
+display: inline-block;
+margin: 2px 2px 2px 0px;
 }
 
 .keyword2 {
@@ -124,25 +133,31 @@ font-size: 90%;
 background: #CCCCCC;
 text-decoration: none;
 border-radius: 6px;
-padding: 1px;
-border-style: ridge;
+padding: 0px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
 border-width: 2px;
 white-space: nowrap;
 overflow: hidden;
+border: 2px solid #CCCCCC;
+display: inline-block;
+margin: 2px 2px 2px 0px;
 }
 
 .keyword:hover {
 line-height: 160%;
-color: #114499;
+color: #000000; /* #114499; */
 font-size: 90%;
 background: #CCCCCC;
 text-decoration: none;
 border-radius: 6px;
-padding: 1px;
-border-style: ridge;
+padding: 0px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
 border-width: 2px;
 white-space: nowrap;
 overflow: hidden;
+border: 2px solid #CCCCCC;
+display: inline-block;
+margin: 2px 2px 2px 0px;
 }
 
 .keyword2:hover {
@@ -152,11 +167,14 @@ font-size: 90%;
 background: #FFFFFF;
 text-decoration: none;
 border-radius: 6px;
-padding: 1px;
-border-style: ridge;
+padding: 0px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
 border-width: 2px;
 white-space: nowrap;
 overflow: hidden;
+border: 2px solid #CCCCCC;
+display: inline-block;
+margin: 2px 2px 2px 0px;
 }
 
 .keyword_group {
