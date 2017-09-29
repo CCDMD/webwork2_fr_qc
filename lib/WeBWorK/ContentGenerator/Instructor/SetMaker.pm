@@ -537,11 +537,10 @@ sub browse_local_panelt {
 		push @popup_menu_args, -labels => \%labels;
 	}
 
-	return   CGI::start_table().
-                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("[_1] Problems:", $name).' ',
-		              CGI::popup_menu(@popup_menu_args),
-		              CGI::br(),
-		              $view_problem_line,
+	return   CGI::start_table({-width=>"80%",-align=>"left"}).
+                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("[_1] Problems:", $name).' ',
+		              CGI::popup_menu(@popup_menu_args)])).
+                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left",colspan=>"2"}, $view_problem_line
 	            )).
                  CGI::end_table();
 }
@@ -591,14 +590,15 @@ sub browse_mysets_panelt {
 	} 
 
 	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r, 3 );
-	return CGI::start_table(),
+	return CGI::start_table({-align=>"left",width=>"80%"}),
                CGI::Tr({},
-		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:").' ',
+		CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("Browse from:").' ',
 		CGI::popup_menu(-name=> 'mlibrary_sets', 
 		                -values=>$list_of_local_sets, 
-		                -default=> $library_selected),
-		CGI::br(), 
-		$view_problem_line
+		                -default=> $library_selected)]
+	         )),
+               CGI::Tr({},
+		CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line
 	         )),
                 CGI::end_table();
 }
@@ -726,7 +726,7 @@ sub browse_library_panel2 {
 		CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 		CGI::start_table({-width=>"100%"}),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Subject:"),
+			CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'library_subjects', 
 					            -values=>\@subjs,
 					            -default=> $subject_selected,
@@ -738,7 +738,7 @@ sub browse_library_panel2 {
 					CGI::submit(-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter:"),
+			CGI::td([$r->maketext("Chapter"),
 				CGI::popup_menu(-name=> 'library_chapters', 
 					            -values=>\@chaps,
 					            -default=> $chapter_selected,
@@ -746,7 +746,7 @@ sub browse_library_panel2 {
 		    )]),
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section:"),
+			CGI::td([$r->maketext("Section"),
 			CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
 					        -default=> $section_selected,
@@ -854,7 +854,7 @@ sub browse_library_panel2t {
 	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
 	       CGI::start_table({-width=>"100%"}),
 	       CGI::Tr({},
-	       CGI::td([$r->maketext("Subject:"),
+	       CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'library_subjects', 
 					            -values=>\@subjs,
 					            -default=> $subject_selected,
@@ -864,7 +864,7 @@ sub browse_library_panel2t {
                                 CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),-onclick=>"setCookie('tabber',1);",
                                         -style=> $right_button_style))),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter:"),
+			CGI::td([$r->maketext("Chapter"),
 				CGI::popup_menu(-name=> 'library_chapters', 
 					            -values=>\@chaps,
 					            -default=> $chapter_selected,
@@ -875,7 +875,7 @@ sub browse_library_panel2t {
                                         -style=>$right_button_style))
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section:"),
+			CGI::td([$r->maketext("Section"),
 			CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
 					        -default=> $section_selected,
@@ -886,10 +886,10 @@ sub browse_library_panel2t {
 		 ),
 
                  CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Textbook:"), $text_popup]),
+			CGI::td([$r->maketext("Textbook"), $text_popup]),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Text chapter:"),
+			CGI::td([$r->maketext("Text chapter"),
 			CGI::popup_menu(-name=> 'library_textchapter', 
 					        -values=>\@textchaps,
 					        -default=> $selected{textchapter},
@@ -897,7 +897,7 @@ sub browse_library_panel2t {
 		    )]),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Text section:"),
+			CGI::td([$r->maketext("Text section"),
 			CGI::popup_menu(-name=> 'library_textsection', 
 					        -values=>\@textsecs,
 					        -default=> $selected{textsection},
@@ -905,7 +905,7 @@ sub browse_library_panel2t {
 		    )]),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-				 CGI::td($r->maketext("Level:")),
+				 CGI::td($r->maketext("Level")),
 				 "<td>$mylevelline</td>"
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
@@ -915,110 +915,14 @@ sub browse_library_panel2t {
 							-override=>1,
 							-size=>40))),
 
-		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
 		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
+		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
 		 CGI::end_table()
 	 )),
                  CGI::end_table();
 	
 }
-sub browse_library_panel5 {
-	my $self = shift;
-	my $r = $self->r;
 
-	my $ce = $r->ce;
-
-	my @subjs = WeBWorK::Utils::ListingDB::getAllDBsubjects($r,'BPL');
-	unshift @subjs, LIB2_DATA->{dbsubject}{all};
-
-	my @chaps = WeBWorK::Utils::ListingDB::getAllDBchapters($r,'BPL');
-	unshift @chaps, LIB2_DATA->{dbchapter}{all};
-
-	my @sects=();
-	@sects = WeBWorK::Utils::ListingDB::getAllDBsections($r,'BPL');
-	unshift @sects, LIB2_DATA->{dbsection}{all};
-
-	my $subject_selected = $r->param('library_subjects') || LIB2_DATA->{dbsubject}{all};
-	my $chapter_selected = $r->param('library_chapters') || LIB2_DATA->{dbchapter}{all};
-	my $section_selected =	$r->param('library_sections') || LIB2_DATA->{dbsection}{all};
-	my $search_bpl       =	$r->param('search_bpl') || '';
-
-
-	my $count_line = WeBWorK::Utils::ListingDB::countDBListings($r,'BPL');
-	if($count_line==0) {
-		$count_line = $r->maketext("There are no matching WeBWorK problems");
-	} else {
-		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
-	}
-	my $view_problem_line = view_problems_line_bpl('lib_view', $r->maketext('View Problems'), $count_line,$self->r);
-
-        # Option of whether to show hints and solutions
-	my $defaultHints = $r->param('showHints') || SHOW_HINTS_DEFAULT;
-	$defaultHints = 1;
-	my $defaultSolutions = $r->param('showSolutions') || SHOW_SOLUTIONS_DEFAULT;
-	$defaultSolutions = 1;
-        my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
-
-
-	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
-	my @active_modes = grep { exists $display_modes{$_} }
-		@{$r->ce->{pg}->{displayModes}};
-	push @active_modes, 'None';
-	# We have our own displayMode since its value may be None, which is illegal
-	# in other modules.
-	my $mydisplayMode = $r->param('mydisplayMode') || $r->ce->{pg}->{options}->{displayMode};
-        my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
-
-
-	print CGI::Tr({},
-	    CGI::td({-class=>"InfoPanel", -align=>"left"}, 
-		#CGI::hidden(-name=>"max_shown",-id=>"max_shown", -value=>$defaultMax),
-		#CGI::hidden(-name=>"showSolutions", -default=>1,-override=>1),
-		CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
-		#CGI::hidden(-name=>"library_srchtype", -default=>'BPL',-override=>1,-value=>'BPL'),
-		CGI::start_table({-width=>"100%"}),
-                CGI::Tr({},
-		    CGI::td([$r->maketext("Search:"),
-                    CGI::textfield(-name=>"search_bpl",
-                                     -id=>"search_bpl",
-                                     -default=>$search_bpl,
-                                     -class=>"search_bpl",
-                                           -example=>$r->maketext("Enter keyword"),
-                                           -autocomplete=>"off",
-                                           -override=>1, -size=>30                                             ),])
-		),
-		CGI::Tr({},
-			CGI::td([$r->maketext("Subject:"),
-				CGI::popup_menu(-name=> 'library_subjects', 
-					            -values=>\@subjs,
-                                                    -id=>'library_subjects',
-					            -default=> $subject_selected
-				)]),
-		),
-		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter:"),
-				CGI::popup_menu(-name=> 'library_chapters', 
-                                                    -id=>'library_chapters',
-					            -values=>\@chaps,
-					            -default=> $chapter_selected
-		    )]),
-		),
-		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
-		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
-		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center"}, "<ul><span id='kword' class='kword'></span></ul>")),
-
-
-	        #CGI::Tr(CGI::td({-colspan=>3},
-                #       "<input type=\"checkbox\" name=\"showHints\" value=\"on\" checked />Hints&nbsp;<input type=\"checkbox\" name=\"showSolutions\" value=\"on\" checked />Solutions",
-                #CGI::checkbox(-name=>"showHints",-checked=>$defaultHints,-label=>$r->maketext("Hints")),
-	        #CGI::checkbox(-name=>"showSolutions",-checked=>$defaultSolutions,-label=>$r->maketext("Solutions")),
-                #CGI::popup_menu(-name=> 'max_shown',
-                #                                    -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
-                 #                                   -default=> $defaultMax))),
-		 CGI::end_table(),
-	 ));
-	
-}
 sub browse_library_panel5t {
 	my $self = shift;
 	my $r = $self->r;
@@ -1076,17 +980,20 @@ sub browse_library_panel5t {
                 my $defaultKeywords = $r->param('library_defkeywords') || DEFAULT_KEYWORDS;
 		return CGI::start_table({-width=>"100%"}),
                 CGI::Tr({},
-		    CGI::td([$r->maketext("Search:"),
+		    CGI::td([$r->maketext("Search"),
                     CGI::textfield(-name=>"search_bpl",
                                      -id=>"search_bpl",
+                                     -type=>"text",
                                      -default=>$search_bpl,
                                      -class=>"search_bpl",
+                                     -placeholder => $r->maketext("Enter keyword"),
                                            -example=>$r->maketext("Enter keyword"),
                                            -autocomplete=>"off",
-                                           -override=>1, -size=>30                                             ),])
+                                           -override=>1
+                                                                                        ).CGI::br()."<small class=\"text-muted\">Place the - minus sign before the negative terms</small>",])
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Subject:"),
+			CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'blibrary_subjects', 
 					            -values=>\@subjs,
                                                     -id=>'blibrary_subjects',
@@ -1094,17 +1001,21 @@ sub browse_library_panel5t {
 				)]),
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter:"),
+			CGI::td([$r->maketext("Chapter"),
 				CGI::popup_menu(-name=> 'blibrary_chapters', 
                                                     -id=>'blibrary_chapters',
 					            -values=>\@chaps,
 					            -default=> $chapter_selected
 		    )]),
 		),
+		 CGI::Tr(
+                   CGI::td({-align=>"left"}, $r->maketext("Keywords")),
+                   CGI::td({-colspan=>2}, "<ul><p id='kword' class='kword'></p></ul><br /><div align=\"left\"><a href=\"#\" id=\"load_kw\">+ ".$r->maketext ("Load More")."</a></div>")
+
+                 ),
+		 CGI::Tr(CGI::td({-colspan=>3, -align=>"left", -id=>"blibrary_count_line"}, $count_line)),
 		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line,
 		                     CGI::hidden(-name=>"library_defkeywords",-id=>"library_defkeywords", -default=>$defaultKeywords,-override=>1))),
-		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"blibrary_count_line"}, $count_line)),
-		 CGI::Tr(CGI::td({-colspan=>3}, "<ul><p id='kword' class='kword'></p></ul><br /><div align=\"center\"><a href=\"#\" id=\"load_kw\">+ ".$r->maketext ("Load More")."</a></div>")),
 
 
 	        #CGI::Tr(CGI::td({-colspan=>3},
@@ -1403,6 +1314,8 @@ sub browse_specific_panelt {
 
 
 	my $view_problem_line = view_problems_line_bpl('lib_view_spcf', $r->maketext('View Problems'),undef, $self->r);
+
+
 	my $popupetc = CGI::popup_menu(-name=> 'library_lib',
                                 -values=>\@libs,
 				-onchange=>"dir_update('dir','get');return true",
@@ -1427,14 +1340,14 @@ sub browse_specific_panelt {
 		$popupetc = $r->maketext("there are no set problem libraries course to look at.");
 	}
 
-	return CGI::start_table({-width=>"60%"}),
+	return CGI::start_table({-width=>"60%",-align=>"left"}),
 
         CGI::Tr(CGI::td([$r->maketext("Library")."&nbsp;:&nbsp;", $popupetc])),
         CGI::Tr(CGI::td([$r->maketext("Directory")."&nbsp;:&nbsp;", $popupetc2])),
         CGI::Tr(CGI::td([$r->maketext("SubDirectory")."&nbsp;:&nbsp;", $popupetc3])),
 
+        CGI::Tr(CGI::td({-colspan=>2, -align=>"left", -id=>"slibrary_count_line"}, $count_line)),
         CGI::Tr(CGI::td({-colspan=>2, -align=>"center"},[$popupetc4])),
-        CGI::Tr(CGI::td({-colspan=>2, -align=>"center", -id=>"slibrary_count_line"}, $count_line)),
         CGI::end_table();
 
 }
@@ -1489,14 +1402,13 @@ sub browse_setdef_panelt {
 	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r, 4);
 	my $popupetc = CGI::popup_menu(-name=> 'slibrary_sets',
                                 -values=>\@list_of_set_defs,
-                                -default=> $library_selected).
-		CGI::br().  $view_problem_line;
+                                -default=> $library_selected);
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
 		$popupetc = $r->maketext("there are no set definition files in this course to look at.");
 	}
-	return CGI::start_table({-width=>"100%"}),
-	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"})), $r->maketext("Browse from:")." "
-	       .$popupetc.
+	return CGI::start_table({-width=>"100%"}).
+	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"},[ $r->maketext("Browse from"),$popupetc ])).
+	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line)).
                CGI::end_table();
      
 }
@@ -1541,7 +1453,7 @@ sub make_top_row {
         my $courseID = $self->r->urlpath->arg("courseID");
 
         #Tusar - 3/25/17
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},CGI::b($r->maketext("Homework set to add problems to")).' ',
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h3($r->maketext("Homework set to add problems to")).' ',
 		CGI::br(), 
 		CGI::br(), 
            ));
@@ -1561,14 +1473,45 @@ sub make_top_row {
         if($self->{browse_which} eq 'browse_setdefs') {
            $c = 4;
         }
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},$r->maketext("Select an Existing Set").' ',
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},
+                             CGI::start_table({-border=>"0"}),
+                                CGI::Tr( CGI::td({-class =>"InfoPanel", -align=>"left"},[
+                                    $r->maketext("Select an Existing Set").' ',
+                                    CGI::popup_menu(-name=> 'local_sets',
+                                                -values=>$list_of_local_sets,
+                                                -default=> $set_selected,
+                                                -onchange=> "return markinset()",
+                                                -override=>1),
+                                    CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set"),-onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);" )
+                                  ])     ),
+                                CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},[
+                                       $r->maketext("Create a New Set"),
+                                       CGI::textfield(-name=>"new_set_name",
+                                           -example=>$r->maketext("Name for new set here"),
+                                           -placeholder=>$r->maketext("Name for new set here"),
+                                           -override=>1, -size=>30),
+                                        CGI::submit(-name=>"new_local_set", -value=>$r->maketext("Create"),
+                                                    -onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);document.mainform.selfassign.value=1"      #       $myjs
+                                                   )
+                                  ])       ),
+                             CGI::end_table(),
+        ));
+
+	print CGI::hidden(-name=>"selfassign", -default=>0,-override=>1).
+		CGI::hidden(-name=>"lib_deftab", -default=>$c,-override=>1);
+
+
+=comment
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},$r->maketext("Select an Existing Set")),
 	        #print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Add problems to").' ',
 		#CGI::b($r->maketext("Target Set:").' '),
 		CGI::popup_menu(-name=> 'local_sets', 
 						-values=>$list_of_local_sets, 
 						-default=> $set_selected,
                                                 -onchange=> "return markinset()",
-						-override=>1),
+						-override=>1)
+
+,
 		CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set"),-onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);" ),
 		CGI::hidden(-name=>"selfassign", -default=>0,-override=>1).
 		CGI::hidden(-name=>"lib_deftab", -default=>$c,-override=>1).
@@ -1577,6 +1520,7 @@ sub make_top_row {
 		$r->maketext("Create a New Set"),
 		CGI::textfield(-name=>"new_set_name", 
 					   -example=>$r->maketext("Name for new set here"),
+					   -placeholder=>$r->maketext("Name for new set here"),
 					   -override=>1, -size=>30),
 		CGI::submit(-name=>"new_local_set", -value=>$r->maketext("Create"),
 		                                    -onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);document.mainform.selfassign.value=1"      #       $myjs
@@ -1586,7 +1530,7 @@ sub make_top_row {
 		CGI::br(), 
                 
 	));
-
+=cut
 	print CGI::Tr(CGI::td({class=>'table-separator'}));
 	print CGI::Tr(CGI::td( CGI::br() ));
 
@@ -1607,6 +1551,9 @@ sub make_top_row {
 		#$libs,
 	));
 =cut
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"},
+                        CGI::h2($r->maketext("Database in which to search for existing problems")),
+	));
         my @formsToShow = @{ VIEW_FORMS() };
         my $i = 0;
         my @divArr = ();
@@ -2709,6 +2656,8 @@ sub output_JS {
   print CGI::end_script();
   print qq!<script src="$webwork_htdocs_url/js/i18n/localize.js"></script>!;
   print "\n";
+  print qq!<script src="$webwork_htdocs_url/js/vendor/bootstrap/js/bootstrap-tagsinput.js"></script>!;
+  print "\n";
   print qq!<script src="$webwork_htdocs_url/js/apps/SetMaker/setmaker.js"></script>!;
   print "\n";
   print CGI::start_script({type=>"text/javascript", src=>"$webwork_htdocs_url/js/legacy/vendor/tabbert.js"}), CGI::end_script();
@@ -2742,9 +2691,9 @@ sub output_CSS {
   print qq{
            <link href="$webwork_htdocs_url/themes/math4/bpl.css" rel="stylesheet" type="text/css" />};
   print qq{
-           <link href="$webwork_htdocs_url/js/vendor/tagify/css/tagify.css" rel="stylesheet" type="text/css" />};
-
-
+           <link href="$webwork_htdocs_url/js/vendor/bootstrap/css/bootstrap-tagsinput.css" rel="stylesheet" type="text/css" />};
+  print qq{
+           <link href="$webwork_htdocs_url/js/vendor/bootstrap/css/bootstrap-tagsinput-typeahead.css" rel="stylesheet" type="text/css" />};
 
   print qq{
            <link href="$webwork_htdocs_url/css/knowlstyle.css" rel="stylesheet" type="text/css" />};
