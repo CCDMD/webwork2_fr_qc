@@ -12,53 +12,60 @@ var basicRequestObject = {
 };
 
 var basicWebserviceURL = "/webwork2/instructorXMLHandler";
-var tagify;
 
 
-$(window).load(function() {
+//$(window).load(function() {
+$(document).ready(function(){
 
+  $('[name="search_bpl"]').tagsinput({typeahead: { source: function(query) { return []; }, freeInput: false }});
+  $('input[name="search_bpl"]').on('itemRemoved', function(event) {
+     blib_update('count', 'clear');
+     $("#library_defkeywords").val(20);
+     lib_searchops();
+     lib_top20keywords();
+  });
 
-   //setCookie('tabber', 0);
-   var input1 = document.querySelector('input[name=search_bpl]');
-   if($('[name="bbrowse_which"]').val() == 'browse_spcf_library' ) {
-       if($('[name="library_lib"] option:selected').index() == 0) {
-           $("#lib_view_spcf").attr("disabled","disabled");
-       }
+  $('input[name="search_bpl"]').on('itemAdded', function(event) {
+     blib_update('count', 'clear');
+     $("#library_defkeywords").val(20);
+     lib_searchops();
+     lib_top20keywords();
+  });
+
+   if($('[name="library_lib"] option:selected').index() == 0) {
+      $("#lib_view_spcf").attr("disabled","disabled");
    }
 
-  
-   if(!input1) { 
-       var brw = $('[name="bbrowse_which"]').val();
-       if(brw == 'browse_spcf_library') {
-          $('a:contains("'+maketext('Solution')+'")').hide();
-          $('a:contains("'+maketext('Hint')+'")').hide();
-       }
-       return;
+   var brw = $('[name="bbrowse_which"]').val();
+   if(brw == 'browse_spcf_library') {
+      $('a:contains("'+maketext('Solution')+'")').hide();
+      $('a:contains("'+maketext('Hint')+'")').hide();
    }
-   tagify = bpl_reset(null,0);
+
    //alert(input1.val());
    $("#blibrary_subjects").change ( function() {
-       tagify = bpl_reset(tagify,1);
-       blib_update('chapters', 'get', tagify, 'BPL' );
-       lib_searchops("BPL",tagify);
-       blib_update('count', 'clear', tagify, 'BPL' );
 
+       blib_update('chapters', 'get');
+       blib_update('count', 'clear' );
+
+       lib_searchops();
        $("#library_defkeywords").val(20);
-       lib_top20keywords("BPL",tagify);
+       lib_top20keywords();
        return true;
    });
 
    $("#blibrary_chapters").change ( function() {
-       tagify = bpl_reset(tagify,1);
-       lib_searchops("BPL",tagify);
-       blib_update('count', 'clear', tagify, 'BPL' );
+       lib_searchops();
+       blib_update('count', 'clear');
        $("#library_defkeywords").val(20);
-       lib_top20keywords("BPL",tagify);
+       lib_top20keywords();
        return true;
    });
 
-  lib_searchops("BPL",tagify);
+  lib_searchops();
+  lib_top20keywords();
   $("#search_bpl").hide();
+
   $('input[name=reset]').click(function() {
        var brw = $('[name="bbrowse_which"]').val();
        var k = 0;
@@ -68,14 +75,12 @@ $(window).load(function() {
        f_reset(k);
        return false;
   });
+
   $("#load_kw").click(function() {
        f_loadmore();
        return false;
   });
-  //var x = tabberAutomatic(tabberOptions);
-  //alert(typeof(x));
 
-  //hide solutions and hints to be toggled
   if($("input[name='showSolutiont']").is(':checked') ) {
       $('a:contains("'+maketext('Solution')+'")').show();
   } else {
@@ -94,6 +99,7 @@ $(window).load(function() {
       $('a:contains("'+maketext('Hint')+'")').hide();
      }
   }
+
 
   //OPL Advanced search handle
   $("#library_advanced").click(function (event) {
@@ -116,14 +122,36 @@ $(window).load(function() {
    });
 
 });
-function f_loadmore() {
 
+function f_tags(arr) {
+
+  $('[name="search_bpl"]').tagsinput('destroy');
+  $('[name="search_bpl"]').tagsinput({typeahead: { source: function(query) { return arr; }, freeInput: false }});
+  //$('[name="search_bpl"]').tagsinput({typeahead: { source: function(query) { return arr; }, freeInput: false }});
+
+//  $('input[name="search_bpl"]').on('itemRemoved', function(event) {
+//     blib_update('count', 'clear');
+//     $("#library_defkeywords").val(20);
+//     $('[name="search_bpl"]').tagsinput('destroy');
+//     lib_searchops();
+//     lib_top20keywords();
+//  });
+//
+//  $('input[name="search_bpl"]').on('itemAdded', function(event) {
+//     blib_update('count', 'clear');
+//     $("#library_defkeywords").val(20);
+//     $('[name="search_bpl"]').tagsinput('destroy');
+//     lib_searchops();
+//     lib_top20keywords();
+//  });
+
+}
+function f_loadmore() {
 
        //alert('Load more keywords');
        var k = parseInt($("#library_defkeywords").val()) + 20;
-       
        $("#library_defkeywords").val(k);
-       lib_top20keywords("BPL",tagify);
+       lib_top20keywords();
        return false;
 
 }
@@ -133,6 +161,7 @@ function f_reset(v) {
        //location.href = location.href;
        //return false;
        nomsg();
+     
 
        $('#showHintt').prop('checked', false);
        $('#showSolutiont').prop('checked', false);
@@ -143,29 +172,27 @@ function f_reset(v) {
        $('[name="llibrary_sets"]').prop("selectedIndex",0);
        $('[name="mlibrary_sets"]').prop("selectedIndex",0);
        $('[name="slibrary_sets"]').prop("selectedIndex",0);
-         //  return;
-       tagify = bpl_reset(tagify,1);
        
        if(v > 0 && v < 5) {
           $('#showHints_'+v).attr('checked', false);
           $('#showSolutions_'+v).attr('checked', false);
-
-          //$("#showHints").val('');
-          //$("#showSolutions").val('');
        }
-       //blib_update('subjects', 'clear', tagify, 'BPL' );
+
        $('[name="blibrary_subjects"]').prop("selectedIndex",0);
-       blib_update('chapters', 'clear', tagify, 'BPL' );
-       blib_update('count', 'clear', tagify, 'BPL' );
-       lib_searchops("BPL",tagify);
+       blib_update('chapters', 'clear');
+
+       $('input[name="search_bpl"]').tagsinput('removeAll');
+       //$('input[name="search_bpl"]').tagsinput('destroy');
+       lib_searchops();
 
        $("#library_defkeywords").val(20);
        $("#lib_deftab").val(v);
-       lib_top20keywords("BPL",tagify);
+       lib_top20keywords();
 
-           $('[name="library_lib"]').prop("selectedIndex",0);
-           $("#lib_view_spcf").attr("disabled","disabled");
-           dir_update('dir', 'clear', tagify, 'BPL' );
+       $('[name="library_lib"]').prop("selectedIndex",0);
+       $("#lib_view_spcf").attr("disabled","disabled");
+       dir_update('dir', 'clear' );
+       blib_update('count', 'clear');
 
        $(".showResultsMenu").hide().css("visibility", "hidden");
        $('#showResults').hide().css("visibility", "hidden");
@@ -176,33 +203,6 @@ function f_reset(v) {
        $(".lb-mlt-group").css("visibility", "hidden");
        $(".AuthorComment").css("display", "none");
        $('#showResultsEnd').hide().css("visibility", "hidden");
-}
-function bpl_reset(tg,rs) {
-       var input1 = document.querySelector('input[name=search_bpl]');
-       if(rs)
-         input1.value = '';
-       if(tg)
-         tg.destroy();
-       tagify = new Tagify(input1, {
-           suggestionsMinChars : 1, autocomplete: 1,
-       });
-       //tagify.on('add', ()=>{
-       tagify.on('add', function (x){
-           blib_update('count', 'clear', tagify, 'BPL' );
-           $("#library_defkeywords").val(20);
-           lib_top20keywords('BPL',tagify);
-           //lib_searchops('BPL',tagify);
-       });
-       //tagify.on('remove', ()=>{
-       tagify.on('remove', function (x){
-           blib_update('count', 'clear', tagify, 'BPL' );
-           //lib_searchops('BPL',tagify);
-           $("#library_defkeywords").val(20);
-           lib_top20keywords('BPL',tagify);
-       });
-       blib_update('count', 'clear', tagify, 'BPL' );
-       lib_top20keywords('BPL',tagify);
-       return tagify;
 }
 
 
@@ -298,7 +298,7 @@ function init_webservice(command) {
   return mydefaultRequestObject;
 }
 
-function lib_update(who, what, tg, typ) {
+function lib_update(who, what ) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
   //nomsg();
@@ -352,7 +352,7 @@ function lib_update(who, what, tg, typ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 			   reportWWerror(data);		   
@@ -367,8 +367,6 @@ function lib_update(who, what, tg, typ) {
 			   line = maketext("There is 1 matching WeBWorK problem")
 		       }
 		       $('#library_count_line').html(line);
-                       //if(typ == 'BPL')
-                       //    lib_searchops('BPL',tg);
 		       return true;
 		   },
 		  error: function (data) {
@@ -380,7 +378,7 @@ function lib_update(who, what, tg, typ) {
   var subcommand = "getAllDBchapters";
   if(what == 'clear') {
     setselect('library_'+who, [all]);
-    return lib_update(child[who], 'clear' , tg , typ);
+    return lib_update(child[who], 'clear' );
   }
   if(who=='chapters' && subj=='') { return lib_update(who, 'clear'); }
   if(who=='sections' && chap=='') { return lib_update(who, 'clear'); }
@@ -390,7 +388,7 @@ function lib_update(who, what, tg, typ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 		       	   reportWWerror(data);
@@ -401,9 +399,7 @@ function lib_update(who, what, tg, typ) {
 		       var arr = response.result_data;
 		       arr.splice(0,0,all);
 		       setselect('library_'+who, arr);
-		       lib_update(child[who], 'clear', tg);
-                       //if(typ == 'BPL')
-                       //    lib_searchops('BPL',tg);
+		       lib_update(child[who], 'clear');
 		       return true;
 		   },
 		  error: function (data) {
@@ -411,7 +407,7 @@ function lib_update(who, what, tg, typ) {
 		  },
 		  });
 }
-function blib_update(who, what, tg, typ) {
+function blib_update(who, what) {
   var child = { subjects : 'chapters', chapters : 'sections', sections : 'count'};
 
   //nomsg();
@@ -426,7 +422,7 @@ function blib_update(who, what, tg, typ) {
     return false;
   }
 
-  typ = 'BPL';
+  var typ = 'BPL';
 
   var subj = $('[name="blibrary_subjects"] option:selected').val();
   var chap = $('[name="blibrary_chapters"] option:selected').val();
@@ -451,7 +447,7 @@ function blib_update(who, what, tg, typ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 			   reportWWerror(data);		   
@@ -466,8 +462,6 @@ function blib_update(who, what, tg, typ) {
 			   line = maketext("There is 1 matching WeBWorK problem")
 		       }
 		       $('#blibrary_count_line').html(line);
-                       //if(typ == 'BPL')
-                       //    lib_searchops('BPL',tg);
 		       return true;
 		   },
 		  error: function (data) {
@@ -479,7 +473,7 @@ function blib_update(who, what, tg, typ) {
   var subcommand = "getAllDBchapters";
   if(what == 'clear') {
     setselect('blibrary_'+who, [all]);
-    return blib_update(child[who], 'clear' , tg , typ);
+    return blib_update(child[who], 'clear');
   }
   if(who=='chapters' && subj=='') { return blib_update(who, 'clear'); }
   if(who=='sections' && chap=='') { return blib_update(who, 'clear'); }
@@ -489,7 +483,7 @@ function blib_update(who, what, tg, typ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 		       	   reportWWerror(data);
@@ -500,9 +494,7 @@ function blib_update(who, what, tg, typ) {
 		       var arr = response.result_data;
 		       arr.splice(0,0,all);
 		       setselect('blibrary_'+who, arr);
-		       blib_update(child[who], 'clear', tg);
-                       //if(typ == 'BPL')
-                       //    lib_searchops('BPL',tg);
+		       blib_update(child[who], 'clear');
 		       return true;
 		   },
 		  error: function (data) {
@@ -566,7 +558,7 @@ function dir_update(who, what ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 			   reportWWerror(data);		   
@@ -614,7 +606,7 @@ function dir_update(who, what ) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 		       	   reportWWerror(data);
@@ -633,9 +625,11 @@ function dir_update(who, what ) {
 		  },
 		  });
 }
-function lib_searchops(lib,tg) {
+function lib_searchops() {
 
   //nomsg();
+  //$('[name="search_bpl"]').tagsinput('destroy');
+
   var mydefaultRequestObject = init_webservice('searchLib');
   if(mydefaultRequestObject == null) {
     // We failed
@@ -667,17 +661,17 @@ function lib_searchops(lib,tg) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 		       	   reportWWerror(data);
 		       }
-
 		       var response = $.parseJSON(data);
 		       console.log(response);
 		       var arr = response.result_data;
 		       arr.splice(0,0);
-		       setkeywords( arr,tg);
+                       //$('[name="search_bpl"]').tagsinput({typeahead: { source: function(query) { return arr}, freeInput: false }});
+		       f_tags(arr);
                        return arr;
 		       //return true;
 		   },
@@ -687,34 +681,24 @@ function lib_searchops(lib,tg) {
 		  });
 }
 
-function setkeywords(arr,tg) {
 
-  tg.settings.whitelist = arr;
-  tg.settings.enforeWhitelist    = true;
-  tg.DOM.datalist = tg.buildDataList();
-  lib_top20keywords("BPL",tg);
-
-}
-
-function keywordclick(tg,ar) {
+function keywordclick(ar) {
 
    $(".keyword").click( function() {
         kw = $(this).attr("keyword");
         var tags = $("input#search_bpl").val();
 
-        $("input#search_bpl").val(tags+','+kw);
-        $("input#search_bpl").trigger("input");
-        tg.addTag(kw);
-        blib_update('count', 'clear', tagify, 'BPL' );
+        $('input[name="search_bpl"]').tagsinput('add', kw);
+        blib_update('count', 'clear' );
         var ir = ar.indexOf(kw);
         if(ir > -1) 
             ar.splice(ir,1);
-        settop20keywords(ar,tg);
+        return settop20keywords(ar);
 
     });
 }
 
-function lib_top20keywords (lib,tg) {
+function lib_top20keywords () {
 
   //nomsg();
   var mydefaultRequestObject = init_webservice('searchLib');
@@ -747,7 +731,7 @@ function lib_top20keywords (lib,tg) {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: mydefaultRequestObject,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 		       	   reportWWerror(data);
@@ -757,7 +741,7 @@ function lib_top20keywords (lib,tg) {
 		       console.log(response);
 		       var arr = response.result_data;
 		       arr.splice(0,0);
-		       settop20keywords( arr, tg);
+		       settop20keywords( arr);
                        //return arr;
 		       return true;
 		   },
@@ -766,7 +750,7 @@ function lib_top20keywords (lib,tg) {
 		  },
 		  });
 }
-function settop20keywords(arr,tg) {
+function settop20keywords(arr) {
 
    //Add the keywords to div kword
    var kwRows = '<div align="left" style="line-height: .8em;">';
@@ -791,20 +775,14 @@ function settop20keywords(arr,tg) {
         
    }
    kwRows += '</div>';
-   document.getElementById("kword").innerHTML = kwRows;keywordclick(tg,arr);
+   document.getElementById("kword").innerHTML = kwRows;
+   keywordclick(arr);
    if(arrayLength < parseInt($("#library_defkeywords").val())) {
       $("#load_kw").hide();
    } else {
       $("#load_kw").show();
    }
 
-}
-function onRemoveTag(e){
-    blib_update('count', 'clear', e, 'BPL' );
-}
-
-function onAddTag(e){
-    blib_update('count', 'clear', e, 'BPL' );
 }
 
 function setselect(selname, newarray) {
@@ -875,7 +853,7 @@ function addemcallback(wsURL, ro, probarray, count) {
       return $.ajax({type:'post',
 		     url: wsURL,
 		     data: ro2,
-		     timeout: 10000, //milliseconds
+		     timeout: 100000, //milliseconds
 		     success: addemcallback(wsURL, ro2, probarray, count+1),
 		     error: function (data) {
 			 alert(wsURL+': '+data.statusText);
@@ -898,7 +876,7 @@ function markinset() {
     return $.ajax({type:'post',
 		   url: basicWebserviceURL,
 		   data: ro,
-		   timeout: 10000, //milliseconds
+		   timeout: 100000, //milliseconds
 		   success: function (data) {
 		       if (data.match(/WeBWorK error/)) {
 			   reportWWerror(data);
@@ -1031,7 +1009,7 @@ function randomize(filepath, el) {
   $.ajax({type:'post',
 	  url: basicWebserviceURL,
 	  data: ro,
-	  timeout: 10000, //milliseconds
+	  timeout: 100000, //milliseconds
 	  success: function (data) {
 	      if (data.match(/WeBWorK error/)) {
 		  reportWWerror(data);
