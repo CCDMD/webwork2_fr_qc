@@ -847,12 +847,13 @@ sub browse_library_panel2t {
         my $defAdv = $r->param('library_adv_btn') || '';
         my $right_button_style = "width: 18ex";
 
-        return CGI::start_table({-width=>"100%",-id=>"opladv"}),
+        return CGI::start_table({-align=>"left",-width=>"80%",-id=>"opladv"}),
 	       CGI::Tr({},
 	       CGI::td({-class=>"InfoPanel", -align=>"left"}, 
 	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
 	       CGI::start_table({-width=>"100%"}),
+               CGI::Tr(CGI::td({-colspan=>4, -align=>"center",-class=>"opladvsrch"}, $r->maketext('All Selected Constraints Joined by "And"'))),
 	       CGI::Tr({},
 	       CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'library_subjects', 
@@ -860,7 +861,7 @@ sub browse_library_panel2t {
 					            -default=> $subject_selected,
 					            -onchange=>"lib_update('chapters', 'get');return true"
 				)]),
-                        CGI::td({-colspan=>2, -align=>"right",-class=>"opladvsrch"},
+                        CGI::td({-colspan=>2, -align=>"left",-class=>"opladvsrch"},
                                 CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),-onclick=>"setCookie('tabber',1);",
                                         -style=> $right_button_style))),
 		CGI::Tr({},
@@ -870,7 +871,7 @@ sub browse_library_panel2t {
 					            -default=> $chapter_selected,
 					            -onchange=>"lib_update('sections', 'get');return true"
 		    )]),
-                       CGI::td({-colspan=>2, -align=>"right",-class=>"opladvsrch"},
+                       CGI::td({-colspan=>2, -align=>"left",-class=>"opladvsrch"},
                                         CGI::submit(-name=>"library_reset", -value=>$r->maketext("Reset"),-onclick=>"setCookie('tabber',1);",
                                         -style=>$right_button_style))
 		),
@@ -881,7 +882,7 @@ sub browse_library_panel2t {
 					        -default=> $section_selected,
 						-onchange=>"lib_update('count', 'clear');return true"
 		    )]),
-			CGI::td({-align=>"right",-colspan=>2},
+			CGI::td({-align=>"left",-colspan=>2},
 					CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
 		 ),
 
