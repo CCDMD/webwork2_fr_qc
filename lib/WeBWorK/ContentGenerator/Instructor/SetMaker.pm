@@ -1010,8 +1010,8 @@ sub browse_library_panel5t {
 		    )]),
 		),
 		 CGI::Tr(
-                   CGI::td({-align=>"left"}, $r->maketext("Keywords")),
-                   CGI::td({-colspan=>2}, "<ul><p id='kword' class='kword'></p></ul><br /><div align=\"left\"><a href=\"#\" id=\"load_kw\">+ ".$r->maketext ("Load More")."</a></div>")
+                   CGI::td({-align=>"left",-valign=>"top"}, $r->maketext("Keywords")),
+                   CGI::td({-colspan=>2}, "<span id='kword' class='kword'></span><br /><div align=\"left\"><a href=\"#\" id=\"load_kw\">+ ".$r->maketext ("Load More")."</a></div>")
 
                  ),
 		 CGI::Tr(CGI::td({-colspan=>3, -align=>"left", -id=>"blibrary_count_line"}, $count_line)),
