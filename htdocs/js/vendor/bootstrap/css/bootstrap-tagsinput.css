@@ -44,6 +44,7 @@
 .bootstrap-tagsinput .tag {
   display: inline-block;
 margin: 2px 2px 2px 2px;
+color: #000000; /* #114499; */
   border-radius: 6px;
 line-height: 160%;
 border-style: solid;
