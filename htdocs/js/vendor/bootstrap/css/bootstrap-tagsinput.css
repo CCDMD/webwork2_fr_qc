@@ -43,7 +43,12 @@
 }
 .bootstrap-tagsinput .tag {
   display: inline-block;
-  margin: 5px 0 5px 5px;
+margin: 2px 2px 2px 2px;
+  border-radius: 6px;
+line-height: 160%;
+border-style: solid;
+border: 2px solid #E5E5E5;
+color: #000000; /* #114499; */
   vertical-align: top;
   position: relative;
   cursor: default;
@@ -98,3 +103,4 @@
  
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, 0.125);
 }
+

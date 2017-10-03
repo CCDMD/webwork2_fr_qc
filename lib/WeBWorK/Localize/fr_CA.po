@@ -343,8 +343,8 @@ msgstr "%1 Points :"
 
 #. ($name)
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:431
-msgid "%1 Problems:"
-msgstr "Problèmes dans %1 :"
+msgid "%1 Problems"
+msgstr "Problèmes dans %1"
 
 #. ($numAdded, $numSkipped, join(", ", @$skipped)
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList2.pm:1345
@@ -1469,6 +1469,11 @@ msgstr "Parcourir"
 msgid "Browse from:"
 msgstr "Parcourir dans : "
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:455
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:812
+msgid "Browse from"
+msgstr "Parcourir dans"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/Localize.pm:415
 msgid ""
 "By default, feeback is always sent to all users specified to recieve "
@@ -1721,6 +1726,10 @@ msgstr ""
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:727
 msgid "Chapter:"
 msgstr "Chapitre :"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:727
+msgid "Chapter"
+msgstr "Chapitre"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Problem.pm:1493
 msgid "Check Answers"
@@ -2895,6 +2904,10 @@ msgstr ""
 "d'étudiant. Il est à noter que l'identifiant étudiant sert de mot de passe à "
 "la première connexion."
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:991
+msgid "Enter keywords"
+msgstr "Indiquer les mots clés"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/GatewayQuiz.pm:383
 #: /opt/webwork/webwork2/lib/WeBWorK/Utils/AttemptsTable.pm:310
 msgid "Entered"
@@ -3802,6 +3815,10 @@ msgstr "Paramètres de l'évaluation Juste-à-temps"
 msgid "Keywords:"
 msgstr "Mots clés :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:772
+msgid "Keywords"
+msgstr "Mots clés"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/Scoring.pm:33
 msgid "LAST NAME"
 msgstr "NOM DE FAMILLE"
@@ -3901,6 +3918,10 @@ msgstr "Choisir des problèmes 3"
 msgid "Library Browser no js"
 msgstr "Choisir des problèmes sans js"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:1556
+msgid "Library in which to search for existing problems"
+msgstr "Banque dans laquelle rechercher des problèmes existants"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/Localize.pm:339
 msgid "List of display modes made available to students"
 msgstr "Liste des modes d'affichage mis à la disposition des étudiants"
@@ -3927,7 +3948,7 @@ msgstr "Afficher plus"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:406
 msgid "Local"
-msgstr "le répertoire local"
+msgstr "ce cours"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:887
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker2.pm:980
@@ -4735,6 +4756,10 @@ msgid ""
 "will not show up in the courses list on the WeBWorK home page. It will still "
 "appear in the Course Administration listing."
 msgstr ""
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:994
+msgid "Use the minus (-) signe before a keyword to tell the search to exclude problems with that term"
+msgstr "Placer le signe moins (-) devant un mot clé afin que la recherche exclut les problèmes contenant ce terme"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/AchievementItems.pm:1016
 msgid ""
@@ -5546,6 +5571,10 @@ msgstr ""
 msgid "Search:"
 msgstr "Recherche :"
 
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:882
+msgid "Search"
+msgstr "Recherche"
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetList.pm:771
 msgid "Secondary sort"
 msgstr "Tri secondaire"
@@ -5580,6 +5609,11 @@ msgstr "Groupe "
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:738
 msgid "Section:"
 msgstr "Section :"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:738
+msgid "Section "
+msgstr "Section"
+
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ProblemSetDetail2.pm:385
 msgid "Seed"
@@ -6218,6 +6252,10 @@ msgstr "Sous-répertoire"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:717
 msgid "Subject:"
 msgstr "Sujet :"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:717
+msgid "Subject"
+msgstr "Sujet"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SendMail.pm:669
 msgid "Subject: "

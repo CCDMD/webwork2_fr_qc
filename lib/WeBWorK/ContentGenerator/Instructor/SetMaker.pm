@@ -495,7 +495,7 @@ sub browse_local_panel {
 		my %labels = map { my($l)=$_=~/^$lib\/(.*)$/;$_=>$l } @$list_of_prob_dirs;
 		push @popup_menu_args, -labels => \%labels;
 	}
-	print CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("[_1] Problems:", $name).' ',
+	print CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("[_1] Problems", $name).' ',
 		              CGI::popup_menu(@popup_menu_args),
 		              CGI::br(), 
 		              $view_problem_line,
@@ -538,7 +538,7 @@ sub browse_local_panelt {
 	}
 
 	return   CGI::start_table({-width=>"80%",-align=>"left"}).
-                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("[_1] Problems:", $name).' ',
+                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("[_1] Problems", $name).' ',
 		              CGI::popup_menu(@popup_menu_args)])).
                  CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left",colspan=>"2"}, $view_problem_line
 	            )).
@@ -562,7 +562,7 @@ sub browse_mysets_panel {
 	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r);
 	print   CGI::start_table(),
                 CGI::Tr({},
-		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:").' ',
+		CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from").' ',
 		CGI::popup_menu(-name=> 'library_sets', 
 		                -values=>$list_of_local_sets, 
 		                -default=> $library_selected),
@@ -592,7 +592,7 @@ sub browse_mysets_panelt {
 	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r, 3 );
 	return CGI::start_table({-align=>"left",width=>"80%"}),
                CGI::Tr({},
-		CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("Browse from:").' ',
+		CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("Browse from").' ',
 		CGI::popup_menu(-name=> 'mlibrary_sets', 
 		                -values=>$list_of_local_sets, 
 		                -default=> $library_selected)]
@@ -674,7 +674,7 @@ sub browse_library_panel1 {
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, 
 		CGI::start_table(),
 			CGI::Tr({},
-				CGI::td([$r->maketext("Chapter:"),
+				CGI::td([$r->maketext("Chapter"),
 					CGI::popup_menu(-name=> 'library_chapters', 
 					                -values=>\@chaps,
 					                -default=> $chapter_selected,
@@ -682,7 +682,7 @@ sub browse_library_panel1 {
 					),
 					CGI::submit(-name=>"lib_select_chapter", -value=>"Update Section List")])),
 			CGI::Tr({},
-				CGI::td($r->maketext("Section:")),
+				CGI::td($r->maketext("Section ")),
 				CGI::td({-colspan=>2},
 					CGI::popup_menu(-name=> 'library_sections', 
 					                -values=>\@sects,
@@ -746,7 +746,7 @@ sub browse_library_panel2 {
 		    )]),
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section"),
+			CGI::td([$r->maketext("Section "),
 			CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
 					        -default=> $section_selected,
@@ -876,7 +876,7 @@ sub browse_library_panel2t {
                                         -style=>$right_button_style))
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section"),
+			CGI::td([$r->maketext("Section "),
 			CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
 					        -default=> $section_selected,
@@ -987,11 +987,11 @@ sub browse_library_panel5t {
                                      -type=>"text",
                                      -default=>$search_bpl,
                                      -class=>"search_bpl",
-                                     -placeholder => $r->maketext("Enter keyword"),
-                                           -example=>$r->maketext("Enter keyword"),
+                                     -placeholder => $r->maketext("Enter keywords"),
+                                           -example=>$r->maketext("Enter keywords"),
                                            -autocomplete=>"off",
                                            -override=>1
-                                                                                        ).CGI::br()."<small class=\"text-muted\">Place the - minus sign before the negative terms</small>",])
+                                                                                        ).CGI::br()."<small class=\"text-muted\">".$r->maketext("Use the minus (-) signe before a keyword to tell the search to exclude problems with that term")."</small>",])
 		),
 		CGI::Tr({},
 			CGI::td([$r->maketext("Subject"),
@@ -1127,7 +1127,7 @@ sub browse_library_panel2adv {
 		# Html done by hand since it is temporary
 		CGI::Tr(CGI::td({-colspan=>4, -align=>"center"}, $r->maketext('All Selected Constraints Joined by "And"'))),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Subject:"),
+			CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'library_subjects', 
 					            -values=>\@subjs,	
 					            -default=> $selected{dbsubject},
@@ -1137,7 +1137,7 @@ sub browse_library_panel2adv {
 				CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),
 					-style=> $right_button_style))),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter:"),
+			CGI::td([$r->maketext("Chapter"),
 				CGI::popup_menu(-name=> 'library_chapters', 
 					            -values=>\@chaps,
 					            -default=> $selected{dbchapter},
@@ -1148,7 +1148,7 @@ sub browse_library_panel2adv {
 					-style=>$right_button_style))
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section:"),
+			CGI::td([$r->maketext("Section "),
 			CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
 					        -default=> $selected{dbsection},
@@ -1257,13 +1257,13 @@ sub browse_specific_panel {
 	if(scalar(@libs) == 0) {
 		$popupetc =  $r->maketext("there are no set problem libraries course to look at.");
 	}
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library")."&nbsp;:&nbsp;",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Library"),
 		$popupetc
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory")."&nbsp;:&nbsp;",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Directory"),
 		$popupetc2
 	));
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory")."&nbsp;:&nbsp;",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("SubDirectory"),
 		$popupetc3
 	));
        print  CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line));
@@ -1343,9 +1343,9 @@ sub browse_specific_panelt {
 
 	return CGI::start_table({-width=>"60%",-align=>"left"}),
 
-        CGI::Tr(CGI::td([$r->maketext("Library")."&nbsp;:&nbsp;", $popupetc])),
-        CGI::Tr(CGI::td([$r->maketext("Directory")."&nbsp;:&nbsp;", $popupetc2])),
-        CGI::Tr(CGI::td([$r->maketext("SubDirectory")."&nbsp;:&nbsp;", $popupetc3])),
+        CGI::Tr(CGI::td([$r->maketext("Library"), $popupetc])),
+        CGI::Tr(CGI::td([$r->maketext("Directory"), $popupetc2])),
+        CGI::Tr(CGI::td([$r->maketext("SubDirectory"), $popupetc3])),
 
         CGI::Tr(CGI::td({-colspan=>2, -align=>"left", -id=>"slibrary_count_line"}, $count_line)),
         CGI::Tr(CGI::td({-colspan=>2, -align=>"center"},[$popupetc4])),
@@ -1379,7 +1379,7 @@ sub browse_setdef_panel {
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
 		$popupetc = $r->maketext("there are no set definition files in this course to look at.");
 	}
-	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from:")." ",
+	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"}, $r->maketext("Browse from")." ",
 		$popupetc
 	));
 }
@@ -1553,7 +1553,7 @@ sub make_top_row {
 	));
 =cut
 	print CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"},
-                        CGI::h2($r->maketext("Database in which to search for existing problems")),
+                        CGI::h2($r->maketext("Library in which to search for existing problems")),
 	));
         my @formsToShow = @{ VIEW_FORMS() };
         my $i = 0;
