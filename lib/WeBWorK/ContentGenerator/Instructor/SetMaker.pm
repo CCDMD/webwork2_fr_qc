@@ -981,7 +981,7 @@ sub browse_library_panel5t {
                 my $defaultKeywords = $r->param('library_defkeywords') || DEFAULT_KEYWORDS;
 		return CGI::start_table({-width=>"100%"}),
                 CGI::Tr({},
-		    CGI::td([$r->maketext("Search"),
+		    CGI::td([$r->maketext("Search").CGI::br().CGI::br(),
                     CGI::textfield(-name=>"search_bpl",
                                      -id=>"search_bpl",
                                      -type=>"text",
