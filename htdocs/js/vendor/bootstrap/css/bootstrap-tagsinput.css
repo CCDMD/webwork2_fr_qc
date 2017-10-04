@@ -14,12 +14,13 @@
   border-radius: 4px;
   max-width: 50%;
   width: 100% !important;
-  line-height: 24px;
+  line-height: 28px;
   cursor: text;
 }
 .bootstrap-tagsinput input {
   border: none;
   box-shadow: none;
+  vertical-align: middle;
   outline: none;
   background-color: transparent;
   padding: 0 6px;
@@ -42,16 +43,21 @@
   box-shadow: none;
 }
 .bootstrap-tagsinput .tag {
-  display: inline-block;
-margin: 2px 2px 2px 2px;
-color: #000000; /* #114499; */
-  border-radius: 6px;
 line-height: 160%;
-border-style: solid;
+color: #000000; /* #114499; */
+  vertical-align: middle;
+font-size: 90%;
+background: #E5E5E5; /*#FFFFFF;*/
+text-decoration: none;
+border-radius: 6px;
+padding: 5px 5px 5px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
+border-width: 2px;
+white-space: nowrap;
+overflow: hidden;
 border: 2px solid #E5E5E5;
-  vertical-align: top;
-  position: relative;
-  cursor: default;
+display: inline-block;
+margin: 2px 2px 2px 0px;
   -webkit-transition: .13s ease-out;
   -o-transition: .13s ease-out;
   transition: .13s ease-out;
@@ -63,11 +69,21 @@ border: 2px solid #E5E5E5;
 }
 
 .bootstrap-tagsinput .tag:hover {
-  display: inline-block;
-  margin: 5px 0 5px 5px;
-  vertical-align: top;
-  position: relative;
-  cursor: default;
+line-height: 160%;
+color: #000000; /* #114499; */
+font-size: 90%;
+background: #CCCCCC;
+text-decoration: none;
+  vertical-align: middle;
+border-radius: 6px;
+padding: 5px 5px 5px 5px; /*1px;*/
+border-style: solid; /*ridge;*/
+border-width: 2px;
+white-space: nowrap;
+overflow: hidden;
+border: 2px solid #CCCCCC;
+display: inline-block;
+margin: 2px 2px 2px 0px;
   -webkit-transition: .13s ease-out;
   -o-transition: .13s ease-out;
   transition: .13s ease-out;
