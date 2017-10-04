@@ -849,10 +849,10 @@ sub browse_library_panel2t {
 
         return CGI::start_table({-align=>"left",-width=>"80%",-id=>"opladv"}),
 	       CGI::Tr({},
-	       CGI::td({-class=>"InfoPanel", -align=>"left"}, 
+	       CGI::td({-class=>"InfoPanel",-width=>"80%", -align=>"left"}, 
 	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
-	       CGI::start_table({-width=>"100%"}),
+	       CGI::start_table({-width=>"80%"}),
                CGI::Tr(CGI::td({-colspan=>4, -align=>"center",-class=>"opladvsrch"}, $r->maketext('All Selected Constraints Joined by "And"'))),
 	       CGI::Tr({},
 	       CGI::td([$r->maketext("Subject"),
