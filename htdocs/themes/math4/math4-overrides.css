@@ -144,7 +144,9 @@ h2:first-child {
 .font-visible {
 	font-weight: normal;
 }
-
+.text-muted {
+  color: #777777 !important;
+}
 
 /* Users list - override */
 .set-list-form,
@@ -170,15 +172,6 @@ h2:first-child {
 .set-list-form select,
 .user-list-form select {
     height:31px;
-}
-
-
-/* tagify.css - override */
-tags tag {
-  margin:2px 5px 2px 3px;
-}
-tags > div {
-  margin:2px;
 }
 
 

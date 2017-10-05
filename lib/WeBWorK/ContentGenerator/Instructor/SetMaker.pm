@@ -1454,7 +1454,7 @@ sub make_top_row {
         my $courseID = $self->r->urlpath->arg("courseID");
 
         #Tusar - 3/25/17
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h3($r->maketext("Homework set to add problems to")).' ',
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h2($r->maketext("Homework set to add problems to")).' ',
 		CGI::br(), 
 		CGI::br(), 
            ));
@@ -1482,7 +1482,7 @@ sub make_top_row {
                                                 -values=>$list_of_local_sets,
                                                 -default=> $set_selected,
                                                 -onchange=> "return markinset()",
-                                                -override=>1),
+                                                -override=>1).
                                     CGI::submit(-name=>"edit_local", -value=>$r->maketext("Edit Target Set"),-onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);" )
                                   ])     ),
                                 CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},[
@@ -1490,7 +1490,7 @@ sub make_top_row {
                                        CGI::textfield(-name=>"new_set_name",
                                            -example=>$r->maketext("Name for new set here"),
                                            -placeholder=>$r->maketext("Name for new set here"),
-                                           -override=>1, -size=>30),
+                                           -override=>1, -size=>30).
                                         CGI::submit(-name=>"new_local_set", -value=>$r->maketext("Create"),
                                                     -onclick=>"setCookie('tabber',  document.mainform.lib_deftab.value);document.mainform.selfassign.value=1"      #       $myjs
                                                    )
