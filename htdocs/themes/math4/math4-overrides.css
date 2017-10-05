@@ -107,6 +107,7 @@ table.library-browser-table .tab-content .tab-pane {
 table.library-browser-table td {
   padding-bottom:0.5em;
   padding-top:0.5em;
+  padding-right:0.25em;
 }
 table.library-browser-table input[type="submit"],
 table.library-browser-table input[type="reset"],
@@ -115,10 +116,12 @@ table.library-browser-table input[type="text"],
 table.library-browser-table select {
 	margin-right: 5px;
 }
-.showResultsMenu input[type="checkbox"] {
-	margin-bottom:4px;
+table.library-browser-table input[type="checkbox"] {
+    margin-top: 0px;
 }
-
+.lb-mlt-group {
+    border-width:0px;
+}
 
 .edit_form label {
 	margin-left:5px;
@@ -147,6 +150,12 @@ h2:first-child {
 .text-muted {
   color: #777777 !important;
 }
+
+/* Bootstrap bootstrap-tagsinput.css override */
+.library-browser-table .bootstrap-tagsinput {
+ max-width: 98%;	
+}
+
 
 /* Users list - override */
 .set-list-form,
