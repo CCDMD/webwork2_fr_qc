@@ -97,10 +97,10 @@ table.FormLayout th {
 table.library-browser-table {
 	width:100%;
 }
-table.library-browser-table .tab-content table {
+/*table.library-browser-table .tab-content table {
 	width:100%;
 	max-width:100%;
-}
+}*/
 table.library-browser-table .tab-content .tab-pane {
 	text-align:left;
 }
@@ -117,7 +117,8 @@ table.library-browser-table select {
 	margin-right: 5px;
 }
 table.library-browser-table input[type="checkbox"] {
-    margin-top: 0px;
+	margin-bottom:4px;
+	margin-top:4px;
 }
 .lb-mlt-group {
     border-width:0px;

@@ -853,7 +853,7 @@ sub browse_library_panel2t {
 	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
 	       CGI::start_table({-width=>"80%"}),
-               CGI::Tr(CGI::td({-colspan=>4, -align=>"center",-class=>"opladvsrch"}, $r->maketext('All Selected Constraints Joined by "And"'))),
+               CGI::Tr(CGI::td({-colspan=>4, -class=>"opladvsrch"}, $r->maketext('All Selected Constraints Joined by "And"'))),
 	       CGI::Tr({},
 	       CGI::td([$r->maketext("Subject"),
 				CGI::popup_menu(-name=> 'library_subjects', 
@@ -1334,8 +1334,8 @@ sub browse_specific_panelt {
                                 -values=>\@list_of_sub_reps,
 				-onchange=>"dir_update('count','clear');return true",
                                 -default=> $subdir_selected).
-		CGI::br();
-        my $popupetc4 = CGI::br().  $view_problem_line;
+                CGI::br();
+        my $popupetc4 =  $view_problem_line;
 
 	if(scalar(@libs) == 0) {
 		$popupetc = $r->maketext("there are no set problem libraries course to look at.");
@@ -1348,7 +1348,7 @@ sub browse_specific_panelt {
         CGI::Tr(CGI::td([$r->maketext("SubDirectory"), $popupetc3])),
 
         CGI::Tr(CGI::td({-colspan=>2, -align=>"left", -id=>"slibrary_count_line"}, $count_line)),
-        CGI::Tr(CGI::td({-colspan=>2, -align=>"center"},[$popupetc4])),
+        CGI::Tr(CGI::td({-colspan=>2},[$popupetc4])),
         CGI::end_table();
 
 }
@@ -1454,9 +1454,7 @@ sub make_top_row {
         my $courseID = $self->r->urlpath->arg("courseID");
 
         #Tusar - 3/25/17
-        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h2($r->maketext("Homework set to add problems to")).' ',
-		CGI::br(), 
-		CGI::br(), 
+        print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h2($r->maketext("Homework set to add problems to")).' ', 
            ));
         my $c = 0;
         if($self->{browse_which} eq 'browse_spcf_library') {
