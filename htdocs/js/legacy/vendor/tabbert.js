@@ -640,9 +640,11 @@ function toggleAdvSrch() {
        $("#library_advanced").val(maketext('Basic Search'));
        $('#opladv tr.opladvsrch').toggle(true);
        $('#opladv td.opladvsrch').toggle(true);
+       $('#opladv span.opladvsrch').toggle(true);
   } else {
        $("#library_advanced").val(maketext('Advanced Search'));
        $('#opladv tr.opladvsrch').toggle(false);
        $('#opladv td.opladvsrch').toggle(false);
+       $('#opladv span.opladvsrch').toggle(false);
   }
 }
