@@ -397,6 +397,7 @@ sub view_problems_line {
 	my $r = shift; # so we can get parameter values
         my $t = shift;
 	my $result = CGI::submit(-name=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$t);");
+        $result   .= CGI::reset(-id=>"library_reset",-name=>"library_reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -540,6 +541,7 @@ sub browse_local_panelt {
 	return   CGI::start_table({-width=>"80%",-align=>"left"}).
                  CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("[_1] Problems", $name).' ',
 		              CGI::popup_menu(@popup_menu_args)])).
+               CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
                  CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left",colspan=>"2"}, $view_problem_line
 	            )).
                  CGI::end_table();
@@ -597,6 +599,7 @@ sub browse_mysets_panelt {
 		                -values=>$list_of_local_sets, 
 		                -default=> $library_selected)]
 	         )),
+               CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
                CGI::Tr({},
 		CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line
 	         )),
@@ -818,6 +821,7 @@ sub browse_library_panel2t {
 
 	my $text_popup = CGI::popup_menu(-name => 'library_textbook',
 									 -values =>\@textarray,
+                                                                         -style=>"width:800px;",
 									 -labels => \%textlabels,
 									 -default=>$selected{textbook},
 									 -onchange=>"setCookie('tabber',1);submit();return true");
@@ -852,72 +856,72 @@ sub browse_library_panel2t {
 	       CGI::td({-class=>"InfoPanel",-width=>"80%", -align=>"left"}, 
 	       CGI::hidden(-name=>"library_is_basic", -default=>1,-override=>1),
 	       CGI::hidden(-name=>"library_adv_btn", -default=>$defAdv),
-	       CGI::start_table({-width=>"80%"}),
-               CGI::Tr(CGI::td({-colspan=>4, -class=>"opladvsrch"}, $r->maketext('All Selected Constraints Joined by "And"'))),
+	       CGI::start_table({-width=>"100%"}),
+               CGI::Tr({},
+                    CGI::td({-colspan=>"2",-width=>"60%",-align=>"left",-style=>"font-weight:bold;"}, $r->maketext('All Selected Constraints Joined by "And"')),
+                    CGI::td({-colspan=>"2",-width=>"40%", -align=>"right"},
+                                "<span class='opladvsrch'>".CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),-onclick=>"setCookie('tabber',1);", -style=> $right_button_style)."</span>".
+				CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
+               ),
 	       CGI::Tr({},
-	       CGI::td([$r->maketext("Subject"),
-				CGI::popup_menu(-name=> 'library_subjects', 
+	           CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Subject")),
+	           CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},CGI::popup_menu(-name=> 'library_subjects', 
 					            -values=>\@subjs,
+                                                    -style=>"width:800px;",
 					            -default=> $subject_selected,
-					            -onchange=>"lib_update('chapters', 'get');return true"
-				)]),
-                        CGI::td({-colspan=>2, -align=>"left",-class=>"opladvsrch"},
-                                CGI::submit(-name=>"lib_select_subject", -value=>$r->maketext("Update Menus"),-onclick=>"setCookie('tabber',1);",
-                                        -style=> $right_button_style))),
+					            -onchange=>"lib_update('chapters', 'get');return true")),
+                  ),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Chapter"),
-				CGI::popup_menu(-name=> 'library_chapters', 
+			CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Chapter")),
+			CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},CGI::popup_menu(-name=> 'library_chapters', 
 					            -values=>\@chaps,
+                                                    -style=>"width:800px;",
 					            -default=> $chapter_selected,
-					            -onchange=>"lib_update('sections', 'get');return true"
-		    )]),
-                       CGI::td({-colspan=>2, -align=>"left",-class=>"opladvsrch"},
-                                        CGI::submit(-name=>"library_reset", -value=>$r->maketext("Reset"),-onclick=>"setCookie('tabber',1);",
-                                        -style=>$right_button_style))
+					            -onchange=>"lib_update('sections', 'get');return true"))
 		),
 		CGI::Tr({},
-			CGI::td([$r->maketext("Section "),
-			CGI::popup_menu(-name=> 'library_sections', 
+			CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Section ")),
+			CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},CGI::popup_menu(-name=> 'library_sections', 
 					        -values=>\@sects,
+                                                -style=>"width:800px;",
 					        -default=> $section_selected,
-						-onchange=>"lib_update('count', 'clear');return true"
-		    )]),
-			CGI::td({-align=>"left",-colspan=>2},
-					CGI::submit(-id=>"library_advanced",-class=>"OPLAdvSearch",-name=>"library_advanced", -value=>$r->maketext("Advanced Search")))
+						-onchange=>"lib_update('count', 'clear');return true")),
 		 ),
 
                  CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Textbook"), $text_popup]),
+			CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Textbook")), 
+                        CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},$text_popup),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Text chapter"),
-			CGI::popup_menu(-name=> 'library_textchapter', 
+			CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Text chapter")),
+			CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},CGI::popup_menu(-name=> 'library_textchapter', 
 					        -values=>\@textchaps,
+                                                -style=>"width:800px;",
 					        -default=> $selected{textchapter},
-							-onchange=>"setCookie('tabber',1);submit();return true"
-		    )]),
+							-onchange=>"setCookie('tabber',1);submit();return true")),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-			CGI::td([$r->maketext("Text section"),
-			CGI::popup_menu(-name=> 'library_textsection', 
+			CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Text section")),
+			CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},CGI::popup_menu(-name=> 'library_textsection', 
 					        -values=>\@textsecs,
+                                                -style=>"width:800px;",
 					        -default=> $selected{textsection},
-							-onchange=>"setCookie('tabber',1);submit();return true"
-		    )]),
+							-onchange=>"setCookie('tabber',1);submit();return true")),
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-				 CGI::td($r->maketext("Level")),
-				 "<td>$mylevelline</td>"
+				 CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Level")),
+				 "<td colspan='3' align='left' width='85%'>$mylevelline</td>"
 		 ),
 		 CGI::Tr({-class=>'opladvsrch'},
-		     CGI::td($r->maketext("Keywords:")),CGI::td({-colspan=>2},
+		     CGI::td({-colspan=>"1",-width=>"25%"},$r->maketext("Keywords")),
+                     CGI::td({-colspan=>"3",-align=>"left",-width=>"85%"},
 			 CGI::textfield(-name=>"library_keywords",
 							-default=>$library_keywords,
 							-override=>1,
-							-size=>40))),
+							-size=>80))),
 
-		 CGI::Tr(CGI::td({-colspan=>3, -align=>"center", -id=>"library_count_line"}, $count_line)),
-		 CGI::Tr(CGI::td({-colspan=>3}, $view_problem_line)),
+		 CGI::Tr(CGI::td({-colspan=>"4", -align=>"left",-width=>"100%", -id=>"library_count_line"}, $count_line)),
+		 CGI::Tr(CGI::td({-colspan=>"4",-width=>"100%"}, $view_problem_line)),
 		 CGI::end_table()
 	 )),
                  CGI::end_table();
@@ -1409,6 +1413,7 @@ sub browse_setdef_panelt {
 	}
 	return CGI::start_table({-width=>"100%"}).
 	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"},[ $r->maketext("Browse from"),$popupetc ])).
+	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
 	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line)).
                CGI::end_table();
      
