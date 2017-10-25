@@ -118,6 +118,7 @@ $(document).ready(function(){
         }
         $('#opladv tr.opladvsrch').toggle();
         $('#opladv td.opladvsrch').toggle();
+        $('#opladv span.opladvsrch').toggle();
         event.preventDefault();
    });
 
