@@ -10488,3 +10488,7 @@ msgstr "Vos unités ne peuvent contenir qu'une division"
 
 msgid "Your answer isn't a vector<BR>(it looks like a formula that returns a number)"
 msgstr "Votre réponse n'est pas un vecteur<BR>(ça ressemble à une formule qui renvoie un nombre)"
+
+msgid "Your answer isn't a number<BR>(it looks like a formula that returns a number)"
+msgstr "Votre réponse n'est pas un number<BR>(ça ressemble à une formule qui renvoie un nombre)"
+  
