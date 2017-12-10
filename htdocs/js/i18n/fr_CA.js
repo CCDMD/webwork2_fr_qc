@@ -28,6 +28,8 @@ var translate = {
         "All Subdirectories" : "Tous les sous-répertoires",
         "Select Library" : "Choisir une banque",
         "Hint" : "Indice",
-        "Solution" : "Solution"
+        "Solution" : "Solution",
+	"Basic Search" : "Recherche de base",
+	"Advanced Search" : "Recherche avancée"
         
 }
