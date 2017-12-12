@@ -9818,3 +9818,123 @@ msgstr "Votre réponse n'est pas un vecteur<BR>(ça ressemble à une formule qui
 
 msgid "Your answer isn't a number<BR>(it looks like a formula that returns a number)"
 msgstr "Votre réponse n'est pas un number<BR>(ça ressemble à une formule qui renvoie un nombre)"
+
+
+msgid "'%1' is not allowed in scientific notation"
+msgstr "%1' n'est pas permis en notation scientifique"
+
+msgid "'%1' is not defined in this context"
+msgstr "%1' n'est pas défini dans ce contexte"
+
+msgid "A number with units must be a constant, not %1"
+msgstr "Un nombre avec unités doit être une constante, non %1"
+
+msgid "Absolute value can't be taken of %1"
+msgstr "La valeur absolue ne peut pas être prise de %1"
+
+msgid "Adaptive constant is too large: %1 = %2<BR>(maximum allowed is %3)"
+msgstr "La constante adaptative est trop grande : %1 = %2<BR>(le maximum permis est %3)"
+
+msgid "Adaptive parameters can only be used for real-valued formulas"
+msgstr "Les paramètres adaptatifs peuvent seulement être utilisés pour des formules à valeurs réelles"
+
+msgid "An element of a set can't be %1"
+msgstr "L'élément d'un ensemble ne peut pas être %1"
+
+msgid "Assurez-vous que votre réponse est factorisée complètement ou est entrée dans le format requis."
+msgstr "Assurez-vous que votre réponse est factorisée complètement ou est entrée dans le format requis."
+
+msgid "At least one side is incorrect."
+msgstr "Au moins l'un des côtés est incorrect."
+
+msgid "Can only multiply 2-dimensional matrices"
+msgstr "Seulement des matrices à 2 dimensions peuvent être multipliées"
+
+msgid "Can't add Matrices with different dimensions"
+msgstr "Impossible d'additionner des Matrices de dimensions différentes"
+
+msgid "Can't add Points with different numbers of coordinates"
+msgstr "Impossible d'additionner des Points ayant des nombres différents de coordonnées"
+
+msgid "Can't add Vectors with different numbers of coordinates"
+msgstr "Impossible d'additionner des Vecteurs ayant des nombres différents de coordonnées"
+
+msgid "Can't compare Matrices with different dimensions"
+msgstr "Impossible de comparer des Matrices de dimensions différentes"
+
+msgid "Can't compute log of zero"
+msgstr "Impossible de calculer le logarithme de zéro"
+
+msgid "Can't convert %1 to %2"
+msgstr "Impossible de convertir %1 en %2"
+
+msgid "Can't convert %1 to a constant"
+msgstr "Impossible de convertir %1 en une constante"
+
+msgid "Can't convert %1 to an Interval, Set or Union"
+msgstr "Impossible de convertir %1 en un Intervalle, un Ensemble ou un Union"
+
+msgid "Can't convert ARRAY of length %1 to %2"
+msgstr "Impossible de convertir un TABLEAU de longueur %1 en %2"
+
+msgid "Can't convert ARRAY of length %1 to a Complex Number"
+msgstr "Impossible de convertir un TABLEAU de longueur %1 en un Nombre Complexe"
+
+msgid "Can't create ans_array for %1-dimensional matrix"
+msgstr "Impossible de créer ans_array pour une matrice à %1 dimension(s)"
+
+msgid "Can't differentiate intervals"
+msgstr "Impossible de différencier les intervalles"
+
+msgid "Can't differentiate sets"
+msgstr "Impossible de différencier les ensembles"
+
+msgid "Can't differentiate unions"
+msgstr "Impossible de différencier les unions"
+
+msgid "Can't divide by a Matrix"
+msgstr "Impossible de diviser par une Matrice"
+
+msgid "Can't divide by a Point"
+msgstr "Impossible de diviser par un Point"
+
+msgid "Can't divide by a Vector"
+msgstr "Impossible de diviser par un Vecteur"
+
+msgid "Can't dot Vectors with different numbers of coordinates"
+msgstr "Impossible de calculer le produit scalaire de Vecteurs ayant des nombres différents de coordonnées"
+
+msgid "Can't evaluate correct answer at adapted point (%1)"
+msgstr "Impossible d'évaluer la réponse exacte au point adapté (%1)"
+
+msgid "Can't evaluate formula on test point (%1)"
+msgstr "Impossible d'évaluer la formule au point de test (%1)"
+
+msgid "Can't evaluate formula on test point (%1) with parameters (%2)"
+msgstr "Impossible d'évaluer la formule au point de test (%1) avec les paramètres (%2)"
+
+msgid "Can't extract element number '%1' (index must be an integer)"
+msgstr "Impossible d'extraire l'élément numéro '%1' (l'index doit être un entier)"
+
+msgid "Can't make an interval only out of Infinity"
+msgstr "Impossible de créer un intervalle constitué uniquement de l'Infini"
+
+msgid "Can't perform implied multiplication in this context"
+msgstr "Impossible d'effectuer la multiplication sous-entendue dans ce contexte"
+
+msgstr "Impossible d'élever les Points aux puissances"
+
+msgid "Can't raise Vectors to powers"
+msgstr "Impossible d'élever les Vecteurs aux puissances"
+
+msgid "Can't raise a negative number to a non-integer power"
+msgstr "Impossible d'élever un nombre négatif à une puissance non entière"
+
+msgid "Can't reduce:  negation operator is not defined"
+msgstr "Impossible de réduire : l'opérateur de négation n'est pas défini"
+
+msgid "Can't solve for adaptive parameters"
+msgstr "Impossible de résoudre pour des paramètres adaptatifs"
+
+msgid "Can't subtract Matrices with different dimensions"
+msgstr "Impossible de soustraire des Matrices de dimensions différentes"
