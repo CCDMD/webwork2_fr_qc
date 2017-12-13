@@ -1392,17 +1392,21 @@ sub browse_setdef_panelt {
 	my $self = shift;
 	my $r = $self->r;
 	my $ce = $r->ce;
-	my $library_selected = shift;
+	#my $library_selected = shift;
+	my $library_selected = $self->{current_library_set};
 	my $default_value = $r->maketext(SELECT_SETDEF_FILE_STRING);
+	
 	# in the following line, the parens after sort are important. if they are
 	# omitted, sort will interpret get_set_defs as the name of the comparison
 	# function, and ($ce->{courseDirs}{templates}) as a single element list to
 	# be sorted. *barf*
 	my @list_of_set_defs = sort(get_set_defs($ce->{courseDirs}{templates}));
+	unshift @list_of_set_defs, $default_value; 
+	
 	if(scalar(@list_of_set_defs) == 0) {
 		@list_of_set_defs = ($r->maketext(NO_LOCAL_SET_STRING));
 	} elsif (not $library_selected or $library_selected eq $default_value) { 
-		unshift @list_of_set_defs, $default_value; 
+		#unshift @list_of_set_defs, $default_value; 
 		$library_selected = $default_value; 
 	}
 	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r, 4);
