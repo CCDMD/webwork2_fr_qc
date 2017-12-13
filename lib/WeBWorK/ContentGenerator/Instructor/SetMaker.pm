@@ -398,7 +398,7 @@ sub view_problems_line {
         my $t = shift;
 	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$t);");
     #    $result   .= CGI::reset(-id=>"library_reset",-name=>"library_reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
-	$result   .= CGI::reset(-id=>"reset",-name=>"reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
+	$result .= CGI::reset(-id=>"reset",-name=>"reset", -value=> $r->maketext('Reset'));
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -407,7 +407,10 @@ sub view_problems_line {
 	# We have our own displayMode since its value may be None, which is illegal
 	# in other modules.
 	my $mydisplayMode = $r->param('mydisplayMode') || $r->ce->{pg}->{options}->{displayMode};
-	$result .= ' '.$r->maketext('Display Mode:').' '.CGI::popup_menu(-name=> 'mydisplayMode',
+	#$result .= ' '.$r->maketext('Display Mode:').' '.CGI::popup_menu(-name=> 'mydisplayMode',
+	#                                                            -values=>\@active_modes,
+	#                                                            -default=> $mydisplayMode);
+	$result .= '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'.$r->maketext('Display Mode:').' '.CGI::popup_menu(-name=> 'mydisplayMode',
 	                                                            -values=>\@active_modes,
 	                                                            -default=> $mydisplayMode);
 	# Now we give a choice of the number of problems to show
@@ -1416,11 +1419,14 @@ sub browse_setdef_panelt {
 	if($list_of_set_defs[0] eq $r->maketext(NO_LOCAL_SET_STRING)) {
 		$popupetc = $r->maketext("there are no set definition files in this course to look at.");
 	}
-	return CGI::start_table({-width=>"100%"}).
-	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left"},[ $r->maketext("Browse from"),$popupetc ])).
-	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
-	       CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line)).
-               CGI::end_table();
+							
+	return CGI::start_table({-align=>"left",-width=>"80%"}),
+	       CGI::Tr({},
+		   CGI::td({-class=>"InfoPanel", -align=>"left"},[ $r->maketext("Browse from").' ',$popupetc ])),
+		   CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
+	       CGI::Tr({},
+		   CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"}, $view_problem_line)),
+           CGI::end_table();
      
 }
 sub make_top_row {
@@ -1680,11 +1686,11 @@ sub make_top_row {
                 #$show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
                  #                                    if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
 				$show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;";
-                $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
-                               -style=>"width: 30ex",
-                                 -onclick=>"f_reset();return false;",
-                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library' && $bbrowse_which ne 'browse_npl_library');
-                $show_hide_path_button .= $clear_prob_btn;
+                #$clear_prob_btn = CGI::submit(-name=>"cleardisplay",
+                #               -style=>"width: 30ex",
+                #                 -onclick=>"f_reset();return false;",
+                #               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library' && $bbrowse_which ne 'browse_npl_library');
+                #$show_hide_path_button .= $clear_prob_btn;
                 $show_hide_path_button .= $prev_button."&nbsp;".$next_button;
 
 
