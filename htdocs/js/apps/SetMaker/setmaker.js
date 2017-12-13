@@ -36,11 +36,11 @@ $(document).ready(function(){
       $("#lib_view_spcf").attr("disabled","disabled");
    }
 
-   var brw = $('[name="bbrowse_which"]').val();
-   if(brw == 'browse_spcf_library') {
+  // var brw = $('[name="bbrowse_which"]').val();
+  // if(brw == 'browse_spcf_library') {
       $('a:contains("'+maketext('Solution')+'")').hide();
       $('a:contains("'+maketext('Hint')+'")').hide();
-   }
+   //}
 
    //alert(input1.val());
    $("#blibrary_subjects").change ( function() {
@@ -84,20 +84,20 @@ $(document).ready(function(){
   if($("input[name='showSolutiont']").is(':checked') ) {
       $('a:contains("'+maketext('Solution')+'")').show();
   } else {
-     if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
-        $('a:contains("'+maketext('Solution')+'")').show();
-     } else {
+ //    if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
+  //      $('a:contains("'+maketext('Solution')+'")').show();
+ //    } else {
         $('a:contains("'+maketext('Solution')+'")').hide();
-     }
+   //  }
   }
   if($("input[name='showHintt']").is(':checked')) {
       $('a:contains("'+maketext('Hint')+'")').show();
   } else {
-     if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
-      $('a:contains("'+maketext('Hint')+'")').show();
-     } else {
+  //   if($('[name="lib_deftab"]').val() > 0 && $('[name="lib_deftab"]').val() < 5) {
+    //  $('a:contains("'+maketext('Hint')+'")').show();
+    // } else {
       $('a:contains("'+maketext('Hint')+'")').hide();
-     }
+    // }
   }
 
 
@@ -166,6 +166,7 @@ function f_reset(v) {
 
        $('#showHintt').prop('checked', false);
        $('#showSolutiont').prop('checked', false);
+       $('#max_shownt').prop("selectedIndex",20);
 
        $('[name="library_subjects"]').prop("selectedIndex",0);
        lib_update('chapters', 'clear');

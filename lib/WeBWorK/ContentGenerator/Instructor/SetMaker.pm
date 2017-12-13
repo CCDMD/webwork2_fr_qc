@@ -396,8 +396,9 @@ sub view_problems_line {
 	my $label = shift;
 	my $r = shift; # so we can get parameter values
         my $t = shift;
-	my $result = CGI::submit(-name=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$t);");
-        $result   .= CGI::reset(-id=>"library_reset",-name=>"library_reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
+	my $result = CGI::submit(-name=>"$internal_name",-id=>"$internal_name", -value=>$label, -onclick=>"setCookie('tabber',$t);");
+    #    $result   .= CGI::reset(-id=>"library_reset",-name=>"library_reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
+	$result   .= CGI::reset(-id=>"reset",-name=>"reset", -value=> $r->maketext('Reset'),-onclick=>"setCookie('tabber',$t);") if($t == 1);
 
 	my %display_modes = %{WeBWorK::PG::DISPLAY_MODES()};
 	my @active_modes = grep { exists $display_modes{$_} }
@@ -410,22 +411,22 @@ sub view_problems_line {
 	                                                            -values=>\@active_modes,
 	                                                            -default=> $mydisplayMode);
 	# Now we give a choice of the number of problems to show
-	my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
-	$result .= ' '.$r->maketext('Max. Shown:').' '.
-		CGI::popup_menu(-name=> 'max_shown',
-		                -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
-		                -default=> $defaultMax);
+	#my $defaultMax = $r->param('max_shown') || MAX_SHOW_DEFAULT;
+	#$result .= ' '.$r->maketext('Max. Shown:').' '.
+	#	CGI::popup_menu(-name=> 'max_shown',
+	#	                -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
+	#	                -default=> $defaultMax);
 	# Option of whether to show hints and solutions
-	my $defaultHints = $r->param('showHints_'.$t) || SHOW_HINTS_DEFAULT;
-        my ($chk_hints,$chk_soln) = ('','');
-        $chk_hints = " checked" if($defaultHints);
-        my $chk_hints_id = "showHints_".$t;
+	#my $defaultHints = $r->param('showHints_'.$t) || SHOW_HINTS_DEFAULT;
+    #    my ($chk_hints,$chk_soln) = ('','');
+    #    $chk_hints = " checked" if($defaultHints);
+    #    my $chk_hints_id = "showHints_".$t;
 	#$result .= "&nbsp;".CGI::checkbox(-name=>"showHints",-checked=>$defaultHints,-label=>$r->maketext("Hints"));
-	my $defaultSolutions = $r->param('showSolutions_'.$t) || SHOW_SOLUTIONS_DEFAULT;
-        $chk_soln = " checked" if($defaultSolutions);
-        my $chk_soln_id = "showSolutions_".$t;
+	#my $defaultSolutions = $r->param('showSolutions_'.$t) || SHOW_SOLUTIONS_DEFAULT;
+    #    $chk_soln = " checked" if($defaultSolutions);
+   #     my $chk_soln_id = "showSolutions_".$t;
 	#$result .= "&nbsp;".CGI::checkbox(-name=>"showSolutions",-checked=>$defaultSolutions,-label=>$r->maketext("Solutions"));
-        $result .= "&nbsp;<input type=\"checkbox\" id=\"$chk_hints_id\" name=\"$chk_hints_id\" value=\"on\"  $chk_hints />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" name=\"$chk_soln_id\"  id=\"$chk_soln_id\" value=\"on\"  $chk_soln />".$r->maketext("Solutions");
+     #   $result .= "&nbsp;<input type=\"checkbox\" id=\"$chk_hints_id\" name=\"$chk_hints_id\" value=\"on\"  $chk_hints />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" name=\"$chk_soln_id\"  id=\"$chk_soln_id\" value=\"on\"  $chk_soln />".$r->maketext("Solutions");
 	$result .= "\n".CGI::hidden(-name=>"original_displayMode", -default=>$mydisplayMode)."\n";
 	
 	return($result);
@@ -956,7 +957,7 @@ sub browse_library_panel5t {
 	} else {
 		$count_line = $r->maketext("There are [_1] matching WeBWorK problems", $count_line);
 	}
-	my $view_problem_line = view_problems_line_bpl('lib_view', $r->maketext('View Problems'), $count_line,$self->r);
+	my $view_problem_line = view_problems_line_bpl('lib_view_bpl', $r->maketext('View Problems'), $count_line,$self->r);
 
         # Option of whether to show hints and solutions
 	my $defaultHints = $r->param('showHints') || SHOW_HINTS_DEFAULT;
@@ -1462,20 +1463,26 @@ sub make_top_row {
         print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left", -colspan =>"2"},CGI::h2($r->maketext("Homework set to add problems to")).' ', 
            ));
         my $c = 0;
+		my $btn_click = "lib_view_bpl";
         if($self->{browse_which} eq 'browse_spcf_library') {
            $c = 5;
+		   $btn_click = "lib_view_spcf";
         }
         if($self->{browse_which} eq 'browse_npl_library') {
            $c = 1;
+		   $btn_click = "lib_view";
         }
         if($self->{browse_which} eq 'browse_local') {
            $c = 2;
+		   $btn_click = "view_local_set";
         }
         if($self->{browse_which} eq 'browse_mysets') {
            $c = 3;
+		   $btn_click = "view_mysets_set";
         }
         if($self->{browse_which} eq 'browse_setdefs') {
            $c = 4;
+		   $btn_click = "view_setdef_set";
         }
         print CGI::Tr(CGI::td({-class =>"InfoPanel", -align=>"left"},
                              CGI::start_table({-border=>"0"}),
@@ -1642,14 +1649,15 @@ sub make_top_row {
 
                 my $defaultMax = $r->param('max_shownt') || MAX_SHOW_DEFAULT;
 
-                my $t = 0;
-                $t = 5 if($bbrowse_which eq "browse_spcf_library");
-                my $btn_click = "lib_view";
-                $btn_click = "lib_view_spcf" if($bbrowse_which eq "browse_spcf_library");
+                #my $t = 0;
+                #$t = 5 if($bbrowse_which eq "browse_spcf_library");
+				
+				#my $btn_click = "lib_view";
+                #$btn_click = "lib_view_spcf" if($bbrowse_which eq "browse_spcf_library");
                 my $displayMax = ' '.$r->maketext('Max. Shown:').' '.
                 CGI::popup_menu(-name=> 'max_shownt',id=>'max_shownt',
                                 -values=>[5,10,15,20,25,30,50,$r->maketext("All")],
-                                -onchange => "setCookie('tabber',$t);document.getElementById(\"$btn_click\").click();",
+                                -onchange => "setCookie('tabber',$c);document.getElementById(\"$btn_click\").click();",
                                 -default=> $defaultMax);
                 my ($chk_hintt,$chk_solnt) = ("","");
                 if($r->param('showHintt')) {
@@ -1663,15 +1671,15 @@ sub make_top_row {
 		$show_hide_path_button .= CGI::button(-name=>"select_all", -style=>"width:29ex",
                                                        -onClick=>"return addme(\"\", \'all\', \"$stringalert\" )",
 			                               -value=>$r->maketext("Add All"));
-                $show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
-                $show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
-                                                     if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
-
-                                                     #if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+                #$show_hide_path_button .= $displayMax if($r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+				$show_hide_path_button .= $displayMax;
+                #$show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;" 
+                 #                                    if( $r->param('bbrowse_which') eq 'browse_bpl_library' || $r->param('bbrowse_which') eq 'browse_spcf_library');
+				$show_hide_path_button .= "<input type=\"checkbox\" id=\"showHintt\" name=\"showHintt\" value=\"on\" onclick=\"toggleHint(\$(this));\" $chk_hintt />".$r->maketext("Hints")."&nbsp;<input type=\"checkbox\" id=\"showSolutiont\" name=\"showSolutiont\" value=\"on\" onclick=\"toggleSolution(\$(this));\" $chk_solnt />".$r->maketext("Solutions")."&nbsp;";
                 $clear_prob_btn = CGI::submit(-name=>"cleardisplay",
                                -style=>"width: 30ex",
                                  -onclick=>"f_reset();return false;",
-                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library');
+                               -value=>$r->maketext("Clear Problem Display")) if($bbrowse_which ne 'browse_bpl_library' && $bbrowse_which ne 'browse_spcf_library' && $bbrowse_which ne 'browse_npl_library');
                 $show_hide_path_button .= $clear_prob_btn;
                 $show_hide_path_button .= $prev_button."&nbsp;".$next_button;
 
@@ -2121,7 +2129,7 @@ sub pre_header_initialize {
     debug("browse_setdefs", $r->param("browse_setdefs"));
 	##### Asked to browse certain problems
         if($r->param('edit_local') || $r->param('new_local_set') 
-                 || !( $r->param('next_page') || $r->param('prev_page') || $r->param('lib_view') || $r->param('lib_view_spcf') || $r->param('view_setdef_set') || $r->param('view_mysets_set') || $r->param('view_local_set')) 
+                 || !( $r->param('next_page') || $r->param('prev_page') || $r->param('lib_view') || $r->param('lib_view_bpl') || $r->param('lib_view_spcf') || $r->param('view_setdef_set') || $r->param('view_mysets_set') || $r->param('view_local_set')) 
                ) {
 	    $use_previous_problems = 0; @pg_files = (); ## clear old problems
         }
@@ -2174,6 +2182,9 @@ sub pre_header_initialize {
 
                 #$r->{showHints} = 1 if($r->param('showHints_2'));
                 #$r->{showSolutions} = 1 if($r->param('showSolutions_2'));
+				$r->{showHints} = 1;
+                $r->{showSolutions} = 1;
+				
 		my $set_to_display = $self->{current_library_set};
 		if (not defined($set_to_display) or $set_to_display eq $r->maketext(SELECT_LOCAL_STRING) or $set_to_display eq "Found no directories containing problems") {
 			$self->addbadmessage($r->maketext('You need to select a set to view.'));
@@ -2192,7 +2203,9 @@ sub pre_header_initialize {
 
                 #$r->{showHints} = 1 if($r->param('showHints_3'));
                 #$r->{showSolutions} = 1 if($r->param('showSolutions_3'));
-
+                $r->{showHints} = 1;
+                $r->{showSolutions} = 1;
+				
 		my $set_to_display = $self->{current_library_set};
 		debug("set_to_display is $set_to_display");
 		if (not defined($set_to_display) 
@@ -2224,24 +2237,35 @@ sub pre_header_initialize {
 		@pg_files=();
                 my $typ = "";
 
-                if($r->param('bbrowse_which') eq 'browse_bpl_library') {
-                    $typ = 'BPL';
-                    $r->{showHints} = 1;
-                    $r->{showSolutions} = 1;
-                }
-
                 #$r->{showHints} = 1 if($r->param('showHints_1'));
                 #$r->{showSolutions} = 1 if($r->param('showSolutions_1'));
-
+                    $r->{showHints} = 1;
+                    $r->{showSolutions} = 1;
                 
                
                 my @dbsearch;
-                if($typ eq 'BPL') {
-		    @dbsearch = WeBWorK::Utils::ListingDB::getBPLDBListings($r,0, $typ);
-                } else {
-		    @dbsearch = WeBWorK::Utils::ListingDB::getSectionListings($r, $typ);
-                }
+                
+				@dbsearch = WeBWorK::Utils::ListingDB::getSectionListings($r, $typ);
+     
 		@pg_files = process_search($r,$typ, @dbsearch);
+		$use_previous_problems=0;
+
+		##### View a set from a set*.def
+
+	} elsif ($r->param('lib_view_bpl')) {
+ 
+		@pg_files=();
+                my $typ = "";
+
+                    $typ = 'BPL';
+                    $r->{showHints} = 1;
+                    $r->{showSolutions} = 1;
+                
+               
+                my @dbsearch;
+		    @dbsearch = WeBWorK::Utils::ListingDB::getBPLDBListings($r,0, $typ);
+
+			@pg_files = process_search($r,$typ, @dbsearch);
 		$use_previous_problems=0;
 
 		##### View a set from a set*.def
@@ -2251,8 +2275,8 @@ sub pre_header_initialize {
 		@pg_files=();
                 my $typ = '';
                 if($r->param('bbrowse_which') eq 'browse_spcf_library') {
-                    $r->{showHints} = 1;
-                    $r->{showSolutions} = 1;
+                   $r->{showHints} = 1;
+                   $r->{showSolutions} = 1;
                 }
                
 
@@ -2266,6 +2290,9 @@ sub pre_header_initialize {
 
                 #$r->{showHints} = 1 if($r->param('showHints_4'));
                 #$r->{showSolutions} = 1 if($r->param('showSolutions_4'));
+				 $r->{showHints} = 1;
+                 $r->{showSolutions} = 1;
+				 
 		my $set_to_display = $self->{current_library_set};
 		debug("set_to_display is $set_to_display");
 		if (not defined($set_to_display) 
@@ -2485,15 +2512,16 @@ sub body {
 	}
 
 
-        my $tb = $r->param('lib_deftab') || '0';
-        my $prm1 = "showHints_".$tb;
-        my $prm2 = "showSolutions_".$tb;
+     #   my $tb = $r->param('lib_deftab') || '0';
+      #  my $prm1 = "showHints_".$tb;
+     #   my $prm2 = "showSolutions_".$tb;
         
-	my $showHints = $r->param($prm1);
-	my $showSolutions = $r->param($prm2);
-
-        $showHints = 1 if($tb == 0 || $tb == 5);
-        $showSolutions = 1 if($tb == 0 || $tb == 5);
+	#my $showHints = $r->param($prm1);
+	#my $showSolutions = $r->param($prm2);
+	my $showHints = 1;
+	my $showSolutions = 1;
+       # $showHints = 1 if($tb == 0 || $tb == 5);
+       # $showSolutions = 1 if($tb == 0 || $tb == 5);
 
 
 =comment
