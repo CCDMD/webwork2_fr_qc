@@ -543,7 +543,7 @@ sub browse_local_panelt {
 	}
 
 	return   CGI::start_table({-width=>"80%",-align=>"left"}).
-                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("[_1] Problems", $name).' ',
+                 CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("Browse from").' ',
 		              CGI::popup_menu(@popup_menu_args)])).
                CGI::Tr(CGI::td({-class=>"InfoPanel", -align=>"left",-colspan=>"2"},"&nbsp;")).
                  CGI::Tr({}, CGI::td({-class=>"InfoPanel", -align=>"left",colspan=>"2"}, $view_problem_line
