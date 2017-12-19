@@ -9939,7 +9939,100 @@ msgstr "Impossible de résoudre pour des paramètres adaptatifs"
 msgid "Can't subtract Matrices with different dimensions"
 msgstr "Impossible de soustraire des Matrices de dimensions différentes"
 
+
 ## pg/lib/Parser/AnswerChecker.pm
+msgid "a number"
+msgstr "un Nombre"
+
+msgid "a real"
+msgstr "un nombre Réel"
+
+msgid "an infinity"
+msgstr "l'Infini"
+
+msgid "a point"
+msgstr "un Point"
+
+msgid "a vector"
+msgstr "un Vecteur"
+
+msgid "a matrix"
+msgstr "une Matrice"
+
+msgid "a list"
+msgstr "une Liste"
+
+msgid "an interval"
+msgstr "un Intervalle"
+
+msgid "a set"
+msgstr "un Ensemble"
+
+msgid "a union"
+msgstr "une Union"
+
+msgid "a string"
+msgstr "une Chaîne"
+
+msgid "a formula"
+msgstr "une Fonction"
+
+msgid "Number"
+msgstr "Nombre"
+
+msgid "Real"
+msgstr "Réel"
+
+msgid "Infinity"
+msgstr "Infini"
+
+msgid "Complex"
+msgstr "Complexe"
+
+msgid "Point"
+msgstr "Point"
+
+msgid "Vector"
+msgstr "Vecteur"
+
+msgid "Matrix"
+msgstr "Matrice"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Interval"
+msgstr "Intervalle"
+msgid "Set"
+msgstr "Ensemble"
+
+msgid "Union"
+msgstr "Union"
+
+msgid "String"
+msgstr "Chaîne"
+
+msgid "Formula"
+msgstr "Fonction"
+
+msgid "Your union contains overlapping intervals"
+msgstr "Votre union contient des intervalles qui se chevauchent"
+
+msgid " second"
+msgstr " deuxième"
+
+msgid " third"
+msgstr " troisième"
+
+msgid "answer"
+msgstr "réponse"
+
+msgid "number"
+msgstr "nombre"
+
+msgid "Your %1 %2 is incorrect"
+msgstr "Votre %1 %2 est incorrect"
+
 msgid "Coordinates of Points must be Numbers, not Vector"
 msgstr "Les coordonnées de Points doivent être des Nombres, non des Vecteurs"
 
@@ -10060,5 +10153,11 @@ msgstr "Il devrait y avoir plus de %1 dans votre %2"
 msgid "<SMALL>There is a problem with your %1 %2:</SMALL><BR><DIV STYLE="margin-left:1em">%3</DIV>"
 msgstr "<SMALL>Il y a un problème avec votre %1 %2 :</SMALL><BR><DIV STYLE="margin-left:1em">%3</DIV>"
 
-msgid "Your %1 %2 is incorrect"
-msgstr "Votre %1 %2 est incorrect(e)"
+msgid "Your%1 %2 is incorrect<BR>Your%3 %4 is incorrect"
+msgstr "Votre %1 %2 est incorrect(e)<BR>Votre %3 %4 est incorrect(e)"
+
+msgid "Your %1 isn't %2 (it looks like %3)"
+msgstr "Votre %1 n'est pas %2 (cela semble être %3)"
+
+msgid "a list of numbers"
+msgstr "une liste de nombres"
