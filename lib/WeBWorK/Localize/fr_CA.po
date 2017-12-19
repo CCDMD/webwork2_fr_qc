@@ -10161,3 +10161,6 @@ msgstr "Votre %1 n'est pas %2 (cela semble être %3)"
 
 msgid "a list of numbers"
 msgstr "une liste de nombres"
+
+msgid "a union of intervals"
+msgstr "une union d'intervalles"
