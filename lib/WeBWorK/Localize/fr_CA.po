@@ -7186,8 +7186,8 @@ msgid ""
 "allow you to generate a new version of the test."
 msgstr ""
 
-#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:163
-msgid "Unpack"
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:165
+msgid "Unpack Archive"
 msgstr "Décompresser"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:385
