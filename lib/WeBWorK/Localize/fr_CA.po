@@ -2330,7 +2330,7 @@ msgstr "Télécharger %1"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:261
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:267
 msgid "Download Hardcopy"
-msgstr "Télécharger une copie imprimable"
+msgstr "Télécharger la copie imprimable"
 
 #. ($pl)
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:317
@@ -5072,6 +5072,10 @@ msgstr "Résultats de la dernière action effectuée&#8239;:"
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:1288
 msgid "Retitled"
 msgstr "Rebaptiser"
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Feedback.pm:330
+msgid "Return to your work"
+msgstr "Retourner à votre travail"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:167
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:586
@@ -8203,6 +8207,10 @@ msgstr "Votre adresse courriel a été modifiée."
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/FileManager.pm:1239
 msgid "Your file name contains illegal characters"
 msgstr "Votre nom de fichier contient des caractères illégaux."
+
+#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Feedback.pm:329
+msgid "Your message was sent successfully."
+msgstr "Votre message a été transmis avec succès."
 
 #. ($lastScore,$notCountedMessage)
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Problem.pm:1610

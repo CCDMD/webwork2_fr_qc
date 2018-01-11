@@ -245,9 +245,10 @@ sub save_string {
 	my $varname = $self->{var};
 	my $newval = $self->convert_newval_source($newvalsource);
 	my $displayoldval = $self->comparison_value($oldval);
+	my $r = $self->{Module}->r;
 	return '' if($displayoldval eq $newval);
 	my $str = '$'. $varname . " = '$newval';\n";
-	$str = '$'. $varname . " = undef;\n" if $newval eq 'nobody';
+	$str = '$'. $varname . " = undef;\n" if $newval eq $r->maketext('nobody');
 	return($str);
 }
 
