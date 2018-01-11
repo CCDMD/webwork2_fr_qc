@@ -9938,3 +9938,229 @@ msgstr "Impossible de résoudre pour des paramètres adaptatifs"
 
 msgid "Can't subtract Matrices with different dimensions"
 msgstr "Impossible de soustraire des Matrices de dimensions différentes"
+
+
+## pg/lib/Parser/AnswerChecker.pm
+msgid "a number"
+msgstr "un Nombre"
+
+msgid "a real"
+msgstr "un nombre Réel"
+
+msgid "an infinity"
+msgstr "l'Infini"
+
+msgid "a point"
+msgstr "un Point"
+
+msgid "a vector"
+msgstr "un Vecteur"
+
+msgid "a matrix"
+msgstr "une Matrice"
+
+msgid "a list"
+msgstr "une Liste"
+
+msgid "an interval"
+msgstr "un Intervalle"
+
+msgid "a set"
+msgstr "un Ensemble"
+
+msgid "a union"
+msgstr "une Union"
+
+msgid "a string"
+msgstr "une Chaîne"
+
+msgid "a formula"
+msgstr "une Fonction"
+
+msgid "Number"
+msgstr "Nombre"
+
+msgid "Real"
+msgstr "Réel"
+
+msgid "Infinity"
+msgstr "Infini"
+
+msgid "Complex"
+msgstr "Complexe"
+
+msgid "Point"
+msgstr "Point"
+
+msgid "Vector"
+msgstr "Vecteur"
+
+msgid "Matrix"
+msgstr "Matrice"
+
+msgid "List"
+msgstr "Liste"
+
+msgid "Interval"
+msgstr "Intervalle"
+msgid "Set"
+msgstr "Ensemble"
+
+msgid "Union"
+msgstr "Union"
+
+msgid "String"
+msgstr "Chaîne"
+
+msgid "Formula"
+msgstr "Fonction"
+
+msgid "Your union contains overlapping intervals"
+msgstr "Votre union contient des intervalles qui se chevauchent"
+
+msgid " second"
+msgstr " deuxième"
+
+msgid " third"
+msgstr " troisième"
+
+msgid "answer"
+msgstr "réponse"
+
+msgid "number"
+msgstr "nombre"
+
+msgid "Your %1 %2 is incorrect"
+msgstr "Votre %1 %2 est incorrect"
+
+msgid "Coordinates of Points must be Numbers, not Vector"
+msgstr "Les coordonnées de Points doivent être des Nombres, non des Vecteurs"
+
+msgid "Coordinates of Vectors must be Numbers, not Vector"
+msgstr "Les coordonnées de Vecteurs doivent être des Nombres, non des Vecteurs"
+
+msgid "Your answer isn't %1<BR>(it looks like %2)"
+msgstr "Votre réponse n'est pas %1<BR>(cela semble être %2)"
+
+msgid "Your %1 %2 isn't %3 (it looks like %4)"
+msgstr "Votre %1 %2 n'est pas %3 (cela semble être %4)"
+
+msgid "Your %1 answer isn't %2 (it looks like %3)"
+msgstr "Votre %1 réponse n'est pas %2 (cela semble être %3)"
+
+msgid "Vector"
+msgstr "Vecteur"
+
+msgid "zeroth"
+msgstr "zéroième"
+
+msgid "first"
+msgstr "premier(ère)"
+
+msgid "second"
+msgstr "deuxième"
+
+msgid "third"
+msgstr "troisième"
+
+msgid "fourth"
+msgstr "quatrième"
+
+msgid "fifth"
+msgstr "cinquième"
+
+msgid "sixth"
+msgstr "sixième"
+
+msgid "seventh"
+msgstr "septième"
+
+msgid "eighth"
+msgstr "huitième"
+
+msgid "ninth"
+msgstr "neuvième"
+
+msgid "tenth"
+msgstr "dixième"
+
+msgid "Your union contains overlapping intervals"
+msgstr "Votre union contient des intervalles se chevauchant"
+
+msgid "Your union contains sets and intervals that overlap"
+msgstr "Votre union contient des ensembles et des intervalles se chevauchant"
+
+msgid "Your union can be simplified by combining intervals"
+msgstr "Votre union peut être simplifiée en combinant des intervalles"
+
+msgid "Your union can be simplified by combining some sets"
+msgstr "Votre union peut être simplifiée en combinant des ensembles"
+
+msgid "Your union contains sets with repeated elements"
+msgstr "Votre union contient des ensembles avec des éléments se répétant"
+
+msgid "Your set should have no repeated elements"
+msgstr "Votre ensemble ne devrait pas avoir d'éléments se répétant"
+
+msgid "Your %1 union contains overlapping intervals"
+msgstr "Votre %1 union contient des intervalles se chevauchant"
+
+msgid "Your %1 union contains sets and intervals that overlap"
+msgstr "Votre %1 union contient des ensembles et des intervalles se chevauchant"
+
+msgid "Your %1 union can be simplified by combining intervals"
+msgstr "Votre %1 peut être simplifiée en combinant des intervalles"
+
+msgid "Your %1 union can be simplified by combining some sets"
+msgstr "Votre %1 peut être simplifiée en combinant des ensembles"
+
+msgid "Your %1 union contains sets with repeated elements"
+msgstr "Votre %1 contient des ensembles avec des éléments se répétant"
+
+msgid "Your %1 set should have no repeated elements"
+msgstr "Votre %1 ensemble ne devrait pas avoir d'éléments se répétant"
+
+msgid "Your left endpoint is incorrect"
+msgstr "Votre extrémité inférieure est incorrecte"
+
+msgid "Your right endpoint is incorrect"
+msgstr "Votre extrémité supérieure est incorrecte"
+
+msgid "Your left endpoint is incorrect<BR>Your right endpoint is incorrect"
+msgstr "Votre extrémité inférieure est incorrecte<BR>Votre extrémité supérieure est incorrecte"
+
+msgid "The type of interval is incorrect"
+msgstr "Le type d'intervalle est incorrect"
+
+msgid "# Variable will be having values as first, second, third etc."
+msgstr "# La variable aura des valeurs telles que premier, deuxième, troisième, etc."
+
+msgid "The %1 coordinate is incorrect"
+msgstr "La %1 coordonnée est incorrecte"
+
+msgid "The parentheses for your %1 are of the wrong type"
+msgstr "Les parenthèses de votre %1 sont du mauvais type"
+
+msgid "The parentheses for your %1 should be removed"
+msgstr "Les parenthèses de votre %1 devraient être enlevées"
+
+msgid "The parentheses for your %1 seem to be missing"
+msgstr "Les parenthèses de votre %1 semblent être manquantes"
+
+msgid "There should be more %1 in your %2"
+msgstr "Il devrait y avoir plus de %1 dans votre %2"
+
+msgid "<SMALL>There is a problem with your %1 %2:</SMALL><BR><DIV STYLE="margin-left:1em">%3</DIV>"
+msgstr "<SMALL>Il y a un problème avec votre %1 %2 :</SMALL><BR><DIV STYLE="margin-left:1em">%3</DIV>"
+
+msgid "Your%1 %2 is incorrect<BR>Your%3 %4 is incorrect"
+msgstr "Votre %1 %2 est incorrect(e)<BR>Votre %3 %4 est incorrect(e)"
+
+msgid "Your %1 isn't %2 (it looks like %3)"
+msgstr "Votre %1 n'est pas %2 (cela semble être %3)"
+
+msgid "a list of numbers"
+msgstr "une liste de nombres"
+
+msgid "a union of intervals"
+msgstr "une union d'intervalles"
