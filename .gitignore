@@ -32,3 +32,4 @@ conf/*.apache-config
 DATA/*
 *.swp
 .dump_past_answers_salt
+bin/adminClasslist.lst
