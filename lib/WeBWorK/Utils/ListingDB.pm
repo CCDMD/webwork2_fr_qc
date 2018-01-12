@@ -117,7 +117,7 @@ sub getTables {
 	my %tables;
 
 
-       if($ce->{problemLibrary}->{version} == 2.0 && $typ ne 'BPL') {
+       if($ce->{problemLibrary}->{version} == 2.5 && $typ ne 'BPL') {
                 %tables = %OPLtables;
        } elsif($typ eq 'BPL') {
 		%tables = %BPLtables;
