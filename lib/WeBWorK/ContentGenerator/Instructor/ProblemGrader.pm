@@ -304,7 +304,7 @@ sub body {
 		    
 		    } elsif ($answerTypes[$i] eq 'essay') {
 			
-			$answer = HTML::Entities::encode_entities($answer);
+		#	$answer = HTML::Entities::encode_entities($answer);
 			$answer =~ s/\n/<br>/g;
 			$userAnswerString .= CGI::p({class=>'essay-answer'},
 						    $answer);
