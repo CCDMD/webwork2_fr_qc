@@ -48,6 +48,7 @@ BEGIN
 	&getAllSections &searchListings &getAllListings &getSectionListings
 	&getAllDBsubjects &getAllDBchapters &getAllDBsections &getDBTextbooks
 	&getDBListings &countDBListings &getTables &getDBextras &getAllKeyWords &getTop20KeyWords
+        &getAllKeyWords_en &getTop20KeyWords_en
         &getAllDirs &getAllSubdirs &countDirListings &getDirListings
 	);
 	%EXPORT_TAGS		=();
@@ -92,6 +93,26 @@ my %BPLtables = (
  pgfile_problem => 'BPL_pgfile_problem',
 );
 
+my %BPLENtables = (
+ dbsubject => 'BPLen_DBsubject',
+ dbchapter => 'BPLen_DBchapter',
+ dbsection => 'BPLen_DBsection',
+ author => 'BPLen_author',
+ path => 'BPLen_path',
+ pgfile => 'BPLen_pgfile',
+ keyword => 'BPLen_keyword',
+ keywordmap => 'BPLen_keyword_chapters',
+ keyworddim => 'BPLen_keyword_dim',
+ keywordrank => 'BPLen_keyword_rank',
+ pgfile_keyword => 'BPLen_pgfile_keyword',
+ textbook => 'BPLen_textbook',
+ chapter => 'BPLen_chapter',
+ section => 'BPLen_section',
+ problem => 'BPLen_problem',
+ morelt => 'BPLen_morelt',
+ pgfile_problem => 'BPLen_pgfile_problem',
+);
+
 my %NPLtables = (
  dbsubject => 'NPL-DBsubject',
  dbchapter => 'NPL-DBchapter',
@@ -116,12 +137,20 @@ sub getTables {
 	my $libraryRoot = $ce->{problemLibrary}->{root};
 	my %tables;
 
+       #print STDERR "In gettables: $typ\n";
 
-       if($ce->{problemLibrary}->{version} == 2.5 && $typ ne 'BPL') {
+
+
+       if($ce->{problemLibrary}->{version} == 2.5 && $typ ne 'BPL' && $typ ne 'BPLEN') {
                 %tables = %OPLtables;
        } elsif($typ eq 'BPL') {
 		%tables = %BPLtables;
+       } elsif($typ eq 'BPLEN') {
+                #print STDERR "In gettables 2: $typ\n";
+		%tables = %BPLENtables;
+                #print STDERR Data::Dumper->Dump([\%tables]);
        } else {
+                #print STDERR "In gettables 2: $typ\n";
 		%tables = %NPLtables;
        }
        return %tables;
@@ -325,7 +354,7 @@ sub getDBTextbooks {
             tc.textbook_id=tbk.textbook_id
             $extrawhere $textextrawhere ";
 
-print STDERR "$query\n";
+#print STDERR "$query\n";
 
 #$query =~ s/\n/ /g;
 #warn $query;
@@ -357,6 +386,7 @@ sub getAllDBsubjects {
 	my $r = shift;
         my $typ = shift || 'OPL';
         if($r->param('library_srchtype') eq 'BPL') { $typ = 'BPL'; }
+        if($r->param('library_srchtype') eq 'BPLEN') { $typ = 'BPLEN'; }
 	my %tables = getTables($r->ce, $typ);
 	my @results=();
 	my @row;
@@ -378,10 +408,112 @@ Returns an array of keywords starting
 $r is the Apache request object
 
 =cut
+sub getAllKeyWords_en {
+	my $r = shift;
+        my $typ = 'BPLEN';
+	my %tables = getTables($r->ce, 'BPLEN');
+	my @results=();
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+        $subject = "" if($subject eq $r->maketext("All Subjects"));
+        $chapter = "" if($chapter eq $r->maketext("All Chapters"));
 
+	my $keywords =  $r->param('library_keywords') || "";
+        my $limit = $r->param('library_defkeywordsen') || 10000;
+        my $row;
+        my $kwwhere;
+        my $exwhere;
+        my $AllKeyWords = {};
+        my $PgKeyWords = {};
+
+	my $dbh = getDB($r->ce);
+        #$subject = encoder($subject)->utf8 if($subject!~/[^[:ascii:]]/);
+        #$chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
+
+        my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s , `$tables{keywordrank}` r WHERE r.keyword_id = s.keyword_id";
+
+        my $hash = $dbh->selectall_arrayref($query);
+        foreach my $rw (@$hash) {
+              my ($keyword_id,$keyword,$chapter_id,$chapter,$subject_id,$subject,$pgfile_id,$rank) = @$rw;
+              push @{$PgKeyWords->{$keyword}->{pgfile_id}}, $pgfile_id;
+        }
+
+        my %ExclPGFILE;
+        my %InclPGFILE;
+        my %SrchKeyWords;
+
+        if($keywords ne "") {
+            my $firstLoop = 1;
+            my %lastSet;
+            my @tags = split ',',$keywords;
+ 
+            foreach my $kw (@tags) {
+                my $pgfiles;
+                $kw =~s/^\s+//g;
+                $kw =~s/\s+$//g;
+                $SrchKeyWords{$kw} = 1;
+                if($kw =~/^-/) {
+                    $kw =~s/^-//;
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                     
+                    foreach (  @$pgfiles ) {
+                       $ExclPGFILE{$_} = 1;
+                    }
+                } else {
+
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                    %lastSet = map{ $_ =>1 } @$pgfiles if($firstLoop);
+                    my @masterSet = grep( $lastSet{$_}, @$pgfiles );
+                    %lastSet = map{$_ =>1} @masterSet;
+                    $firstLoop = 0 if($firstLoop);
+
+                }
+                %InclPGFILE=%lastSet;
+            }
+        }
+
+	foreach my $w (@$hash) {
+
+              my ($keyword_id,$keyword,$chapter_id,$DBchapter,$subject_id,$DBsubject,$pgfile_id,$rank) = @$w;
+
+              next if(exists($SrchKeyWords{$keyword}));
+              next if($subject ne "" && $DBsubject ne $subject);
+              next if($chapter ne "" && $DBchapter ne $chapter);
+              next if(scalar(keys %ExclPGFILE) > 0 && exists $ExclPGFILE{$pgfile_id});
+
+              next if(scalar(keys %InclPGFILE) > 0 && not exists $InclPGFILE{$pgfile_id});
+
+              $AllKeyWords->{$keyword}->{rank}    = $rank || 0;
+
+        }
+=comment
+        my @results = sort { $AllKeyWords->{$b}{rank} <=> $AllKeyWords->{$a}{rank} } keys %$AllKeyWords;
+        $limit = (scalar(@results) > $limit) ? $limit : scalar(@results);
+        $dbh->do("CREATE TEMPORARY TABLE topkeywords (keyword varchar(100)) DEFAULT CHARSET=latin1");
+        s/'/\\'/g for @results;
+        my $kwinsert =  join "'),('", @results[0..$limit-1];
+        $kwinsert = "('".$kwinsert."')";
+        $dbh->do("INSERT INTO topkeywords (keyword) values $kwinsert");
+        my $keywords = $dbh->selectcol_arrayref("SELECT keyword from topkeywords ORDER BY CONVERT(CAST(keyword as BINARY) USING utf8)");
+        $dbh->do("DROP TABLE topkeywords");
+=cut
+ 
+        my @kws;
+        foreach (keys %$AllKeyWords) {
+            push @kws, $_;
+            push @kws, "-".$_;
+        }
+
+
+        return @kws;
+}
 sub getAllKeyWords {
 	my $r = shift;
-	my %tables = getTables($r->ce, 'BPL');
+        my $typ = 'BPL';
+        #print STDERR $r->param('library_srchtype');
+        if($r->param('library_srchtype') eq 'BPLEN') { $typ = 'BPLEN'; }
+	my %tables = getTables($r->ce, $typ);
+	#my %tables = getTables($r->ce, 'BPL');
 	my @results=();
 	my $subject = $r->param('library_subjects');
 	my $chapter = $r->param('library_chapters');
@@ -484,9 +616,100 @@ Returns an array of keywords starting
 $r is the Apache request object
 
 =cut
+sub getTop20KeyWords_en {
+	my $r = shift;
+        my $typ = 'BPLEN';
+	my %tables = getTables($r->ce, 'BPLEN');
+	my @results=();
+	my $subject = $r->param('library_subjects');
+	my $chapter = $r->param('library_chapters');
+        $subject = "" if($subject eq $r->maketext("All Subjects"));
+        $chapter = "" if($chapter eq $r->maketext("All Chapters"));
+
+	my $keywords =  $r->param('library_keywords') || "";
+        my $limit = $r->param('library_defkeywordsen') || 20;
+        my $row;
+        my $kwwhere;
+        my $exwhere;
+        my $AllKeyWords = {};
+        my $PgKeyWords = {};
+
+	my $dbh = getDB($r->ce);
+        #$subject = encoder($subject)->utf8 if($subject!~/[^[:ascii:]]/);
+        #$chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
+
+        my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s , `$tables{keywordrank}` r WHERE r.keyword_id = s.keyword_id";
+
+        my $hash = $dbh->selectall_arrayref($query);
+        foreach my $rw (@$hash) {
+              my ($keyword_id,$keyword,$chapter_id,$chapter,$subject_id,$subject,$pgfile_id,$rank) = @$rw;
+              push @{$PgKeyWords->{$keyword}->{pgfile_id}}, $pgfile_id;
+        }
+
+        my %ExclPGFILE;
+        my %InclPGFILE;
+        my %SrchKeyWords;
+
+        if($keywords ne "") {
+            my $firstLoop = 1;
+            my %lastSet;
+            my @tags = split ',',$keywords;
+ 
+            foreach my $kw (@tags) {
+                my $pgfiles;
+                $kw =~s/^\s+//g;
+                $kw =~s/\s+$//g;
+                $SrchKeyWords{$kw} = 1;
+                if($kw =~/^-/) {
+                    $kw =~s/^-//;
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                     
+                    foreach (  @$pgfiles ) {
+                       $ExclPGFILE{$_} = 1;
+                    }
+                } else {
+
+                    $pgfiles = $PgKeyWords->{$kw}->{pgfile_id};
+                    %lastSet = map{ $_ =>1 } @$pgfiles if($firstLoop);
+                    my @masterSet = grep( $lastSet{$_}, @$pgfiles );
+                    %lastSet = map{$_ =>1} @masterSet;
+                    $firstLoop = 0 if($firstLoop);
+
+                }
+                %InclPGFILE=%lastSet;
+            }
+        }
+
+	foreach my $w (@$hash) {
+
+              my ($keyword_id,$keyword,$chapter_id,$DBchapter,$subject_id,$DBsubject,$pgfile_id,$rank) = @$w;
+
+              next if(exists($SrchKeyWords{$keyword}));
+              next if($subject ne "" && $DBsubject ne $subject);
+              next if($chapter ne "" && $DBchapter ne $chapter);
+              next if(scalar(keys %ExclPGFILE) > 0 && exists $ExclPGFILE{$pgfile_id});
+
+              next if(scalar(keys %InclPGFILE) > 0 && not exists $InclPGFILE{$pgfile_id});
+
+              $AllKeyWords->{$keyword}->{rank}    = $rank || 0;
+
+        }
+        my @results = sort { $AllKeyWords->{$b}{rank} <=> $AllKeyWords->{$a}{rank} } keys %$AllKeyWords;
+        $limit = (scalar(@results) > $limit) ? $limit : scalar(@results);
+        $dbh->do("CREATE TEMPORARY TABLE topkeywords (keyword varchar(100)) DEFAULT CHARSET=latin1");
+        s/'/\\'/g for @results;
+        my $kwinsert =  join "'),('", @results[0..$limit-1];
+        $kwinsert = "('".$kwinsert."')";
+        $dbh->do("INSERT INTO topkeywords (keyword) values $kwinsert");
+        my $keywords = $dbh->selectcol_arrayref("SELECT keyword from topkeywords ORDER BY CONVERT(CAST(keyword as BINARY) USING utf8)");
+
+        return @$keywords;
+}
 sub getTop20KeyWords {
 	my $r = shift;
-	my %tables = getTables($r->ce, 'BPL');
+        my $typ = 'BPL';
+        if($r->param('library_srchtype') eq 'BPLEN') { $typ = 'BPLEN'; }
+	my %tables = getTables($r->ce, $typ);
 	my @results=();
 	my $subject = $r->param('library_subjects');
 	my $chapter = $r->param('library_chapters');
@@ -573,6 +796,7 @@ sub getTop20KeyWords {
         return @$keywords;
 }
 
+
 =item getAllDBchapters($r)
 Returns an array of DBchapter names                                             
                                                                                 
@@ -583,12 +807,17 @@ $r is the Apache request object
 sub getAllDBchapters {
 	my $r = shift;
         my $typ = shift || 'OPL';
+
         if($r->param('library_srchtype') eq 'BPL') { 
            $typ = 'BPL'; 
+        }
+        if($r->param('library_srchtype') eq 'BPLEN') { 
+           $typ = 'BPLEN'; 
         }
 	my %tables = getTables($r->ce,$typ);
 	my $subject = $r->param('library_subjects');
         $subject = $r->param('blibrary_subjects') if($typ eq 'BPL');
+        $subject = $r->param('benlibrary_subjects') if($typ eq 'BPLEN');
 	return () unless($subject);
 	my $dbh = getDB($r->ce);
 	my $query = "SELECT DISTINCT c.name, c.DBchapter_id 
@@ -745,7 +974,112 @@ sub getDBListings {
 	}
 	return @results;
 }
+sub getBPLENDBListings {
+	my $r = shift;
+	my $amcounter = shift;  # 0-1 if I am a counter.
+        my $typ = "BPLEN";
 
+	my $ce = $r->ce;
+	my %tables = getTables($ce,'BPLEN');
+
+	my $subj = $r->param('benlibrary_subjects') || "";
+	my $chap = $r->param('benlibrary_chapters') || "";
+
+        $subj = "" if ($subj eq $r->maketext("All Subjects"));
+        $chap = "" if ($chap eq $r->maketext("All Chapters"));
+
+        $subj = encoder($subj)->utf8 if($subj!~/[^[:ascii:]]/);
+        $chap = encoder($chap)->utf8 if($chap!~/[^[:ascii:]]/);
+        
+	my $sec = "";
+	my $keywords =  $r->param('library_keywords') || $r->param('search_bplen') || "";
+	my $dbh = getDB($ce);
+        my $sth;
+       
+
+	# Next could be an array, an array reference, or nothing
+	my @levels = $r->param('level');
+	if(scalar(@levels) == 1 and ref($levels[0]) eq 'ARRAY') {
+		@levels = @{$levels[0]};
+	}
+	@levels = grep { defined($_) && m/\S/ } @levels;
+	my ($kw1, $kw2) = ('','');
+
+        #Hack for BPL new interface
+        if($keywords ne "") {
+            my @tags = split(',',$keywords);
+            my $k=0;
+
+	    $kw1 = ", `$tables{keywordmap}` kc, `$tables{keyword}` kw, `$tables{pgfile_keyword}` pgkey";
+	    $kw2 = " AND kw.keyword_id=pgkey.keyword_id 
+                     AND kc.bpldbchapter_id = dbc.DBchapter_id 
+                     AND kw.keyword_id=kc.bplkeyword_id 
+                     AND pgkey.pgfile_id=pgf.pgfile_id";
+
+            #$kw2 .= " AND kw.keyword $op \"$k1\" " if($k1 ne "");
+
+            if(scalar(@tags) > 0) {
+              foreach my $t (@tags) {
+                $t=~s/\s+$//g;
+                $t=~s/^\s+//g;
+                $k++;
+                $t = encoder($t)->utf8 if($t!~/[^[:ascii:]]/);
+                if($t=~/^-/) {
+                    $t =~s/^-//;
+                    $kw2 .= " AND NOT EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                } else {
+                    $kw2 .= " AND EXISTS (select 1 from  `$tables{keyword}` kw$k,`$tables{pgfile_keyword}` pgkey$k where kw$k.keyword = \"$t\" and kw$k.keyword_id=pgkey$k.keyword_id AND pgkey$k.pgfile_id = pgkey.pgfile_id ) \n";
+                }
+                ###Rank them here 
+                $t =~s/^-//;
+              }
+            }
+        }
+
+	my $extrawhere = '';
+	if($subj) {
+		$subj =~ s/'/\\'/g;
+		$extrawhere .= " AND dbsj.name=\"$subj\" ";
+	}
+	if($chap) {
+		$chap =~ s/'/\\'/g;
+		$extrawhere .= " AND dbc.name=\"$chap\" ";
+	}
+	if($sec) {
+		$sec =~ s/'/\\'/g;
+		$extrawhere .= " AND dbsc.name=\"$sec\" ";
+	}
+
+	my $selectwhat = 'DISTINCT pgf.pgfile_id';
+	$selectwhat = 'COUNT(' . $selectwhat . ')' if ($amcounter);
+
+	my $query = "SELECT $selectwhat from `$tables{pgfile}` pgf, 
+         `$tables{dbsection}` dbsc, `$tables{dbchapter}` dbc, `$tables{dbsubject}` dbsj $kw1
+        WHERE dbsj.DBsubject_id = dbc.DBsubject_id AND
+              dbc.DBchapter_id = dbsc.DBchapter_id AND
+              dbsc.DBsection_id = pgf.DBsection_id 
+              \n $extrawhere 
+              $kw2";
+        $query .= " ORDER BY pgf.filename" if($typ eq 'BPLEN');
+
+
+	my $pg_id_ref = $dbh->selectall_arrayref($query);
+	my @pg_ids = map { $_->[0] } @{$pg_id_ref};
+	if($amcounter) {
+	    return(@pg_ids[0]);
+	}
+
+	my @results=();
+	for my $pgid (@pg_ids) {
+		$query = "SELECT path, filename, morelt_id, pgfile_id, static, MO FROM `$tables{pgfile}` pgf, `$tables{path}` p 
+          WHERE p.path_id = pgf.path_id AND pgf.pgfile_id=\"$pgid\"";
+		my $row = $dbh->selectrow_arrayref($query);
+		push @results, {'path' => $row->[0], 'filename' => $row->[1], 'morelt' => $row->[2], 'pgid'=> $row->[3], 'static' => $row->[4], 'MO' => $row->[5] };
+		
+	}
+        $dbh->disconnect;
+	return @results;
+}
 sub getBPLDBListings {
 	my $r = shift;
 	my $amcounter = shift;  # 0-1 if I am a counter.
@@ -833,6 +1167,7 @@ sub getBPLDBListings {
               \n $extrawhere 
               $kw2";
         $query .= " ORDER BY pgf.filename" if($typ eq 'BPL');
+print STDERR "$query\n";
 
 
 	my $pg_id_ref = $dbh->selectall_arrayref($query);
@@ -901,6 +1236,8 @@ sub countDBListings {
         my $typ = shift || $r->param('library_srchtype');
         if($typ eq 'BPL') {
 	    return (getBPLDBListings($r,1,$typ));
+        } elsif($typ eq 'BPLEN') {
+	    return (getBPLENDBListings($r,1,$typ));
         } else {
 	    return (getDBListings($r,1,$typ));
         }
