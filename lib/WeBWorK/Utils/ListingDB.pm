@@ -817,7 +817,7 @@ sub getAllDBchapters {
 	my %tables = getTables($r->ce,$typ);
 	my $subject = $r->param('library_subjects');
         $subject = $r->param('blibrary_subjects') if($typ eq 'BPL');
-        $subject = $r->param('benlibrary_subjects') if($typ eq 'BPLEN');
+        #$subject = $r->param('benlibrary_subjects') if($typ eq 'BPLEN');
 	return () unless($subject);
 	my $dbh = getDB($r->ce);
 	my $query = "SELECT DISTINCT c.name, c.DBchapter_id 
