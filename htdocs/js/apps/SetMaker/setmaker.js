@@ -815,6 +815,8 @@ function enlib_searchops() {
 
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
+  mydefaultRequestObject.benlibrary_subjects = subj;
+  mydefaultRequestObject.benlibrary_chapters = chap;
   mydefaultRequestObject.library_keywords = keywd;
   mydefaultRequestObject.library_srchtype = 'BPLEN';
 
@@ -896,7 +898,7 @@ function enlib_top20keywords () {
   mydefaultRequestObject.library_subjects = subj;
   mydefaultRequestObject.library_chapters = chap;
   mydefaultRequestObject.library_keywords = tags;
-  mydefaultRequestObject.library_defkeywordsen = kwn;
+  mydefaultRequestObject.library_defkeywords = kwn;
 
   var subcommand = "getTop20KeyWords_en";
 
