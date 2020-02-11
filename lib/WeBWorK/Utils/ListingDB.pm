@@ -137,7 +137,6 @@ sub getTables {
 	my $libraryRoot = $ce->{problemLibrary}->{root};
 	my %tables;
 
-       #print STDERR "In gettables: $typ\n";
 
 
 
@@ -146,11 +145,8 @@ sub getTables {
        } elsif($typ eq 'BPL') {
 		%tables = %BPLtables;
        } elsif($typ eq 'BPLEN') {
-                #print STDERR "In gettables 2: $typ\n";
 		%tables = %BPLENtables;
-                #print STDERR Data::Dumper->Dump([\%tables]);
        } else {
-                #print STDERR "In gettables 2: $typ\n";
 		%tables = %NPLtables;
        }
        return %tables;
@@ -354,7 +350,6 @@ sub getDBTextbooks {
             tc.textbook_id=tbk.textbook_id
             $extrawhere $textextrawhere ";
 
-#print STDERR "$query\n";
 
 #$query =~ s/\n/ /g;
 #warn $query;
@@ -510,7 +505,6 @@ sub getAllKeyWords_en {
 sub getAllKeyWords {
 	my $r = shift;
         my $typ = 'BPL';
-        #print STDERR $r->param('library_srchtype');
         if($r->param('library_srchtype') eq 'BPLEN') { $typ = 'BPLEN'; }
 	my %tables = getTables($r->ce, $typ);
 	#my %tables = getTables($r->ce, 'BPL');
@@ -533,6 +527,7 @@ sub getAllKeyWords {
         #$chapter = encoder($chapter)->utf8 if($chapter!~/[^[:ascii:]]/);
 
         my $query = "SELECT s.*,r.rank FROM  `$tables{keyworddim}` s , `$tables{keywordrank}` r WHERE r.keyword_id = s.keyword_id";
+print STDERR "\n\n\n\n\n$query\n\n\n\n";
 
         my $hash = $dbh->selectall_arrayref($query);
         foreach my $rw (@$hash) {
@@ -606,7 +601,6 @@ sub getAllKeyWords {
             push @kws, "-".$_;
         }
 
-
         return @kws;
 }
 
@@ -627,7 +621,7 @@ sub getTop20KeyWords_en {
         $chapter = "" if($chapter eq $r->maketext("All Chapters"));
 
 	my $keywords =  $r->param('library_keywords') || "";
-        my $limit = $r->param('library_defkeywordsen') || 20;
+        my $limit = $r->param('library_defkeywords') || 20;
         my $row;
         my $kwwhere;
         my $exwhere;
@@ -817,7 +811,7 @@ sub getAllDBchapters {
 	my %tables = getTables($r->ce,$typ);
 	my $subject = $r->param('library_subjects');
         $subject = $r->param('blibrary_subjects') if($typ eq 'BPL');
-        #$subject = $r->param('benlibrary_subjects') if($typ eq 'BPLEN');
+        $subject = $r->param('benlibrary_subjects') if($typ eq 'BPLEN');
 	return () unless($subject);
 	my $dbh = getDB($r->ce);
 	my $query = "SELECT DISTINCT c.name, c.DBchapter_id 
@@ -825,6 +819,7 @@ sub getAllDBchapters {
 				`$tables{dbsubject}` t
                  WHERE c.DBsubject_id = t.DBsubject_id AND
                  t.name = \"$subject\"  ORDER BY  CONVERT(CAST(c.name as BINARY) USING utf8)";
+
 
 	my $all_chaps_ref = $dbh->selectall_arrayref($query);
 	my @results = map { $_->[0] } @{$all_chaps_ref};
