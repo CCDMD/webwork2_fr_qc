@@ -366,6 +366,17 @@ sub searchLib {    #API for searching the NPL database
 
 		return($out);
 	};
+        'getAllKeywords_en' eq $subcommand && do {
+		$self->{library_subjects} = $rh->{library_subjects};
+		$self->{library_chapters} = $rh->{library_chapters};
+		$self->{library_keywords} = $rh->{library_keywords};
+
+		my @keyword_listings = WeBWorK::Utils::ListingDB::getAllKeyWords_en($self);
+		$out->{ra_out} = \@keyword_listings;
+                $out->{text} = encode_base64("Keywords loaded.");
+
+		return($out);
+	};
         'getTop20KeyWords' eq $subcommand && do {
 		$self->{library_subjects} = $rh->{library_subjects};
 		$self->{library_chapters} = $rh->{library_chapters};
@@ -373,6 +384,18 @@ sub searchLib {    #API for searching the NPL database
 		$self->{library_defkeywords} = $rh->{library_defkeywords};
 
 		my @keyword_listings = WeBWorK::Utils::ListingDB::getTop20KeyWords($self);
+		$out->{ra_out} = \@keyword_listings;
+                $out->{text} = encode_base64("Keywords loaded.");
+
+		return($out);
+	};
+        'getTop20KeyWords_en' eq $subcommand && do {
+		$self->{library_subjects} = $rh->{library_subjects};
+		$self->{library_chapters} = $rh->{library_chapters};
+		$self->{library_keywords} = $rh->{library_keywords};
+		$self->{library_defkeywordsen} = $rh->{library_defkeywordsen};
+
+		my @keyword_listings = WeBWorK::Utils::ListingDB::getTop20KeyWords_en($self);
 		$out->{ra_out} = \@keyword_listings;
                 $out->{text} = encode_base64("Keywords loaded.");
 

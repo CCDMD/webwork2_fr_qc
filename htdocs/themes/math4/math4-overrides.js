@@ -24,6 +24,7 @@ $('#mainform input[name="edit_local"]').removeClass('btn-primary');
 $('#mainform input[name="new_local_set"]').removeClass('btn-primary');
 $('#mainform input[name="lib_view"]').addClass('btn-primary');
 $('#mainform input[name="lib_view_bpl"]').addClass('btn-primary');
+$('#mainform input[name="lib_view_bplen"]').addClass('btn-primary');
 $('#mainform input[name="view_mysets_set"]').addClass('btn-primary');
 $('#mainform input[name="view_local_set"]').addClass('btn-primary');
 $('#mainform input[name="lib_view_spcf"]').addClass('btn-primary');

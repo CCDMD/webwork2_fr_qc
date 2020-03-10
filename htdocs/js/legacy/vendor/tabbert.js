@@ -620,14 +620,16 @@ function setBrowseWhich(i) {
     if(i == 0)
       document.getElementsByName('bbrowse_which')[0].value = 'browse_bpl_library';
     if(i == 1)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_npl_library';
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_bplen_library';
     if(i == 2)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_local';
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_npl_library';
     if(i == 3)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_mysets';
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_local';
     if(i == 4)
-      document.getElementsByName('bbrowse_which')[0].value = 'browse_setdefs';
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_mysets';
     if(i == 5)
+      document.getElementsByName('bbrowse_which')[0].value = 'browse_setdefs';
+    if(i == 6)
       document.getElementsByName('bbrowse_which')[0].value  = 'browse_spcf_library';
 
     document.getElementsByName('lib_deftab')[0].value = i;

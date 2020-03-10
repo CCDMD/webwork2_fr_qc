@@ -15,6 +15,13 @@ msgstr ""
 msgid "#corr"
 msgstr ""
 
+msgid "French Problem Library"
+msgstr "CCDMD Problem Library (FR)"
+
+msgid "English Problem Library"
+msgstr "CCDMD Problem Library (EN)"
+
+
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/Scoring.pm:479
 msgid "#incorr"
 msgstr ""
