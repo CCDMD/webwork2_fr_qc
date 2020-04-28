@@ -241,7 +241,7 @@ sub safe_get_id {
                                 $insertvalues[$j] = NULL;
                         }
                 }
-                #print "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
+                print "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $dbh->do("INSERT INTO `$tablename` VALUES(". join(',',@insertvalues) .")");
                 dbug "INSERT INTO $tablename VALUES( ".join(',',@insertvalues).")\n";
                 $sth = $dbh->prepare($query);
@@ -255,6 +255,7 @@ sub safe_get_id {
 sub pgfiles {
 
         my $name = $File::Find::name;
+        return if($name =~/CCDMD-EN/);
         %textinfo=();
         my @textproblems = (-1);
 #print "\n$name";
