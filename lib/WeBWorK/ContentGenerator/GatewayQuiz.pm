@@ -181,7 +181,8 @@ sub can_recordAnswers {
 	my $grace = $self->{ce}->{gatewayGracePeriod};
 
 	my $submitTime = ( defined($Set->version_last_attempt_time()) &&
-			   $Set->version_last_attempt_time() ) ? 
+			   $Set->version_last_attempt_time() && 
+                           $Set->assignment_type() eq 'proctored_gateway' ) ? 
 			   $Set->version_last_attempt_time() : $timeNow;
 
 	if ($User->user_id ne $EffectiveUser->user_id) {
@@ -250,7 +251,8 @@ sub can_checkAnswers {
 	my $grace = $self->{ce}->{gatewayGracePeriod};
 	
 	my $submitTime = ( defined($Set->version_last_attempt_time()) &&
-			   $Set->version_last_attempt_time() ) ? 
+			   $Set->version_last_attempt_time() &&
+                           $Set->{'assignment_type'} eq 'proctored_gateway' ) ? 
 			   $Set->version_last_attempt_time() : $timeNow;
 
 	# this is further complicated by trying to address hiding scores by 
