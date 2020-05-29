@@ -1637,7 +1637,7 @@ sub make_top_row {
 
         foreach my $actionID (@formsToShow) {
                 # Check permissions
-                my $actionForm = %{ ACTION_FORMS() }{$actionID};
+                my $actionForm = %{ ACTION_FORMS() }->{$actionID};
                 #my $onChange = "document.problemsetlist.action[$i].checked=true";
                 my $onChange = "";
                 my %actionParams = $self->getActionParams($actionID);
