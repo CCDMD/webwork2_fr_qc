@@ -1539,9 +1539,19 @@ msgstr ""
 msgid "Causes a single homework problem to be worth twice as much."
 msgstr ""
 
-#: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:63
 msgid "French Problem Library"
-msgstr "Banque de problèmes libres"
+msgstr "Banque de problèmes libres - FR"
+
+msgid "English Problem Library"
+msgstr "Banque de problèmes libres - EN"
+
+##: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:63
+#msgid "French Problem Library"
+#msgstr "Banque de problèmes libres (FR)"
+#
+##: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/SetMaker.pm:63
+#msgid "English Problem Library"
+#msgstr "Banque de problèmes libres (EN)"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/CourseAdmin.pm:936
 msgid "Change Course Title to:"
