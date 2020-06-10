@@ -557,11 +557,15 @@ _RETURN $WebworkSOAP::Classes::User of names objects.
 sub get_user {
     my ($self,$authenKey,$courseName,$userID) = @_;
     my $soapEnv = new WebworkSOAP($authenKey,$courseName);
+    
+open (LOG, ">>/opt/webwork/tmp_log") or die "Can't open log file";
+print LOG "\n\nhi there\n\n";
     my $userData = $soapEnv->{db}->getUser($userID);
     if(not defined $userData) {
         return -1;
     }
     my $user = new WebworkSOAP::Classes::User($userData);
+close(LOG);
     return ($user);
 }
 

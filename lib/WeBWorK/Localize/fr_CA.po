@@ -8028,7 +8028,7 @@ msgstr ""
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:488
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/ProblemSets.pm:541
 msgid "You must log into this set via your Learning Management System (e.g. Blackboard, Moodle, etc...)."
-msgstr ""
+msgstr "Vous devez accéder à ce devoir par le biais de votre plateforme d'apprentissage (p. ex. Moodle, Blackboard, etc.)"
 
 #: /opt/webwork/webwork2/lib/WeBWorK/ContentGenerator/Instructor/ShowAnswers.pm:76
 msgid "You must provide a student ID, a set ID, and a problem number."
