@@ -531,7 +531,7 @@ sub browse_local_panelt {
 		}
 	}
 	debug("library is $lib and sets are $library_selected");
-	my $view_problem_line = view_problems_line('view_local_set', $r->maketext('View Problems'), $self->r, 2);
+	my $view_problem_line = view_problems_line('view_local_set', $r->maketext('View Problems'), $self->r, 3);
 	my @popup_menu_args = (
 		-name => 'llibrary_sets',
 		-values => $list_of_prob_dirs,
@@ -596,7 +596,7 @@ sub browse_mysets_panelt {
 		$library_selected = $default_value; 
 	} 
 
-	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r, 3 );
+	my $view_problem_line = view_problems_line('view_mysets_set', $r->maketext('View Problems'), $self->r, 4 );
 	return CGI::start_table({-align=>"left",width=>"80%"}),
                CGI::Tr({},
 		CGI::td({-class=>"InfoPanel", -align=>"left"}, [$r->maketext("Browse from").' ',
@@ -1505,7 +1505,7 @@ sub browse_setdef_panelt {
 		#unshift @list_of_set_defs, $default_value; 
 		$library_selected = $default_value; 
 	}
-	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r, 4);
+	my $view_problem_line = view_problems_line('view_setdef_set', $r->maketext('View Problems'), $self->r, 5);
 	my $popupetc = CGI::popup_menu(-name=> 'slibrary_sets',
                                 -values=>\@list_of_set_defs,
                                 -default=> $library_selected);
