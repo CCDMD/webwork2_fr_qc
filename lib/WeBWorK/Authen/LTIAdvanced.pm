@@ -356,6 +356,22 @@ sub authenticate {
     $request_hash{$key} =  $r->param($key); 
     debug("$key->|" . $request_hash{$key} . "|");
   }	
+  
+ # Try to fix issues with non-ASCII characters in LTI data
+  #     BUT only when the course environment has LTI_fix_multi_byte_characters set to 1
+
+  if ( defined($ce->{LTI_fix_multi_byte_characters})
+       and ( $ce->{LTI_fix_multi_byte_characters} == 1 ) ) {
+    my ( $key, $val );
+    foreach $key ( keys( %request_hash ) ) {
+      $val = $request_hash{$key} ;
+      if ( ($val =~ /[\x80-\xFF]/ and !utf8::is_utf8($val)) ) {
+        debug("Key ${key} : Detected what appears to be a UTF8 multi-byte characters which would have been passed to OAuth and triggered an error. Applying utf8::decode to the relevant value.\n");
+        utf8::decode($request_hash{$key});
+      }
+    }
+  }
+
   my $requestHash = \%request_hash;
 
   # We need to provide the request URL when verifying the OAuth request.

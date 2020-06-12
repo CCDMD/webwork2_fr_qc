@@ -29,7 +29,7 @@ use warnings;
 use mod_perl;
 use constant MP2 => ( exists $ENV{MOD_PERL_API_VERSION} and $ENV{MOD_PERL_API_VERSION} >= 2 );
 
-use Encode;
+#use Encode;
 
 use WeBWorK::Localize;
 
@@ -59,12 +59,8 @@ sub mutable_param {
 	my $self = shift;
 	
 	if (not defined $self->{paramcache}) {
-	    my @names = $self->SUPER::param();
-	    foreach my $name (@names) {
-		my @params = $self->SUPER::param($name);
-		@params = map {Encode::decode_utf8($_)} @params;
-		$self->{paramcache}{$name} = [@params];
-	    }
+    	my @names = $self->SUPER::param;
+	@{$self->{paramcache}}{@names} = map { [ $self->SUPER::param($_) ] } @names;
 	}
 
 	@_ or return keys %{$self->{paramcache}};
